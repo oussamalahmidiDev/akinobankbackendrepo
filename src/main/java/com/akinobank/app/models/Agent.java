@@ -21,12 +21,10 @@ public class Agent implements Serializable {
     @Id//la cle prm
     @GeneratedValue(strategy = GenerationType.AUTO) // la generation auto
     private int id;
-    private String nom , prenom , email;
+    private String nom , prenom ;
     private Date dateDeCreation;
     private Date dateUpdate;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // pour ne pas afficher le mot de passe
-    private String motDePasse ;
 
     @ManyToOne
     @JoinColumn(name = "id_admin") // pour la relation : chaque agent a un seul admin
@@ -42,14 +40,5 @@ public class Agent implements Serializable {
     @OneToOne(mappedBy = "agent") // chaque agent a un seul compte user pour l'auth
     private User user;
 
-    //just for test
 
-//    public Agent(String nom, String prenom, String email, String password, Admin admin, Agence agence) {
-//        this.nom=nom;
-//        this.prenom=prenom;
-//        this.email=email;
-//        this.motDePasse=password;
-//        this.admin=admin;
-//        this.agence=agence;
-//    }
 }

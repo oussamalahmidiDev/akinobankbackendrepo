@@ -27,10 +27,7 @@ public class Admin implements Serializable {
     private int id;
 
 
-    private String nom , prenom , email ;
-
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // pour ne pas afficher le mot de passe , just pour la modification
-    private String motDePasse;
+    private String nom , prenom  ;
 
     @OneToMany(mappedBy = "admin", fetch = FetchType.LAZY) // pour la relation : chaque admin a pls agents
     Collection<Agent> agentCollection;
@@ -41,11 +38,4 @@ public class Admin implements Serializable {
     @OneToOne(mappedBy = "admin") // pour la relation : un admin a un compte user pour la auth
     private User user;
 
-
-//    public Admin(String nom,String prenom, String email, String password) {
-//        this.nom=nom;
-//        this.prenom=prenom;
-//        this.email=email;
-//        this.motDePasse=password;
-//    }
 }

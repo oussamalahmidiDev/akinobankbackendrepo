@@ -22,12 +22,9 @@ public class Client implements Serializable {
     @Id // la cle prm
     @GeneratedValue(strategy = GenerationType.AUTO)//generation auto
     private int id;
-    private String nom, prenom , email  , photo , numeroTelephone;
+    private String nom, prenom , photo , numeroTelephone;
 
     private String verificationToken ; //a discuter
-
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // pour ne pas afficher le mot de passe (JSON)
-    private String motDePasse ;
 
     private Date dateDeCreation;
     private Date dateUpdate;
@@ -45,13 +42,4 @@ public class Client implements Serializable {
     @OneToOne(mappedBy = "client")// chaque client a un seul compte user pour l'auth
     private User user;
 
-    //just for test
-
-//    public Client(String nom, String prenom, String email, String password, Agent agent) {
-//        this.nom=nom;
-//        this.prenom=prenom;
-//        this.email=email;
-//        this.motDePasse=password;
-//        this.agent=agent;
-//    }
 }
