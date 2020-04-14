@@ -42,12 +42,14 @@ public class Agent implements Serializable {
     @OneToOne(mappedBy = "agent") // chaque agent a un seul compte user pour l'auth
     private User user;
 
-    public Agent(String nom, String prenom, String email, String password, Admin admin, Agence agence) {
-        this.nom=nom;
-        this.prenom=prenom;
-        this.email=email;
-        this.motDePasse=password;
-        this.admin=admin;
-        this.agence=agence;
-    }
+    //just for test
+
+//    public Agent(String nom, String prenom, String email, String password, Admin admin, Agence agence) {
+//        this.nom=nom;
+//        this.prenom=prenom;
+//        this.email=email;
+//        this.motDePasse=password;
+//        this.admin=admin;
+//        this.agence=agence;
+//    }
 }

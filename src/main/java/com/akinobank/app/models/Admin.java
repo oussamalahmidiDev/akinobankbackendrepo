@@ -41,11 +41,11 @@ public class Admin implements Serializable {
     @OneToOne(mappedBy = "admin") // pour la relation : un admin a un compte user pour la auth
     private User user;
 
-
-    public Admin(String nom,String prenom, String email, String password) {
-        this.nom=nom;
-        this.prenom=prenom;
-        this.email=email;
-        this.motDePasse=password;
-    }
+//just for test
+//    public Admin(String nom,String prenom, String email, String password) {
+//        this.nom=nom;
+//        this.prenom=prenom;
+//        this.email=email;
+//        this.motDePasse=password;
+//    }
 }

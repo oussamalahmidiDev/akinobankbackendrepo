@@ -45,11 +45,13 @@ public class Client implements Serializable {
     @OneToOne(mappedBy = "client")// chaque client a un seul compte user pour l'auth
     private User user;
 
-    public Client(String nom, String prenom, String email, String password, Agent agent) {
-        this.nom=nom;
-        this.prenom=prenom;
-        this.email=email;
-        this.motDePasse=password;
-        this.agent=agent;
-    }
+    //just for test
+
+//    public Client(String nom, String prenom, String email, String password, Agent agent) {
+//        this.nom=nom;
+//        this.prenom=prenom;
+//        this.email=email;
+//        this.motDePasse=password;
+//        this.agent=agent;
+//    }
 }

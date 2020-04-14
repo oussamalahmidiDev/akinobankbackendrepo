@@ -30,11 +30,13 @@ public class Agence implements Serializable {
     @JoinColumn(name = "id_admin") // pour la relation : chaque agence a un seul admin
     private Admin admin;
 
-    public Agence(Date date, Date date1, String lib, String ville, Admin admin) {
-        this.dateDeCreation=date;
-        this.dateUpdate=date1;
-        this.libelleAgence=lib;
-        this.ville=ville;
-        this.admin=admin;
-    }
+    //just for test
+
+//    public Agence(Date date, Date date1, String lib, String ville, Admin admin) {
+//        this.dateDeCreation=date;
+//        this.dateUpdate=date1;
+//        this.libelleAgence=lib;
+//        this.ville=ville;
+//        this.admin=admin;
+//    }
 }
