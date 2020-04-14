@@ -1,1 +1,1 @@
-Put your thymeleaf templates for admin views here.
+Put your thymeleaf views templates here.
