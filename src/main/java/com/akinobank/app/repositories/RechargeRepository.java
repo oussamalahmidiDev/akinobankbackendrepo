@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 
-public interface RechargeRepository  extends JpaRepository<Recharge, Integer> {
+public interface RechargeRepository  extends JpaRepository<Recharge, Long> {
 }

@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Repository
-public interface AdminRepository  extends JpaRepository<Admin, Integer> {
+public interface AdminRepository  extends JpaRepository<Admin, Long> {
 }

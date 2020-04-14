@@ -21,7 +21,7 @@ public class Client implements Serializable {
 
     @Id // la cle prm
     @GeneratedValue(strategy = GenerationType.AUTO)//generation auto
-    private int id;
+    private Long id;
     private String nom, prenom , photo , numeroTelephone;
 
     private String verificationToken ; //a discuter

@@ -20,7 +20,7 @@ public class Agence implements Serializable {
 
     @Id // la cle prm
     @GeneratedValue(strategy = GenerationType.AUTO) //generation auto
-    private int id;
+    private Long id;
     private Date dateDeCreation;
     private Date dateUpdate;
 

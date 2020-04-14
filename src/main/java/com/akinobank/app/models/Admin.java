@@ -24,7 +24,7 @@ public class Admin implements Serializable {
 
     @Id // la cle prm
     @GeneratedValue(strategy = GenerationType.AUTO) //pour la generation auto
-    private int id;
+    private Long id;
 
 
     private String nom , prenom  ;

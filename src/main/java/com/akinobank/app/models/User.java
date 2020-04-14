@@ -16,8 +16,10 @@ public class User implements UserDetails { // We use interface UserDetials inste
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
     private String email , password;
+    private boolean emailConfirmed;
+    private String verificationToken;
 
     @OneToOne
     private Admin admin;

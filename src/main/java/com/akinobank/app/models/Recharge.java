@@ -20,7 +20,7 @@ public class Recharge implements Serializable {
 
     @Id // la cle prm
     @GeneratedValue(strategy = GenerationType.AUTO)//generation auto
-    private int id;
+    private Long id;
     private String operateur , numeroTelephone;
     private double montant ;
     private Date dateRecharge ;

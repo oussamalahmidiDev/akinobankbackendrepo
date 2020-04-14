@@ -19,7 +19,7 @@ public class Notification implements Serializable {
 
     @Id // la cle prm
     @GeneratedValue(strategy = GenerationType.AUTO) // generation auto
-    private int id;
+    private Long id;
     private String contenu , type;
     private boolean lue;
     private Date dateDeCreation;
