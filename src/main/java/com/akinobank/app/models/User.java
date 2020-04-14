@@ -17,7 +17,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private String email , motDePass;
+    private String email , password;
 
     @OneToOne
     private Admin admin;
@@ -41,7 +41,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @Override
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     public String getPassword() {
-        return motDePass;
+        return password;
     }
 
     @Override

@@ -40,12 +40,10 @@ public class Compte implements Serializable {
     private Client client;
 
     @OneToMany(fetch = FetchType.LAZY)
-    private Collection<Virement> virementCollection; // pour la relation : chaque compte a 0 ou pls virement
+    private Collection<Virement> virements; // pour la relation : chaque compte a 0 ou pls virement
 
     @OneToMany(fetch = FetchType.LAZY)
-    private Collection<Recharge> rechargeCollection; //pour la relation : chaque compte a 0 ou pls recharge
-
-    //just for test
+    private Collection<Recharge> recharges; //pour la relation : chaque compte a 0 ou pls recharge
 
 //    public Compte(UUID uuid, double solde, String intitule, String statut, Date datec, Date dateu, String codeSecret, Client client , Collection<Virement> virement , Collection<Recharge> recharge) {
 //        this.numeroCompte =uuid;
@@ -56,8 +54,8 @@ public class Compte implements Serializable {
 //        this.dateUpdate=dateu;
 //        this.codeSecret=codeSecret;
 //        this.client=client;
-//        this.virementCollection=virement;
-//        this.rechargeCollection=recharge;
+//        this.virements=virement;
+//        this.recharges=recharge;
 //    }
 
 //    @OneToOne(mappedBy = "compte") //

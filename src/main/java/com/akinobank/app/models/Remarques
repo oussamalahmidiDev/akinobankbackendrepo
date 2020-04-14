@@ -1,0 +1,8 @@
+- Les attributs de timestamp doivent etre generes automatiquement
+- Le statut de compte doit etre de type ENUM [definir enumeration de statut qui contient des valeurs fixes]
+- ajouter attribut 'role' dans la class User
+- vaut mieux de changer le type de 'id' int => Long
+- verificationToken doit etre dans la classe User, car meme les agents ont leurs verification token
+- ajouter un attribut bool de 'emailConfirmed' pour verifier si l'user a verifie son email
+
+

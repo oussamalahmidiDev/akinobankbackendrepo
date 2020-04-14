@@ -37,7 +37,7 @@ public class Agent implements Serializable {
     private Agence agence;
 
     @OneToMany(mappedBy = "agent", fetch = FetchType.LAZY)// pour la relation : chaque agent a pls clients
-    private Collection<Client> clientCollection;
+    private Collection<Client> clients;
 
     @OneToOne(mappedBy = "agent") // chaque agent a un seul compte user pour l'auth
     private User user;
