@@ -1,6 +1,6 @@
 //package com.akinobank.app.models;
 //
-//
+// << We create this class just in case UserDetails is not working >>
 //import com.fasterxml.jackson.annotation.JsonProperty;
 //import lombok.AllArgsConstructor;
 //import lombok.Getter;
