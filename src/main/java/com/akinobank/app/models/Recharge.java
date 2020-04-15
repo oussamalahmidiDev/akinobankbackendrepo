@@ -9,6 +9,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -23,7 +26,15 @@ public class Recharge implements Serializable {
     @Id // la cle prm
     @GeneratedValue(strategy = GenerationType.AUTO)//generation auto
     private Long id;
-    private String operateur , numeroTelephone;
+
+    @NotBlank(message = "L'operateur est obligatoire")
+    private String operateur ;
+
+    @NotBlank(message = "le numéro de téléphone est obligatoire")
+    private String numeroTelephone;
+
+    @NotNull
+    @Positive
     private double montant ;
 
     @CreationTimestamp
@@ -33,5 +44,6 @@ public class Recharge implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "uuid_compte") // pour la relation : chaque recharge appartient a un seul compte
+    @NotNull
     private Compte compte;
 }

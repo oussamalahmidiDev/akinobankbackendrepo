@@ -1,5 +1,6 @@
 package com.akinobank.app.models;
 
+import com.sun.istack.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,8 @@ import org.hibernate.id.UUIDGenerationStrategy;
 import org.hibernate.id.UUIDGenerator;
 
 import javax.persistence.*;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
@@ -27,7 +30,14 @@ public class Virement implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO,generator = UUIDGenerator.UUID_GEN_STRATEGY_CLASS) //pour la generation auto mais pas avec des int ,avec des UUID : Universally Unique IDentifier
     private UUID id ;
 
-    private String notes  , codeVerification; // pour vérifier la transaction avant d'envoyer
+    private String notes;
+
+    @NotNull
+    @Size(min = 4,max=8)
+    private String codeVerification; // pour vérifier la transaction avant d'envoyer
+
+    @NotNull
+    @Positive
     private double montant;
 
     @CreationTimestamp
@@ -36,10 +46,12 @@ public class Virement implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "uuid_compte") // pour la relation : plusieur virement apprtient a un seul compte
+    @NotNull
     private Compte compte;
 
     @OneToOne
     @JoinColumn(name = "compte_destinataire")
+    @NotNull
     private Compte destCompte;  //la relation entre Virement 1,1 ---->1,1 Compte , envoyer 1 virement a un seul compte
     //a discuter
 

@@ -9,6 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
@@ -33,10 +34,12 @@ public class Agent implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "id_admin") // pour la relation : chaque agent a un seul admin
+    @NotBlank(message = "Admin is obligatory")
     private Admin admin;
 
     @ManyToOne
     @JoinColumn(name = "id_agence") // pour la relation : un agent affecter a une seule agence
+    @NotBlank(message = "Agence is obligatory")
     private Agence agence;
 
     @OneToMany(mappedBy = "agent", fetch = FetchType.LAZY)// pour la relation : chaque agent a pls clients

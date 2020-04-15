@@ -1,6 +1,5 @@
 package com.akinobank.app.models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
@@ -25,7 +25,11 @@ public class Client implements Serializable {
     @Id // la cle prm
     @GeneratedValue(strategy = GenerationType.AUTO)//generation auto
     private Long id;
-    private String photo , numeroTelephone;
+
+    private String photo ;
+
+    @NotBlank(message = "le numéro de téléphone est obligatoire")
+    private String numeroTelephone;
 
     @CreationTimestamp
     private Date dateDeCreation;
@@ -35,9 +39,11 @@ public class Client implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "id_agent") // pour la relation : chaque client a un seul agent
+    @NotBlank(message = "l'agent est obligatoire")
     private Agent agent;
 
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY) // pour la relation : chaque client a pls comptes
+    @NotBlank(message = "Au moins un compte")
     private Collection<Compte> comptes;
 
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY) // pour la relation : chaque client a 0 ou pls notification

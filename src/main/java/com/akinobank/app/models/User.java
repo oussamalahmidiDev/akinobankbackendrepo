@@ -10,6 +10,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -25,11 +28,18 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String email , password;
+    @NotBlank(message = "L'email est obligatoire")
+    private String email ;
+    @NotBlank(message = "Le mot de passe est obligatoire")
+    @Size(min = 6)
+    private String password;
     private boolean emailConfirmed;
+    @NotNull
     private String verificationToken;
+    @NotNull
     private String nom , prenom  ;
 
+    @NotBlank(message = "Le role est obligatoire")
     private String roles ;
 
     @OneToOne

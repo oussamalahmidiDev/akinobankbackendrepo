@@ -8,6 +8,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -30,10 +32,12 @@ public class Agence implements Serializable {
     @UpdateTimestamp
     private Date dateUpdate;
 
+    @NotNull
     private String ville , libelleAgence; // libelleAgenece : nom agence
 
     @ManyToOne
     @JoinColumn(name = "id_admin") // pour la relation : chaque agence a un seul admin
+    @NotBlank(message = "Admin is obligatory")
     private Admin admin;
 
 

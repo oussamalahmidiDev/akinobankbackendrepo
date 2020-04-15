@@ -6,12 +6,10 @@ import com.akinobank.app.repositories.AdminRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
+@ResponseBody //The @ResponseBody annotation tells a controller that the object returned is automatically serialized into JSON , you will need it
 @RequestMapping("/admin")
 public class AdminPanelController {
 
@@ -27,6 +25,7 @@ public class AdminPanelController {
     public String usersView(Model model) {
         return ADMIN_VIEWS_PATH + "users";
     }
+
     @GetMapping("users/ajouter")
     public String addUserView(Model model) {
         /// juste pour tester le form.
