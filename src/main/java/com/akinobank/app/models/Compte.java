@@ -25,19 +25,19 @@ import java.util.UUID;
 @Getter
 @Setter
 public class Compte implements Serializable {
-//
-//    @Id // la cle prm
-//    @GeneratedValue(strategy = GenerationType.IDENTITY) //pour la generation auto mais pas avec des int ,avec des UUID : Universally Unique IDentifier
+
      @Id @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
      @Column(name = "numero_compte", length = 16, unique = true, nullable = false)
     private UUID numeroCompte;
-//    @NotNull
+
+    @NotNull
     private double solde;
-//    @NotBlank(message = "intitule est obligatoire")
+
+    @NotNull
     private String intitule ;
 
-//    @NotNull
+    @NotNull
     private String statut; // status : etat du compte : active-block-...etc
 
     @CreationTimestamp
@@ -50,8 +50,8 @@ public class Compte implements Serializable {
     private Date dateUpdate;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)// pour ne pas afficher le code secret
-//    @NotBlank(message = "Le code secret est obligatoire")
-//    @Size(min = 4 , max = 8)
+    @NotNull
+    @Size(min = 4 , max = 8)
     private String codeSecret; // le code ou le mot de pass pour accéder au compte
 
     @ManyToOne
@@ -60,7 +60,6 @@ public class Compte implements Serializable {
     private Client client;
 
     @OneToMany(fetch = FetchType.LAZY)
-    // peut etre 0 mais pas null
     private Collection<Virement> virements; // pour la relation : chaque compte a 0 ou pls virement
 
     @OneToMany // pour la relation : chaque client a 0 ou pls notification
@@ -73,14 +72,17 @@ public class Compte implements Serializable {
     @OneToMany(fetch = FetchType.LAZY)
     private Collection<Recharge> recharges; //pour la relation : chaque compte a 0 ou pls recharge
 
+    public void setDateDeCreation(Date dateDeCreation) { // generate auto creation date for compte
+        this.dateDeCreation = new Date();
+    }
+
     //just for test
 
-    public Compte(int solde, String intitule, String status, Date date, Date date1, Date date2, String codeS3, Client client) {
+    public Compte(int solde, String intitule, String status, Date date1, Date date2, String codeS3, Client client) {
 
         this.solde=solde;
         this.intitule=intitule;
         this.statut=status;
-        this.dateDeCreation=date;
         this.dateUpdate=date1;
         this.dernierOperation=date2;
         this.codeSecret=codeS3;

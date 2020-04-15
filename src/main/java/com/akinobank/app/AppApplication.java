@@ -60,8 +60,8 @@ public class AppApplication implements CommandLineRunner {
         Client client1 = clientRepository.save(new Client(user3,agent,agence));
 
         //comptes
-        Compte compte1 = compteRepository.save(new Compte(1500,"khalil","khalil",new Date(),new Date(),new Date(),"codeS1",client1));
-        Compte compte2 = compteRepository.save(new Compte(1500,"nouhaila","Active",new Date(),new Date(),new Date(),"codeS2",client1));
-        Compte compte3 = compteRepository.save(new Compte(1500,"oussama","Active",new Date(),new Date(),new Date() ,"codeS3",client1));
+        Compte compte1 = compteRepository.save(new Compte(1500,"khalil","khalil",new Date(),new Date(),"codeS1",client1));
+        Compte compte2 = compteRepository.save(new Compte(1500,"nouhaila","Active",new Date(),new Date(),"codeS2",client1));
+        Compte compte3 = compteRepository.save(new Compte(1500,"oussama","Active",new Date(),new Date() ,"codeS3",client1));
     }
 }

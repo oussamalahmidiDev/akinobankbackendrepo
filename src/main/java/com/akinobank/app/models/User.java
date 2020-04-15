@@ -44,7 +44,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @NotNull
     private String nom , prenom  ;
 
-    @NotBlank(message = "Le role est obligatoire")
+    @NotNull
     private String role ;
 
     @OneToOne(mappedBy = "user")

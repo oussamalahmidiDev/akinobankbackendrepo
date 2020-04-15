@@ -37,6 +37,7 @@ public class Agence implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "id_admin") // pour la relation : chaque agence a un seul admin
+    @NotNull
     private Admin admin;
 
 

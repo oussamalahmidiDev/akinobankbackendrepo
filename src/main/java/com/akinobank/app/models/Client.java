@@ -9,6 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
@@ -28,7 +29,7 @@ public class Client implements Serializable {
 
     private String photo ;
 
-//    @NotBlank(message = "le numéro de téléphone est obligatoire")
+//    @NotNull
     private String numeroTelephone;
 
     @CreationTimestamp
@@ -39,16 +40,16 @@ public class Client implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "id_agent") // pour la relation : chaque client a un seul agent
-//    @NotBlank(message = "l'agent est obligatoire")
+    @NotNull
     private Agent agent;
 
     @ManyToOne
     @JoinColumn(name = "id_agence") // pour la relation : chaque client a un seul agent
-//    @NotBlank(message = "l'agence est obligatoire")
+    @NotNull
     private Agence agence;
 
     @OneToMany // pour la relation : chaque client a pls comptes
-//    @NotBlank(message = "Au moins un compte")
+//    @NotNull
     private Collection<Compte> comptes;
 
 //    @OneToMany // pour la relation : chaque client a 0 ou pls notification
