@@ -1,7 +1,10 @@
 package com.akinobank.app.models;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,34 +22,38 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @Builder
-@ToString
 public class User implements UserDetails { // We use interface UserDetials instead of create a User class and defend each method, because there s a lot of methods already exist and helpful for us
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
     @NotBlank(message = "L'email est obligatoire")
     private String email ;
+
 //    @NotBlank(message = "Le mot de passe est obligatoire")
-    @Size(min = 6)
+//    @Size(min = 6)
     private String password;
-    private boolean emailConfirmed;
+
     @NotNull
+    private boolean emailConfirmed;
+
     private String verificationToken;
+
     @NotNull
     private String nom , prenom  ;
 
     @NotBlank(message = "Le role est obligatoire")
-    private String roles ;
+    private String role ;
 
-    @OneToOne
+    @OneToOne(mappedBy = "user")
     private Admin admin;
 
-    @OneToOne
+    @OneToOne(mappedBy = "user")
     private Agent agent;
 
-    @OneToOne
+    @OneToOne(mappedBy = "user")
     private Client client;
 
 
@@ -55,7 +62,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
     public Collection<? extends GrantedAuthority> getAuthorities() {
 
         List<GrantedAuthority> list = new ArrayList<GrantedAuthority>();
-        list.add(new SimpleGrantedAuthority("ROLE_" + roles)); // ROLE_  : just a prefix , Spring build a prefix for every role its just a syntx ,for exemple if your role is USER then your authority(role) is ROLE_USER
+        list.add(new SimpleGrantedAuthority("ROLE_" + role)); // ROLE_  : just a prefix , Spring build a prefix for every role its just a syntx ,for exemple if your role is USER then your authority(role) is ROLE_USER
 
         return list;
     }
@@ -89,5 +96,13 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public User(String nom, String prenom, String email, String password , String role) {
+        this.nom=nom;
+        this.prenom=prenom;
+        this.email=email;
+        this.password=password;
+        this.role=role;
     }
 }
