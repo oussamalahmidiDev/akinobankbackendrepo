@@ -1,12 +1,16 @@
 package com.akinobank.app.models;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @Entity
 @AllArgsConstructor
@@ -21,6 +25,16 @@ public class User implements UserDetails { // We use interface UserDetials inste
     private boolean emailConfirmed;
     private String verificationToken;
 
+//    @Basic
+//    private List roles = new ArrayList();
+
+    @OneToMany(
+            targetEntity = Admin.class,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List roles = new ArrayList<>();
+
     @OneToOne
     private Admin admin;
 
@@ -30,14 +44,15 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @OneToOne
     private Client client;
 
-//    @OneToMany
-//    @JoinColumn("id")
-//    private Collection role;
 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+
+        List<GrantedAuthority> list = new ArrayList<GrantedAuthority>();
+        list.add(new SimpleGrantedAuthority("ROLE_" + roles)); // ROLE_  : just a prefix , Spring build a prefix for every role its just a syntx ,for exemple if your role is USER then your authority(role) is ROLE_USER
+
+        return list;
     }
 
     @Override

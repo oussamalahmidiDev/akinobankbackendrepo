@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -22,7 +24,11 @@ public class Notification implements Serializable {
     private Long id;
     private String contenu , type;
     private boolean lue;
-    private Date dateDeCreation;
+
+    @Enumerated(EnumType.ORDINAL)
+    @CreationTimestamp
+    private Date dateDeNotification;
+
 
     @ManyToOne
     @JoinColumn(name = "id_client") // pour la relation : chaque Notification appartient a un seul client
