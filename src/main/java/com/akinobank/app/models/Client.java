@@ -34,10 +34,10 @@ public class Client implements Serializable {
     private Agent agent;
 
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY) // pour la relation : chaque client a pls comptes
-    private Collection<Compte> compteCollection;
+    private Collection<Compte> comptes;
 
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY) // pour la relation : chaque client a 0 ou pls notification
-    private Collection<Notification> notificationCollection;
+    private Collection<Notification> notifications;
 
     @OneToOne(mappedBy = "client")// chaque client a un seul compte user pour l'auth
     private User user;

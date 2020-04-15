@@ -30,10 +30,10 @@ public class Admin implements Serializable {
     private String nom , prenom  ;
 
     @OneToMany(mappedBy = "admin", fetch = FetchType.LAZY) // pour la relation : chaque admin a pls agents
-    Collection<Agent> agentCollection;
+    Collection<Agent> agents;
 
     @OneToMany(mappedBy = "admin", fetch = FetchType.LAZY)// pour la relation : chaque admin a pls agences
-    Collection<Agence> agenceCollection;
+    Collection<Agence> agences;
 
     @OneToOne(mappedBy = "admin") // pour la relation : un admin a un compte user pour la auth
     private User user;
