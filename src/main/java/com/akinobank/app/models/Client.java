@@ -12,6 +12,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 @Entity // pour la générer du table User
 // annotation de Lombok : pour générer les getters&setters et les constructeurs par default et avec des args
@@ -33,6 +34,9 @@ public class Client implements Serializable {
     @Enumerated(EnumType.ORDINAL)
     @UpdateTimestamp
     private Date dateUpdate;
+
+    @OneToMany(targetEntity = Client.class)
+    protected List roles ;
 
     @ManyToOne
     @JoinColumn(name = "id_agent") // pour la relation : chaque client a un seul agent

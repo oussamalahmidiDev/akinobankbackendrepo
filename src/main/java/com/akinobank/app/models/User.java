@@ -29,10 +29,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
 //    private List roles = new ArrayList();
 
     @OneToMany(
-            targetEntity = Admin.class,
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+            targetEntity = Admin.class)
     private List roles = new ArrayList<>();
 
     @OneToOne
@@ -50,7 +47,9 @@ public class User implements UserDetails { // We use interface UserDetials inste
     public Collection<? extends GrantedAuthority> getAuthorities() {
 
         List<GrantedAuthority> list = new ArrayList<GrantedAuthority>();
-        list.add(new SimpleGrantedAuthority("ROLE_" + roles)); // ROLE_  : just a prefix , Spring build a prefix for every role its just a syntx ,for exemple if your role is USER then your authority(role) is ROLE_USER
+        list.add(new SimpleGrantedAuthority("ROLE_" + admin.getRoles())); // ROLE_  : just a prefix , Spring build a prefix for every role its just a syntx ,for exemple if your role is USER then your authority(role) is ROLE_USER
+        list.add(new SimpleGrantedAuthority("ROLE_" + agent.getRoles()));
+        list.add(new SimpleGrantedAuthority("ROLE_" + client.getRoles()));
 
         return list;
     }
