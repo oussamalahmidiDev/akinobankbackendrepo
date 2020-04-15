@@ -15,14 +15,12 @@ import java.util.List;
 @Entity // pour la générer du table User
 // annotation de Lombok : pour générer les getters&setters et les constructeurs par default et avec des args@AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
 @Builder
 @AllArgsConstructor
 public class Agent implements Serializable {
 
     @Id//la cle prm
-    @GeneratedValue(strategy = GenerationType.AUTO) // la generation auto
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // la generation auto
     private Long id;
 
     @CreationTimestamp
@@ -33,19 +31,22 @@ public class Agent implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "id_admin") // pour la relation : chaque agent a un seul admin
-    @NotBlank(message = "Admin is obligatory")
+//    @NotBlank(message = "Admin is obligatory")
     private Admin admin;
 
     @ManyToOne
     @JoinColumn(name = "id_agence") // pour la relation : un agent affecter a une seule agence
-    @NotBlank(message = "Agence is obligatory")
+//    @NotBlank(message = "Agence is obligatory")
     private Agence agence;
 
     @OneToMany(mappedBy = "agent", fetch = FetchType.LAZY)// pour la relation : chaque agent a pls clients
     private Collection<Client> clients;
 
-    @OneToOne(mappedBy = "agent") // chaque agent a un seul compte user pour l'auth
+    @OneToOne // chaque agent a un seul compte user pour l'auth
     private User user;
 
+    public Agent(User user) {
+        this.user=user;
+    }
 
 }

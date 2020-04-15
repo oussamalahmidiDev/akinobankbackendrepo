@@ -16,14 +16,12 @@ import java.util.List;
 @Entity // pour la générer du table User
 // annotation de Lombok : pour générer les getters&setters et les constructeurs par default et avec des args
 @AllArgsConstructor
-@Getter
-@Setter
 @NoArgsConstructor
 @Builder
 public class Admin implements Serializable {
 
     @Id // la cle prm
-    @GeneratedValue(strategy = GenerationType.AUTO) //pour la generation auto
+    @GeneratedValue(strategy = GenerationType.IDENTITY) //pour la generation auto
     private Long id;
 
     @OneToMany(mappedBy = "admin", fetch = FetchType.LAZY) // pour la relation : chaque admin a pls agents
@@ -32,7 +30,11 @@ public class Admin implements Serializable {
     @OneToMany(mappedBy = "admin", fetch = FetchType.LAZY)// pour la relation : chaque admin a pls agences
     Collection<Agence> agences;
 
-    @OneToOne(mappedBy = "admin") // pour la relation : un admin a un compte user pour la auth
+    @OneToOne // pour la relation : un admin a un compte user pour la auth
+    @JoinColumn(name = "id_user")
     private User user;
 
+    public Admin(User user) {
+        this.user=user;
+    }
 }

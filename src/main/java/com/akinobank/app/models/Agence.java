@@ -18,8 +18,6 @@ import java.util.Date;
 // annotation de Lombok : pour générer les getters&setters et les constructeurs par default et avec des args
 @AllArgsConstructor
 @NoArgsConstructor
-@Setter
-@Getter
 public class Agence implements Serializable {
 
     @Id // la cle prm
@@ -37,7 +35,7 @@ public class Agence implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "id_admin") // pour la relation : chaque agence a un seul admin
-    @NotBlank(message = "Admin is obligatory")
+    @NotBlank(message = "Admin est obligatoire")
     private Admin admin;
 
 

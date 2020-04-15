@@ -58,7 +58,7 @@ public class AdminPanelController {
         user.setEmailConfirmed(false);
         userRepository.save(user);
 
-        switch (user.getRoles()) {
+        switch (user.getRole()) {
             case
                 "ADMIN": adminRepository.save(Admin.builder().user(user).build()); break;
             default:
