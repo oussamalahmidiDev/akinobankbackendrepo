@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.id.UUIDGenerator;
 
@@ -17,7 +18,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
-
 @Entity // pour la générer du table User
 // annotation de Lombok : pour générer les getters&setters et les constructeurs par default et avec des args
 @AllArgsConstructor
@@ -25,9 +25,12 @@ import java.util.UUID;
 @Getter
 @Setter
 public class Compte implements Serializable {
-
-    @Id // la cle prm
-    @GeneratedValue(strategy = GenerationType.IDENTITY,generator = UUIDGenerator.UUID_GEN_STRATEGY_CLASS) //pour la generation auto mais pas avec des int ,avec des UUID : Universally Unique IDentifier
+//
+//    @Id // la cle prm
+//    @GeneratedValue(strategy = GenerationType.IDENTITY) //pour la generation auto mais pas avec des int ,avec des UUID : Universally Unique IDentifier
+     @Id @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+     @Column(name = "numero_compte", length = 16, unique = true, nullable = false)
     private UUID numeroCompte;
 //    @NotNull
     private double solde;
@@ -60,12 +63,20 @@ public class Compte implements Serializable {
     // peut etre 0 mais pas null
     private Collection<Virement> virements; // pour la relation : chaque compte a 0 ou pls virement
 
+    @OneToMany // pour la relation : chaque client a 0 ou pls notification
+    private Collection<Notification> notifications;
+
+    public void setNumeroCompte() {
+        this.numeroCompte = UUID.randomUUID();;
+    }
+
     @OneToMany(fetch = FetchType.LAZY)
     private Collection<Recharge> recharges; //pour la relation : chaque compte a 0 ou pls recharge
 
     //just for test
-    public Compte(UUID uuid, int solde, String intitule, String status, Date date, Date date1, Date date2, String codeS3, Client client, Collection<Virement> virement, Collection<Recharge> recharge) {
-        this.numeroCompte=uuid;
+
+    public Compte(int solde, String intitule, String status, Date date, Date date1, Date date2, String codeS3, Client client) {
+
         this.solde=solde;
         this.intitule=intitule;
         this.statut=status;
@@ -74,9 +85,6 @@ public class Compte implements Serializable {
         this.dernierOperation=date2;
         this.codeSecret=codeS3;
         this.client=client;
-        this.virements=virement;
-        this.recharges=recharge;
-
 
     }
 }

@@ -42,18 +42,26 @@ public class Client implements Serializable {
 //    @NotBlank(message = "l'agent est obligatoire")
     private Agent agent;
 
-    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY) // pour la relation : chaque client a pls comptes
+    @ManyToOne
+    @JoinColumn(name = "id_agence") // pour la relation : chaque client a un seul agent
+//    @NotBlank(message = "l'agence est obligatoire")
+    private Agence agence;
+
+    @OneToMany // pour la relation : chaque client a pls comptes
 //    @NotBlank(message = "Au moins un compte")
     private Collection<Compte> comptes;
 
-    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY) // pour la relation : chaque client a 0 ou pls notification
-    private Collection<Notification> notifications;
+//    @OneToMany // pour la relation : chaque client a 0 ou pls notification
+//    private Collection<Notification> notifications;
 
-    @OneToOne// chaque client a un seul compte user pour l'auth
+    @OneToOne // pour la relation : un admin a un compte user pour la auth
+    @JoinColumn(name = "id_user")
     private User user;
 
-    public Client(User user) {
+    public Client(User user,Agent agent,Agence agence) {
         this.user=user;
+        this.agent=agent;
+        this.agence=agence;
     }
 
 }

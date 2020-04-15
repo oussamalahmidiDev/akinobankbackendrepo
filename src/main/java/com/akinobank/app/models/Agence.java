@@ -23,7 +23,7 @@ import java.util.Date;
 public class Agence implements Serializable {
 
     @Id // la cle prm
-    @GeneratedValue(strategy = GenerationType.AUTO) //generation auto
+    @GeneratedValue(strategy = GenerationType.IDENTITY) //generation auto
     private Long id;
 
     @CreationTimestamp
@@ -37,8 +37,12 @@ public class Agence implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "id_admin") // pour la relation : chaque agence a un seul admin
-    @NotBlank(message = "Admin est obligatoire")
     private Admin admin;
 
 
+    public Agence(String ville, String libelle, Admin admin) {
+        this.ville=ville;
+        this.libelleAgence=libelle;
+        this.admin=admin;
+    }
 }
