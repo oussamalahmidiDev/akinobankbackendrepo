@@ -21,7 +21,7 @@ public class ClientLogs implements Serializable {
     private Client client;
 
 
-    public void logAdmin(){
+    public void logClient(){
             Logger logger = Logger.getLogger("ClientIdLog "+id);
             FileHandler fh;
         try {

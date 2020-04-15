@@ -21,7 +21,7 @@ public class AgentLogs implements Serializable {
     private Agent agent;
 
 
-    public void logAdmin(){
+    public void logAgent(){
         Logger logger = Logger.getLogger("AgentIdLog "+id);
         FileHandler fh;
         try {
