@@ -49,7 +49,7 @@ public class AppApplication implements CommandLineRunner {
         Admin admin = adminRepository.save(new Admin(user1));
 
         //agence
-        Agence agence = agenceRepository.save(new Agence("AGENCE de MARRAKECH","MARRAKECH",admin));
+        Agence agence = agenceRepository.save(new Agence("MARRAKECH","AGENCE de MARRAKECH",admin));
 
         //agent
         User user2 = userRepository.save(new User("khalil","vox","oussama@gmail.com","khalil","Manager","token2",false));
