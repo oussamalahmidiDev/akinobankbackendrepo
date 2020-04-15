@@ -1,4 +1,5 @@
-<< Anything about Models >>
-Add your questions here i'll reply here:
+                                                 << Anything about Models >>
+------------------------------------------------------Questions here--------------------------------------------------------------
 
 1. pourquoi vous avez redefini l'attribut 'password' dans Admin, Agent, Client .. ? : Fixed
+2.why we need VerificationToken as attrb , we just need to set a method isTokenValid() in JWT Class for exemple ?

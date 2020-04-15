@@ -2,11 +2,11 @@ package com.akinobank.app.repositories;
 
 import com.akinobank.app.models.Virement;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.rest.webmvc.RepositoryRestController;
 
 import java.util.UUID;
 
-@Repository
+@RepositoryRestController
 public interface VirementnRepository extends JpaRepository<Virement, UUID> {
 
 
