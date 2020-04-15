@@ -30,8 +30,8 @@ public class Compte implements Serializable {
     private double solde;
     private String intitule ;
 
-    @Enumerated(EnumType.STRING)
-    private String statut; // status : etat du compte : active-block-...etc
+//    @Enumerated(EnumType.STRING)
+    private Enum statut; // status : etat du compte : active-block-...etc
 
     @CreationTimestamp
     private Date dateDeCreation;
