@@ -5,6 +5,6 @@ NEW settings :
 --------------
 
 -We replace @Repository with @RepositoryRestController : instead of build and calling apis from rest with requests , you need just to call such many methods without define it
-                                                         for exemple : if you have class User , then http://localhost:8080/users with a get request will give you a list of all users
-                                                                                                http://localhost:808/users/seach/? gives you a user
+                                                         for exemple : if you have class client , then http://localhost:8080/clients with a get request will give you a list of all users
+                                                                                                http://localhost:808/clients/seach/? gives you a user
                                                                                                 ...
