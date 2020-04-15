@@ -1,5 +1,6 @@
 package com.akinobank.app.models;
 
+import com.akinobank.app.models.logs.AgentLogs;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -42,6 +43,9 @@ public class Agent implements Serializable {
     @OneToOne // pour la relation : un admin a un compte user pour la auth
     @JoinColumn(name = "id_user")
     private User user;
+
+    @OneToOne
+    private AgentLogs agentLogs;
 
     public Agent(User user ,Admin admin , Agence agence) {
         this.user=user;

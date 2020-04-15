@@ -1,5 +1,6 @@
 package com.akinobank.app.models;
 
+import com.akinobank.app.models.logs.ClientLogs;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -53,6 +54,9 @@ public class Client implements Serializable {
     @OneToOne // pour la relation : un admin a un compte user pour la auth
     @JoinColumn(name = "id_user")
     private User user;
+
+    @OneToOne
+    private ClientLogs clientLogs;
 
     public Client(User user,Agent agent,Agence agence) {
         this.user=user;

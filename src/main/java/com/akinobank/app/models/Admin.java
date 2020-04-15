@@ -1,6 +1,7 @@
 package com.akinobank.app.models;
 
 
+import com.akinobank.app.models.logs.AdminLogs;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
@@ -36,7 +37,11 @@ public class Admin implements Serializable {
     @JoinColumn(name = "id_user")
     private User user;
 
+    @OneToOne
+    private AdminLogs adminLogs;
+
     public Admin(User user) {
         this.user=user;
     }
+
 }
