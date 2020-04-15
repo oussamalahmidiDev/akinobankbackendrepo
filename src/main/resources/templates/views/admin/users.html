@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="views/admin/fragments :: head(title = 'Panneau d\'administrateur')"></head>
+<body>
+<nav th:replace="views/admin/fragments :: navbar"></nav>
+<div th:replace="views/admin/fragments ::
+    header(title = 'Gestion d\'utilisateurs',
+    description = 'Ici vous gérer les administrateurs et les agents de l\'application.')">
+</div>
+<!--Main section-->
+<div class="ml-5 mr-5 mb-5">
+    <a th:href="@{users/ajouter}" class="ml-auto mb-2">
+        <button type="button" class="btn mb-3 btn-primary" style="display: block;margin-left: auto;">Ajouter un utilisateur</button>
+    </a>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Nom et prénom</th>
+            <th scope="col">Email</th>
+            <th scope="col">Role</th>
+            <th scope="col">Date d'ajout</th>
+            <th scope="col">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <th scope="row">Oussama Lahmidi</th>
+            <td>o@g.c</td>
+            <td>AGENT</td>
+            <td>20 Mars 2020</td>
+            <td>
+                <button class="btn btn-outline-primary mr-2 btn-sm">Modifier</button>
+                <button class="btn btn-outline-danger btn-sm">Supprimer</button>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">Oussama Lahmidi</th>
+            <td>o@g.c</td>
+            <td>AGENT</td>
+            <td>20 Mars 2020</td>
+            <td>
+                <button class="btn btn-outline-primary mr-2 btn-sm">Modifier</button>
+                <button class="btn btn-outline-danger btn-sm">Supprimer</button>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">Oussama Lahmidi</th>
+            <td>o@g.c</td>
+            <td>AGENT</td>
+            <td>20 Mars 2020</td>
+            <td>
+                <button class="btn btn-outline-primary mr-2 btn-sm">Modifier</button>
+                <button class="btn btn-outline-danger btn-sm">Supprimer</button>
+            </td>
+        </tr>
+
+        </tbody>
+    </table>
+</div>
+<!---->
+<div th:replace="views/admin/fragments :: scripts"></div>
+</body>
+</html>
