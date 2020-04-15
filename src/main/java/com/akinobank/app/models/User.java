@@ -27,10 +27,10 @@ public class User implements UserDetails { // We use interface UserDetials inste
 
 //    @Basic
 //    private List roles = new ArrayList();
+//
+//    @OneToMany(targetEntity = Admin.class)
+//    private List roles = new ArrayList<>();
 
-    @OneToMany(
-            targetEntity = Admin.class)
-    private List roles = new ArrayList<>();
 
     @OneToOne
     private Admin admin;
