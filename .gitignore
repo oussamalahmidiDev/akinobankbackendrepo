@@ -32,3 +32,4 @@ build/
 
 ### CONFIG FILE ###
 src/main/resources/application.properties
+/bin/
