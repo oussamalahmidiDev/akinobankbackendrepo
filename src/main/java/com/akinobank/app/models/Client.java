@@ -18,6 +18,8 @@ import java.util.List;
 // annotation de Lombok : pour générer les getters&setters et les constructeurs par default et avec des args
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 public class Client implements Serializable {
 
     @Id // la cle prm

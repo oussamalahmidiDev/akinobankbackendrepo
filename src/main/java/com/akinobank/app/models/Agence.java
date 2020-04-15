@@ -18,6 +18,8 @@ import java.util.Date;
 // annotation de Lombok : pour générer les getters&setters et les constructeurs par default et avec des args
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 public class Agence implements Serializable {
 
     @Id // la cle prm

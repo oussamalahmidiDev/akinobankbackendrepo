@@ -22,6 +22,8 @@ import java.util.UUID;
 // annotation de Lombok : pour générer les getters&setters et les constructeurs par default et avec des args
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 public class Compte implements Serializable {
 
     @Id // la cle prm

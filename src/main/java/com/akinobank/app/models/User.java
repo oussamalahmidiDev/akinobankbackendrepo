@@ -29,23 +29,22 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-//    @NotBlank(message = "L'email est obligatoire")
+    @NotBlank(message = "L'email est obligatoire")
     private String email ;
 
 //    @NotBlank(message = "Le mot de passe est obligatoire")
 //    @Size(min = 6)
     private String password;
 
-//    @NotNull
+    @NotNull
     private boolean emailConfirmed;
 
-//    @NotNull
     private String verificationToken;
 
-//    @NotNull
+    @NotNull
     private String nom , prenom  ;
 
-//    @NotBlank(message = "Le role est obligatoire")
+    @NotBlank(message = "Le role est obligatoire")
     private String role ;
 
     @OneToOne(mappedBy = "user")
