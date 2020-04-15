@@ -29,14 +29,9 @@ public class Client implements Serializable {
 
     private String photo ;
 
-//    @NotNull
+    @NotNull
     private String numeroTelephone;
 
-    @CreationTimestamp
-    private Date dateDeCreation;
-
-    @UpdateTimestamp
-    private Date dateUpdate;
 
     @ManyToOne
     @JoinColumn(name = "id_agent") // pour la relation : chaque client a un seul agent
@@ -49,11 +44,11 @@ public class Client implements Serializable {
     private Agence agence;
 
     @OneToMany // pour la relation : chaque client a pls comptes
-//    @NotNull
+    @NotNull
     private Collection<Compte> comptes;
 
-//    @OneToMany // pour la relation : chaque client a 0 ou pls notification
-//    private Collection<Notification> notifications;
+    @OneToMany // pour la relation : chaque client a 0 ou pls notification
+    private Collection<Notification> notifications;
 
     @OneToOne // pour la relation : un admin a un compte user pour la auth
     @JoinColumn(name = "id_user")

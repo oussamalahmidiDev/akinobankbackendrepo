@@ -62,8 +62,6 @@ public class Compte implements Serializable {
     @OneToMany(fetch = FetchType.LAZY)
     private Collection<Virement> virements; // pour la relation : chaque compte a 0 ou pls virement
 
-    @OneToMany // pour la relation : chaque client a 0 ou pls notification
-    private Collection<Notification> notifications;
 
     public void setNumeroCompte() {
         this.numeroCompte = UUID.randomUUID();;

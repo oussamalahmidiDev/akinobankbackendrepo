@@ -26,12 +26,6 @@ public class Agent implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // la generation auto
     private Long id;
 
-    @CreationTimestamp
-    private Date dateDeCreation;
-
-    @UpdateTimestamp
-    private Date dateUpdate;
-
     @ManyToOne
     @JoinColumn(name = "id_admin") // pour la relation : chaque agent a un seul admin
     @NotNull
