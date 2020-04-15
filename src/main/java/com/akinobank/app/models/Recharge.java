@@ -26,7 +26,6 @@ public class Recharge implements Serializable {
     private String operateur , numeroTelephone;
     private double montant ;
 
-    @Enumerated(EnumType.ORDINAL)
     @CreationTimestamp
     private Date dateDeRecharge;
 

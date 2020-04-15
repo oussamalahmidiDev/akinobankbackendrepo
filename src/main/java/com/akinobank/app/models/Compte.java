@@ -27,17 +27,20 @@ public class Compte implements Serializable {
     @Id // la cle prm
     @GeneratedValue(strategy = GenerationType.AUTO,generator = UUIDGenerator.UUID_GEN_STRATEGY_CLASS) //pour la generation auto mais pas avec des int ,avec des UUID : Universally Unique IDentifier
     private UUID numeroCompte;
-
-    private String intitule , statut; // status : etat du compte : active-block-...etc
     private double solde;
-    private Date dernierOperation;  // date de dernier operation
-    @Enumerated(EnumType.ORDINAL)
-    @CreationTimestamp
-    private Date dateDeCreation; // date de creation
+    private String intitule ;
 
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
+    private String statut; // status : etat du compte : active-block-...etc
+
+    @CreationTimestamp
+    private Date dateDeCreation;
+
+    @CreationTimestamp
+    private Date dernierOperation;
+
     @UpdateTimestamp
-    private Date dateUpdate; // date pour chaque modifications
+    private Date dateUpdate;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)// pour ne pas afficher le code secret
     private String codeSecret; // le code ou le mot de pass pour accéder au compte

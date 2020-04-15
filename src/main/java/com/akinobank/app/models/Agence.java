@@ -24,11 +24,9 @@ public class Agence implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO) //generation auto
     private Long id;
 
-    @Enumerated(EnumType.ORDINAL)
     @CreationTimestamp
     private Date dateDeCreation;
 
-    @Enumerated(EnumType.ORDINAL)
     @UpdateTimestamp
     private Date dateUpdate;
 

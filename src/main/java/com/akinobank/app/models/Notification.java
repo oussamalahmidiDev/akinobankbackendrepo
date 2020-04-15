@@ -25,7 +25,6 @@ public class Notification implements Serializable {
     private String contenu , type;
     private boolean lue;
 
-    @Enumerated(EnumType.ORDINAL)
     @CreationTimestamp
     private Date dateDeNotification;
 

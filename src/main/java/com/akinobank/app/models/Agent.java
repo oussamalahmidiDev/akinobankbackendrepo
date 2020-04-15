@@ -24,18 +24,12 @@ public class Agent implements Serializable {
     @Id//la cle prm
     @GeneratedValue(strategy = GenerationType.AUTO) // la generation auto
     private Long id;
-    private String nom , prenom ;
 
-    @Enumerated(EnumType.ORDINAL)
     @CreationTimestamp
     private Date dateDeCreation;
 
-    @Enumerated(EnumType.ORDINAL)
     @UpdateTimestamp
     private Date dateUpdate;
-
-    @OneToMany(targetEntity = Agent.class)
-    protected List roles ;
 
     @ManyToOne
     @JoinColumn(name = "id_admin") // pour la relation : chaque agent a un seul admin

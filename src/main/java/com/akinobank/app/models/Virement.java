@@ -30,7 +30,6 @@ public class Virement implements Serializable {
     private String notes  , codeVerification; // pour vérifier la transaction avant d'envoyer
     private double montant;
 
-    @Enumerated(EnumType.ORDINAL)
     @CreationTimestamp
     private Date dateDeVirement;
 

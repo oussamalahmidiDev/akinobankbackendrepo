@@ -25,18 +25,13 @@ public class Client implements Serializable {
     @Id // la cle prm
     @GeneratedValue(strategy = GenerationType.AUTO)//generation auto
     private Long id;
-    private String nom, prenom , photo , numeroTelephone;
+    private String photo , numeroTelephone;
 
-    @Enumerated(EnumType.ORDINAL)
     @CreationTimestamp
     private Date dateDeCreation;
 
-    @Enumerated(EnumType.ORDINAL)
     @UpdateTimestamp
     private Date dateUpdate;
-
-    @OneToMany(targetEntity = Client.class)
-    protected List roles ;
 
     @ManyToOne
     @JoinColumn(name = "id_agent") // pour la relation : chaque client a un seul agent

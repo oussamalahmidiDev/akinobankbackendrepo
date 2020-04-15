@@ -28,12 +28,6 @@ public class Admin implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO) //pour la generation auto
     private Long id;
 
-    @OneToMany(targetEntity = Admin.class)
-    protected List roles ;
-
-
-    private String nom , prenom  ;
-
     @OneToMany(mappedBy = "admin", fetch = FetchType.LAZY) // pour la relation : chaque admin a pls agents
     Collection<Agent> agents;
 
