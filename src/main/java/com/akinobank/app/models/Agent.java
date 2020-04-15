@@ -17,6 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @AllArgsConstructor
+@ToString
 public class Agent implements Serializable {
 
     @Id//la cle prm

@@ -1,9 +1,6 @@
 package com.akinobank.app.models;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -18,6 +15,9 @@ import java.util.Date;
 // annotation de Lombok : pour générer les getters&setters et les constructeurs par default et avec des args
 @AllArgsConstructor
 @NoArgsConstructor
+@Setter
+@Getter
+@ToString
 public class Agence implements Serializable {
 
     @Id // la cle prm
@@ -35,7 +35,7 @@ public class Agence implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "id_admin") // pour la relation : chaque agence a un seul admin
-    @NotBlank(message = "Admin est obligatoire")
+    @NotBlank(message = "Admin is obligatory")
     private Admin admin;
 
 

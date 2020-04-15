@@ -29,6 +29,12 @@
                 <option value="ADMIN">Administrateur</option>
             </select>
         </div>
+        <div class="form-group">
+            <label for="role">Affecter à une agence</label>
+            <select class="form-control" id="role" th:field="*{agent.agence}">
+                <option th:each="agence: ${agences}" th:value="${agence.id}" th:text="${agence.ville + ' / ' + agence.libelleAgence}"></option>
+            </select>
+        </div>
         <button type="submit" class="btn btn-primary">Enregistrer</button>
     </form>
 </div>

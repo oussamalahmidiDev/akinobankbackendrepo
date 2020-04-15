@@ -4,17 +4,18 @@ package com.akinobank.app.controllers.admin;
 import com.akinobank.app.models.Admin;
 import com.akinobank.app.models.Agent;
 import com.akinobank.app.models.User;
-import com.akinobank.app.repositories.AdminRepository;
-import com.akinobank.app.repositories.AgentRepository;
-import com.akinobank.app.repositories.ClientRepository;
-import com.akinobank.app.repositories.UserRepository;
+import com.akinobank.app.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.UUID;
+
 @Controller
-@ResponseBody //The @ResponseBody annotation tells a controller that the object returned is automatically serialized into JSON , you will need it
+//@ResponseBody //The @ResponseBody annotation tells a controller that the object returned is automatically serialized into JSON , you will need it
 @RequestMapping("/admin")
 public class AdminPanelController {
 
@@ -29,6 +30,9 @@ public class AdminPanelController {
 
     @Autowired
     private ClientRepository clientRepository;
+
+    @Autowired
+    private AgenceRepository agenceRepository;
 
 
     final String ADMIN_VIEWS_PATH = "views/admin/";
@@ -49,13 +53,14 @@ public class AdminPanelController {
     public String addUserView(Model model) {
         /// juste pour tester le form.
         User test = User.builder().email("test").password("hello").build();
-
+        model.addAttribute("agences", agenceRepository.findAll());
         model.addAttribute("user", new User());
         return ADMIN_VIEWS_PATH + "forms/adduser";
     }
     @PostMapping("users/ajouter")
     public String addUser(@ModelAttribute User user) {
-        user.setEmailConfirmed(false);
+        System.out.println(user.toString());
+        user.setVerificationToken(UUID.randomUUID().toString());
         userRepository.save(user);
 
         switch (user.getRole()) {
@@ -64,7 +69,6 @@ public class AdminPanelController {
             default:
                 agentRepository.save(Agent.builder().user(user).build()); break;
         }
-        /// juste pour tester le form.
         return "redirect:/admin/users";
     }
 
