@@ -11,7 +11,9 @@ import lombok.Setter;
 import javax.persistence.*;
 import javax.swing.*;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @Entity // pour la générer du table User
 // annotation de Lombok : pour générer les getters&setters et les constructeurs par default et avec des args
@@ -25,6 +27,9 @@ public class Admin implements Serializable {
     @Id // la cle prm
     @GeneratedValue(strategy = GenerationType.AUTO) //pour la generation auto
     private Long id;
+
+    @OneToMany(targetEntity = Admin.class)
+    protected List roles ;
 
 
     private String nom , prenom  ;

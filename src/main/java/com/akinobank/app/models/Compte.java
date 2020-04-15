@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.id.UUIDGenerator;
 
 import javax.persistence.*;
@@ -29,10 +31,15 @@ public class Compte implements Serializable {
     private String intitule , statut; // status : etat du compte : active-block-...etc
     private double solde;
     private Date dernierOperation;  // date de dernier operation
-    private Date dateDeCreation; // date de creation du compte
-    private Date dateUpdate; // pour chaque modifications
+    @Enumerated(EnumType.ORDINAL)
+    @CreationTimestamp
+    private Date dateDeCreation; // date de creation
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)//pour ne pas afficher le code secret
+    @Enumerated(EnumType.ORDINAL)
+    @UpdateTimestamp
+    private Date dateUpdate; // date pour chaque modifications
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)// pour ne pas afficher le code secret
     private String codeSecret; // le code ou le mot de pass pour accéder au compte
 
     @ManyToOne

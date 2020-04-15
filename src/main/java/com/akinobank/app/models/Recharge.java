@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -23,7 +25,11 @@ public class Recharge implements Serializable {
     private Long id;
     private String operateur , numeroTelephone;
     private double montant ;
-    private Date dateRecharge ;
+
+    @Enumerated(EnumType.ORDINAL)
+    @CreationTimestamp
+    private Date dateDeRecharge;
+
 
 
     @ManyToOne

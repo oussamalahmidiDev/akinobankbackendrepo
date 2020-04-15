@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.ValueGenerationType;
 import org.hibernate.id.UUIDGenerationStrategy;
 import org.hibernate.id.UUIDGenerator;
@@ -27,7 +29,11 @@ public class Virement implements Serializable {
 
     private String notes  , codeVerification; // pour vérifier la transaction avant d'envoyer
     private double montant;
-    private Date dateVirement ;
+
+    @Enumerated(EnumType.ORDINAL)
+    @CreationTimestamp
+    private Date dateDeVirement;
+
 
     @ManyToOne
     @JoinColumn(name = "uuid_compte") // pour la relation : plusieur virement apprtient a un seul compte
