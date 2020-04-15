@@ -54,16 +54,15 @@ public class AdminPanelController {
         return ADMIN_VIEWS_PATH + "forms/adduser";
     }
     @PostMapping("users/ajouter")
-    public String greetingSubmit(@ModelAttribute User user) {
+    public String addUser(@ModelAttribute User user) {
         user.setEmailConfirmed(false);
         userRepository.save(user);
 
         switch (user.getRoles()) {
             case
                 "ADMIN": adminRepository.save(Admin.builder().user(user).build()); break;
-            default: {
-                agentRepository.save(Agent.builder().user(user).build());
-            } break;
+            default:
+                agentRepository.save(Agent.builder().user(user).build()); break;
         }
         /// juste pour tester le form.
         return "redirect:/admin/users";
