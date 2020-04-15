@@ -44,7 +44,7 @@ public class Agent implements Serializable {
     @JoinColumn(name = "id_user")
     private User user;
 
-    @OneToOne
+    @OneToOne(mappedBy = "agent")
     private AgentLogs agentLogs;
 
     public Agent(User user ,Admin admin , Agence agence) {

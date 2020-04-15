@@ -17,7 +17,7 @@ public class AdminLogs implements Serializable {
     private Long id;
     private String path;
 
-    @OneToOne
+  @OneToOne
     private Admin admin;
 
 

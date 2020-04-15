@@ -17,7 +17,7 @@ public class ClientLogs implements Serializable {
     private Long id;
     private String path;
 
-    @OneToOne
+    @ManyToOne
     private Client client;
 
 

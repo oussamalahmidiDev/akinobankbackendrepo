@@ -37,7 +37,7 @@ public class Admin implements Serializable {
     @JoinColumn(name = "id_user")
     private User user;
 
-    @OneToOne
+   @OneToOne(mappedBy = "admin")
     private AdminLogs adminLogs;
 
     public Admin(User user) {

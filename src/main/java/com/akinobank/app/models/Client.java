@@ -30,7 +30,7 @@ public class Client implements Serializable {
 
     private String photo ;
 
-    @NotNull
+//    @NotNull
     private String numeroTelephone;
 
 
@@ -45,7 +45,7 @@ public class Client implements Serializable {
     private Agence agence;
 
     @OneToMany // pour la relation : chaque client a pls comptes
-    @NotNull
+//    @NotNull
     private Collection<Compte> comptes;
 
     @OneToMany // pour la relation : chaque client a 0 ou pls notification
@@ -55,7 +55,7 @@ public class Client implements Serializable {
     @JoinColumn(name = "id_user")
     private User user;
 
-    @OneToOne
+    @OneToOne(mappedBy = "client")
     private ClientLogs clientLogs;
 
     public Client(User user,Agent agent,Agence agence) {

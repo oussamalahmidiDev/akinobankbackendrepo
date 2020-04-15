@@ -17,7 +17,7 @@ public class AgentLogs implements Serializable {
     private Long id;
     private String path;
 
-    @OneToOne
+    @ManyToOne
     private Agent agent;
 
 
