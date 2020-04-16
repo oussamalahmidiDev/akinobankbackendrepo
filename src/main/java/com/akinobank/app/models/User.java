@@ -106,14 +106,14 @@ public class User implements UserDetails { // We use interface UserDetials inste
     }
 
     //Just for test
-//    public User(String nom, String prenom, String email, String password , String role,String token , boolean emailConfirmed) {
-//        this.nom=nom;
-//        this.prenom=prenom;
-//        this.email=email;
-//        this.password=password;
-//        this.role=role;
-//        this.verificationToken=token;
-//        this.emailConfirmed=emailConfirmed;
-//
-//    }
+    public User(String nom, String prenom, String email, String password , String role,String token , boolean emailConfirmed) {
+        this.nom=nom;
+        this.prenom=prenom;
+        this.email=email;
+        this.password=password;
+        this.role=role;
+        this.verificationToken=token;
+        this.emailConfirmed=emailConfirmed;
+
+    }
 }

@@ -29,19 +29,19 @@ public class Client implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "id_agent") // pour la relation : chaque client a un seul agent
-    @NotNull
+//    @NotNull
     private Agent agent;
 
     @ManyToOne
     @JoinColumn(name = "id_agence") // pour la relation : chaque client a un seul agent
-    @NotNull
+//    @NotNull
     private Agence agence;
 
-    @OneToMany // pour la relation : chaque client a pls comptes
-    @NotNull
+    @OneToMany(mappedBy = "client",fetch = FetchType.LAZY) // pour la relation : chaque client a pls comptes
+//    @NotNull
     private Collection<Compte> comptes;
 
-    @OneToMany // pour la relation : chaque client a 0 ou pls notification
+    @OneToMany(mappedBy = "client",fetch = FetchType.LAZY)  // pour la relation : chaque client a 0 ou pls notification
     private Collection<Notification> notifications;
 
     @OneToOne // pour la relation : un admin a un compte user pour la auth

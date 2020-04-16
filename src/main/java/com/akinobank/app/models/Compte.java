@@ -59,10 +59,10 @@ public class Compte implements Serializable {
 //    @NotBlank(message = "le client est obligatoire")
     private Client client;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "compte",fetch = FetchType.LAZY)
     private Collection<Virement> virements; // pour la relation : chaque compte a 0 ou pls virement
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "compte",fetch = FetchType.LAZY)
     private Collection<Recharge> recharges; //pour la relation : chaque compte a 0 ou pls recharge
 
     public void setDateDeCreation(Date dateDeCreation) { // generate auto creation date for compte
@@ -75,15 +75,15 @@ public class Compte implements Serializable {
 
     //just for test
 
-//    public Compte(int solde, String intitule, String status, Date date1, Date date2, String codeS3, Client client) {
-//
-//        this.solde=solde;
-//        this.intitule=intitule;
-//        this.statut=status;
-//        this.dateUpdate=date1;
-//        this.dernierOperation=date2;
-//        this.codeSecret=codeS3;
-//        this.client=client;
-//
-//    }
+    public Compte(int solde, String intitule, String status, Date date1, Date date2, String codeS3, Client client) {
+
+        this.solde=solde;
+        this.intitule=intitule;
+        this.statut=status;
+        this.dateUpdate=date1;
+        this.dernierOperation=date2;
+        this.codeSecret=codeS3;
+        this.client=client;
+
+    }
 }
