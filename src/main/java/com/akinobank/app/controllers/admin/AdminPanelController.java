@@ -14,7 +14,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-//@ResponseBody //The @ResponseBody annotation tells a controller that the object returned is automatically serialized into JSON , you will need it
 @RequestMapping("/admin")
 public class AdminPanelController {
 
@@ -35,7 +34,7 @@ public class AdminPanelController {
 
 
     @GetMapping("")
-    public String index(Model model) {
+    public String index() {
         return ADMIN_VIEWS_PATH + "index";
     }
 
@@ -50,9 +49,10 @@ public class AdminPanelController {
         /// juste pour tester le form.
         User test = User.builder().email("test").password("hello").build();
 
-        model.addAttribute("user", new User());
+        model.addAttribute("users", new User());
         return ADMIN_VIEWS_PATH + "forms/adduser";
     }
+
     @PostMapping("users/ajouter")
     public String addUser(@ModelAttribute User user) {
         user.setEmailConfirmed(false);
@@ -65,7 +65,7 @@ public class AdminPanelController {
                 agentRepository.save(Agent.builder().user(user).build()); break;
         }
         /// juste pour tester le form.
-        return "redirect:/admin/users";
+        return "redirect:/users";
     }
 
 
