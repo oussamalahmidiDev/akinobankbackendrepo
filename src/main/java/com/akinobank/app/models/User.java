@@ -32,7 +32,8 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @NotBlank(message = "L'email est obligatoire")
+    @NotNull
+    @Column(unique = true)
     private String email ;
 
 //    @NotBlank(message = "Le mot de passe est obligatoire")
