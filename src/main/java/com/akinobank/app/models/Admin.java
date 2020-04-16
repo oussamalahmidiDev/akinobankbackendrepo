@@ -36,6 +36,7 @@ public class Admin implements Serializable {
     @JoinColumn(name = "id_user")
     private User user;
 
+    //Just for test
     public Admin(User user) {
         this.user=user;
     }

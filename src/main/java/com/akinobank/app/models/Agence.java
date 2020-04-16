@@ -41,6 +41,7 @@ public class Agence implements Serializable {
     private Admin admin;
 
 
+    //Just for test
     public Agence(String ville, String libelle, Admin admin) {
         this.ville=ville;
         this.libelleAgence=libelle;

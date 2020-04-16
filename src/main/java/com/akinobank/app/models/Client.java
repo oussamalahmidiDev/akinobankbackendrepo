@@ -27,7 +27,6 @@ public class Client implements Serializable {
 //    @NotNull
     private String numeroTelephone;
 
-
     @ManyToOne
     @JoinColumn(name = "id_agent") // pour la relation : chaque client a un seul agent
     @NotNull
@@ -39,7 +38,7 @@ public class Client implements Serializable {
     private Agence agence;
 
     @OneToMany // pour la relation : chaque client a pls comptes
-//    @NotNull
+    @NotNull
     private Collection<Compte> comptes;
 
     @OneToMany // pour la relation : chaque client a 0 ou pls notification
@@ -49,6 +48,7 @@ public class Client implements Serializable {
     @JoinColumn(name = "id_user")
     private User user;
 
+    //Just for test
     public Client(User user,Agent agent,Agence agence) {
         this.user=user;
         this.agent=agent;

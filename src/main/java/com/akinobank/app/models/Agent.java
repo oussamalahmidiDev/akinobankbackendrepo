@@ -37,6 +37,7 @@ public class Agent implements Serializable {
     @JoinColumn(name = "id_user")
     private User user;
 
+    //Just for test
 
     public Agent(User user ,Admin admin , Agence agence) {
         this.user=user;

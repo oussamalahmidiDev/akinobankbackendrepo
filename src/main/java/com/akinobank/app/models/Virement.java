@@ -60,4 +60,5 @@ public class Virement implements Serializable {
     public void setId(UUID id) {
         this.id = UUID.randomUUID();
     }
+
 }
