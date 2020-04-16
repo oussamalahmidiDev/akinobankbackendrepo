@@ -27,8 +27,8 @@
         <tr  th:each="user : ${users}">
             <th scope="row" th:text="${user.getNom() + ' ' +  user.getPrenom()}">Oussama Lahmidi</th>
             <td th:text="${user.email}">o@g.c</td>
-            <td th:text="${user.roles}">AGENT</td>
-            <td>20 Mars 2020</td>
+            <td th:text="${user.role}">AGENT</td>
+            <td th:text="${user.dateDeCreation}">20 Mars 2020</td>
             <td>
                 <button class="btn btn-outline-primary mr-2 btn-sm">Modifier</button>
                 <button class="btn btn-outline-danger btn-sm">Supprimer</button>

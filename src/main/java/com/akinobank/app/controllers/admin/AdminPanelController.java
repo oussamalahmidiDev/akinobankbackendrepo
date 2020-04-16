@@ -2,6 +2,7 @@ package com.akinobank.app.controllers.admin;
 
 
 import com.akinobank.app.models.Admin;
+import com.akinobank.app.models.Agence;
 import com.akinobank.app.models.Agent;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.*;
@@ -59,15 +60,20 @@ public class AdminPanelController {
     }
     @PostMapping("users/ajouter")
     public String addUser(@ModelAttribute User user) {
-        System.out.println(user.toString());
+//        System.out.println(user.toString());
+        Agence chosenAgence = user.getAgent().getAgence();
+        if (user.getAgent().getId() == null) {
+            System.out.println(user.toString());
+            user.setAgent(null);
+        }
         user.setVerificationToken(UUID.randomUUID().toString());
-        userRepository.save(user);
+        user = userRepository.save(user);
 
-        switch (user.getRole()) {
-            case
-                "ADMIN": adminRepository.save(Admin.builder().user(user).build()); break;
-            default:
-                agentRepository.save(Agent.builder().user(user).build()); break;
+        if (user.getRole().equals("ADMIN")) {
+            adminRepository.save(Admin.builder().user(user).build());
+        } else {
+            Admin admin = adminRepository.findById((long) 1).get();
+            agentRepository.save(Agent.builder().user(user).admin(admin).agence(chosenAgence).build());
         }
         return "redirect:/admin/users";
     }
