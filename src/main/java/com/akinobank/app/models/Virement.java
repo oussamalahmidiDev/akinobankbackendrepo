@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.ValueGenerationType;
 import org.hibernate.id.UUIDGenerationStrategy;
@@ -26,8 +27,9 @@ import java.util.UUID;
 @Setter
 public class Virement implements Serializable {
 
-    @Id // la cle prm
-    @GeneratedValue(strategy = GenerationType.AUTO,generator = UUIDGenerator.UUID_GEN_STRATEGY_CLASS) //pour la generation auto mais pas avec des int ,avec des UUID : Universally Unique IDentifier
+    @Id @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "id_virement", length = 16, unique = true, nullable = false)
     private UUID id ;
 
     private String notes;
@@ -51,8 +53,11 @@ public class Virement implements Serializable {
 
     @OneToOne
     @JoinColumn(name = "compte_destinataire")
-    @NotNull
     private Compte destCompte;  //la relation entre Virement 1,1 ---->1,1 Compte , envoyer 1 virement a un seul compte
     //a discuter
 
+
+    public void setId(UUID id) {
+        this.id = UUID.randomUUID();
+    }
 }

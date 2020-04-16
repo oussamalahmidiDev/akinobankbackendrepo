@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,6 +17,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -36,7 +39,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
 //    @Size(min = 6)
     private String password;
 
-    @NotNull
+//    @NotNull
     private boolean emailConfirmed;
 
     private String verificationToken;
@@ -44,7 +47,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @NotNull
     private String nom , prenom  ;
 
-    @NotBlank(message = "Le role est obligatoire")
+    @NotNull
     private String role ;
 
     @OneToOne(mappedBy = "user")
@@ -56,7 +59,11 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @OneToOne(mappedBy = "user")
     private Client client;
 
+    @CreationTimestamp
+    private Date dateDeCreation;
 
+    @UpdateTimestamp
+    private Date dateUpdate;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -98,11 +105,14 @@ public class User implements UserDetails { // We use interface UserDetials inste
         return true;
     }
 
-    public User(String nom, String prenom, String email, String password , String role) {
+    public User(String nom, String prenom, String email, String password , String role,String token , boolean emailConfirmed) {
         this.nom=nom;
         this.prenom=prenom;
         this.email=email;
         this.password=password;
         this.role=role;
+        this.verificationToken=token;
+        this.emailConfirmed=emailConfirmed;
+
     }
 }

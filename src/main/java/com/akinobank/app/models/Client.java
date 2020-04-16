@@ -1,5 +1,6 @@
 package com.akinobank.app.models;
 
+import com.akinobank.app.models.logs.ClientLogs;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
@@ -28,32 +30,38 @@ public class Client implements Serializable {
 
     private String photo ;
 
-//    @NotBlank(message = "le numéro de téléphone est obligatoire")
+//    @NotNull
     private String numeroTelephone;
 
-    @CreationTimestamp
-    private Date dateDeCreation;
-
-    @UpdateTimestamp
-    private Date dateUpdate;
 
     @ManyToOne
     @JoinColumn(name = "id_agent") // pour la relation : chaque client a un seul agent
-//    @NotBlank(message = "l'agent est obligatoire")
+    @NotNull
     private Agent agent;
 
-    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY) // pour la relation : chaque client a pls comptes
-//    @NotBlank(message = "Au moins un compte")
+    @ManyToOne
+    @JoinColumn(name = "id_agence") // pour la relation : chaque client a un seul agent
+    @NotNull
+    private Agence agence;
+
+    @OneToMany // pour la relation : chaque client a pls comptes
+//    @NotNull
     private Collection<Compte> comptes;
 
-    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY) // pour la relation : chaque client a 0 ou pls notification
+    @OneToMany // pour la relation : chaque client a 0 ou pls notification
     private Collection<Notification> notifications;
 
-    @OneToOne// chaque client a un seul compte user pour l'auth
+    @OneToOne // pour la relation : un admin a un compte user pour la auth
+    @JoinColumn(name = "id_user")
     private User user;
 
-    public Client(User user) {
+    @OneToOne(mappedBy = "client")
+    private ClientLogs clientLogs;
+
+    public Client(User user,Agent agent,Agence agence) {
         this.user=user;
+        this.agent=agent;
+        this.agence=agence;
     }
 
 }

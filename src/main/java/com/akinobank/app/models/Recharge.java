@@ -27,10 +27,10 @@ public class Recharge implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)//generation auto
     private Long id;
 
-    @NotBlank(message = "L'operateur est obligatoire")
+    @NotNull
     private String operateur ;
 
-    @NotBlank(message = "le numéro de téléphone est obligatoire")
+    @NotNull
     private String numeroTelephone;
 
     @NotNull

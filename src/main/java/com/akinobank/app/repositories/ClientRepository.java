@@ -6,5 +6,5 @@ import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.stereotype.Repository;
 
 @RepositoryRestController
-public interface ClientRepository extends JpaRepository<Client,Long > {
+public interface ClientRepository extends JpaRepository<Client,Long> {
 }
