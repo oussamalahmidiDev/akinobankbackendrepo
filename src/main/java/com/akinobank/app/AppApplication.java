@@ -45,18 +45,18 @@ public class AppApplication implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         //admin
-        User user1 = userRepository.save(new User("oussama","vox","oussama@gmail.com","oussama","ADMIN","token1",false));
+        User user1 = userRepository.save(new User("oussama","vox","oussama@gmail.com","ousxfbsama","ADMIN","token1"));
         Admin admin = adminRepository.save(new Admin(user1));
 
         //agence
         Agence agence = agenceRepository.save(new Agence("MARRAKECH","AGENCE de MARRAKECH",admin));
 
         //agent
-        User user2 = userRepository.save(new User("khalil","vox","oussama@gmail.com","khalil","Manager","token2",false));
+        User user2 = userRepository.save(new User("khalil","vox","khalil@gmail.com","khalilcghj","Manager","token2"));
         Agent agent = agentRepository.save(new Agent(user2,admin,agence));
 
         //client
-        User user3 = userRepository.save(new User("abdo","vox","abdo@gmail.com","abdo","client","token3x",false));
+        User user3 = userRepository.save(new User("abdo","vox","abdo@gmail.com","abfxbdo","client","token3x"));
         Client client1 = clientRepository.save(new Client(user3,agent,agence));
 
         //comptes

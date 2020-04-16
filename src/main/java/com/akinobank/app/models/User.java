@@ -36,12 +36,11 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @Column(unique = true)
     private String email ;
 
-//    @NotBlank(message = "Le mot de passe est obligatoire")
-//    @Size(min = 6)
+    @NotBlank(message = "Le mot de passe est obligatoire")
+    @Size(min = 6)
     private String password;
 
-//    @NotNull
-    private boolean emailConfirmed;
+    private boolean emailConfirmed = false;
 
     private String verificationToken;
 
@@ -107,14 +106,13 @@ public class User implements UserDetails { // We use interface UserDetials inste
     }
 
     //Just for test
-    public User(String nom, String prenom, String email, String password , String role,String token , boolean emailConfirmed) {
+    public User(String nom, String prenom, String email, String password , String role,String token ) {
         this.nom=nom;
         this.prenom=prenom;
         this.email=email;
         this.password=password;
         this.role=role;
         this.verificationToken=token;
-        this.emailConfirmed=emailConfirmed;
 
     }
 }

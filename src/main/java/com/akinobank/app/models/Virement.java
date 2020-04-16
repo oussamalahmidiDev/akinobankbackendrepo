@@ -30,7 +30,7 @@ public class Virement implements Serializable {
     @Id
     @GeneratedValue(generator = "hibernate-uuid")
     @GenericGenerator(name = "hibernate-uuid", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "numeroCompte", unique = true)
+    @Column(name = "id", unique = true)
     private String id ;
 
     private String notes;
