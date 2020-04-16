@@ -1,14 +1,12 @@
 package com.akinobank.app.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.id.UUIDGenerator;
+import org.hibernate.id.UUIDHexGenerator;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -26,10 +24,18 @@ import java.util.UUID;
 @Setter
 public class Compte implements Serializable {
 
-     @Id @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-     @Column(name = "numero_compte", length = 16, unique = true, nullable = false)
-    private UUID numeroCompte;
+//     @Id @GeneratedValue(generator = "UUID")
+//    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+////     @Column(name = "numero_compte", length = 16)
+//     private UUIDHexGenerator numeroCompte =UUIDHexGenerator;
+
+    @Id
+    @GeneratedValue(generator = "hibernate-uuid")
+    @GenericGenerator(name = "hibernate-uuid", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "numeroCompte", unique = true)
+    private String numeroCompte;
+    //  i change the type from UUID to String just because UUID gives a HEX return number with prefix 0x
+    // But with String the returm gonna be like xxxx-xxxx-xxx-xx and thats what we want
 
     @NotNull
     private double solde;
@@ -65,12 +71,6 @@ public class Compte implements Serializable {
     @OneToMany(mappedBy = "compte",fetch = FetchType.LAZY)
     private Collection<Recharge> recharges; //pour la relation : chaque compte a 0 ou pls recharge
 
-    public void setDateDeCreation(Date dateDeCreation) { // generate auto creation date for compte
-        this.dateDeCreation = new Date();
-    }
-    public void setNumeroCompte() {
-        this.numeroCompte = UUID.randomUUID();;
-    }
 
 
     //just for test

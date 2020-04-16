@@ -7,7 +7,7 @@ import org.springframework.data.rest.webmvc.RepositoryRestController;
 import java.util.UUID;
 
 @RepositoryRestController
-public interface VirementnRepository extends JpaRepository<Virement, UUID> {
+public interface VirementnRepository extends JpaRepository<Virement, String> {
 
 
 }

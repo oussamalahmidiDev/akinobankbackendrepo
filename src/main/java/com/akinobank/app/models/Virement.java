@@ -27,10 +27,11 @@ import java.util.UUID;
 @Setter
 public class Virement implements Serializable {
 
-    @Id @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "id_virement", length = 16, unique = true, nullable = false)
-    private UUID id ;
+    @Id
+    @GeneratedValue(generator = "hibernate-uuid")
+    @GenericGenerator(name = "hibernate-uuid", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "numeroCompte", unique = true)
+    private String id ;
 
     private String notes;
 
@@ -56,9 +57,5 @@ public class Virement implements Serializable {
     private Compte destCompte;  //la relation entre Virement 1,1 ---->1,1 Compte , envoyer 1 virement a un seul compte
     //a discuter
 
-
-    public void setId(UUID id) {
-        this.id = UUID.randomUUID();
-    }
 
 }

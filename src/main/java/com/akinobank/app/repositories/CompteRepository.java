@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @RepositoryRestController
-public interface CompteRepository  extends JpaRepository<Compte, UUID> {
+public interface CompteRepository  extends JpaRepository<Compte, String> {
 }
