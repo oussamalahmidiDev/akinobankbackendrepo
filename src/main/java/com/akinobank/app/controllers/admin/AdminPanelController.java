@@ -16,7 +16,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 
 @Controller
-//@ResponseBody //The @ResponseBody annotation tells a controller that the object returned is automatically serialized into JSON , you will need it
 @RequestMapping("/admin")
 public class AdminPanelController {
 
@@ -46,38 +45,64 @@ public class AdminPanelController {
 
     @GetMapping("users")
     public String usersView(Model model) {
-        model.addAttribute("users", userRepository.findAll());
+        model.addAttribute("users", userRepository.findAllByOrderByDateDeCreationDesc());
         return ADMIN_VIEWS_PATH + "users";
     }
 
     @GetMapping("users/ajouter")
     public String addUserView(Model model) {
-        /// juste pour tester le form.
-        User test = User.builder().email("test").password("hello").build();
         model.addAttribute("agences", agenceRepository.findAll());
         model.addAttribute("user", new User());
-        return ADMIN_VIEWS_PATH + "forms/adduser";
+        return ADMIN_VIEWS_PATH + "forms/user.add";
     }
     @PostMapping("users/ajouter")
     public String addUser(@ModelAttribute User user) {
-//        System.out.println(user.toString());
-        Agence chosenAgence = user.getAgent().getAgence();
-        if (user.getAgent().getId() == null) {
-            System.out.println(user.toString());
-            user.setAgent(null);
-        }
+        // generation du token de confirmation
         user.setVerificationToken(UUID.randomUUID().toString());
-        user = userRepository.save(user);
-
+        System.out.println(user.toString());
         if (user.getRole().equals("ADMIN")) {
+            user = userRepository.save(user);
             adminRepository.save(Admin.builder().user(user).build());
         } else {
-            Admin admin = adminRepository.findById((long) 1).get();
+            Agence chosenAgence = user.getAgent().getAgence();
+            // pour eviter le probleme de transaction
+            user.setAgent(null);
+            user = userRepository.save(user);
+
+            // c juste parcequ'on n'a pas encore implemente l'auth.
+            Admin admin = adminRepository.getOne((long) 1);
             agentRepository.save(Agent.builder().user(user).admin(admin).agence(chosenAgence).build());
         }
+
         return "redirect:/admin/users";
     }
 
+    @GetMapping("users/update/{id}")
+    public String updateUserView(Model model, @PathVariable(value = "id") Long id) {
+        model.addAttribute("user", userRepository.getOne(id));
+        return ADMIN_VIEWS_PATH + "forms/user.update";
+    }
+
+    @PostMapping("users/update/{id}")
+    public String updateUser(@ModelAttribute User user) {
+        System.out.println(user.toString());
+        User userToUpdate = userRepository.getOne(user.getId());
+        userToUpdate.setEmail(user.getEmail());
+        userToUpdate.setNom(user.getNom());
+        userToUpdate.setPrenom(user.getPrenom());
+
+        userRepository.save(userToUpdate);
+        return "redirect:/admin/users";
+    }
+
+    @PostMapping("users/delete/{id}")
+    public String deleteUser(@PathVariable(value = "id") Long id) {
+        User user = userRepository.getOne(id);
+        agentRepository.delete(user.getAgent());
+        userRepository.delete(user);
+
+        return "redirect:/admin/users";
+    }
 
 
 
