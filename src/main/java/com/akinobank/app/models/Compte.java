@@ -15,6 +15,7 @@ import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Random;
 import java.util.UUID;
 @Entity // pour la générer du table User
 // annotation de Lombok : pour générer les getters&setters et les constructeurs par default et avec des args
@@ -55,10 +56,12 @@ public class Compte implements Serializable {
     @UpdateTimestamp
     private Date dateUpdate;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)// pour ne pas afficher le code secret
-    @NotNull
-    @Size(min = 4 , max = 8)
-    private String codeSecret; // le code ou le mot de pass pour accéder au compte
+//    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)// pour ne pas afficher le code secret
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @Size(min = 4 , max = 8)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    private int codeSecret = new Random().nextInt(90000000) + 10000000; //generate a random secret code for client comptes
+    // le code ou le mot de pass pour accéder au compte
 
     @ManyToOne
     @JoinColumn(name = "id_client") // pour la relation : chaque compte a un seul client
@@ -75,14 +78,13 @@ public class Compte implements Serializable {
 
     //just for test
 
-    public Compte(int solde, String intitule, String status, Date date1, Date date2, String codeS3, Client client) {
+    public Compte(int solde, String intitule, String status, Date date1, Date date2, Client client) {
 
         this.solde=solde;
         this.intitule=intitule;
         this.statut=status;
         this.dateUpdate=date1;
         this.dernierOperation=date2;
-        this.codeSecret=codeS3;
         this.client=client;
 
     }
