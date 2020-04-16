@@ -34,8 +34,9 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @Column(unique = true)
     private String email ;
 
-    @NotBlank(message = "Le mot de passe est obligatoire")
-    @Size(min = 6)
+
+//    @NotBlank(message = "Le mot de passe est obligatoire")
+//    @Size(min = 6)
     private String password;
 
     private boolean emailConfirmed = false;
