@@ -40,10 +40,9 @@ public class Recharge implements Serializable {
     @CreationTimestamp
     private Date dateDeRecharge;
 
-
-
     @ManyToOne
     @JoinColumn(name = "uuid_compte") // pour la relation : chaque recharge appartient a un seul compte
     @NotNull
     private Compte compte;
+
 }

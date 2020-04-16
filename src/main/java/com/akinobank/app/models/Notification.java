@@ -27,12 +27,12 @@ public class Notification implements Serializable {
 
     private String contenu ;
     private boolean lue;
+
     @NotNull
     private String type;
 
     @CreationTimestamp
     private Date dateDeNotification;
-
 
     @ManyToOne
     @JoinColumn(name = "id_client") // pour la relation : chaque Notification appartient a un seul client
