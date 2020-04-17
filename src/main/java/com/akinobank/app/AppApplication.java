@@ -51,10 +51,13 @@ public class AppApplication implements CommandLineRunner {
 
         //agence
         Agence agence = agenceRepository.save(new Agence("MARRAKECH","AGENCE de MARRAKECH",admin));
+        Agence agence1 = agenceRepository.save(new Agence("FES","AGENCE de FES",admin));
 
         //agent
         User user2 = userRepository.save(new User("khalil","vox","khalil@gmail.com",Role.AGENT));
+        User user4 = userRepository.save(new User("inas","vox","inas@gmail.com",Role.AGENT));
         Agent agent = agentRepository.save(new Agent(user2,admin,agence));
+        Agent agent1 = agentRepository.save(new Agent(user4,admin,agence1));
 
         //client
         User user3 = userRepository.save(new User("abdo","vox","abdo@gmail.com",Role.CLIENT));
