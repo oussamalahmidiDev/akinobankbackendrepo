@@ -1,5 +1,6 @@
 package com.akinobank.app;
 
+import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.models.*;
 import com.akinobank.app.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,18 +46,18 @@ public class AppApplication implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         //admin
-        User user1 = userRepository.save(new User("oussama","vox","oussama@gmail.com","ousxfbsama","ADMIN","token1"));
+        User user1 = userRepository.save(new User("oussama","vox","oussama@gmail.com",Role.ADMIN));
         Admin admin = adminRepository.save(new Admin(user1));
 
         //agence
         Agence agence = agenceRepository.save(new Agence("MARRAKECH","AGENCE de MARRAKECH",admin));
 
         //agent
-        User user2 = userRepository.save(new User("khalil","vox","khalil@gmail.com","khalilcghj","Manager","token2"));
+        User user2 = userRepository.save(new User("khalil","vox","khalil@gmail.com",Role.AGENT));
         Agent agent = agentRepository.save(new Agent(user2,admin,agence));
 
         //client
-        User user3 = userRepository.save(new User("abdo","vox","abdo@gmail.com","abfxbdo","client","token3x"));
+        User user3 = userRepository.save(new User("abdo","vox","abdo@gmail.com",Role.CLIENT));
         Client client1 = clientRepository.save(new Client(user3,agent,agence));
 
         //comptes

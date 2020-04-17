@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.validator.constraints.UniqueElements;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -62,11 +63,15 @@ public class Compte implements Serializable {
     @UpdateTimestamp
     private Date dateUpdate;
 
+    @Column(unique = true)
+    private int codeSecret;
+
+
 //    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)// pour ne pas afficher le code secret
 //    @GeneratedValue(strategy = GenerationType.IDENTITY)
 //    @Size(min = 4 , max = 8)
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private int codeSecret = new Random().nextInt(90000000) + 10000000; //generate a random secret code for client comptes
+//    @GeneratedValue(strategy=GenerationType.IDENTITY)
+//    = new Random().nextInt(90000000) + 10000000; //generate a random secret code for client comptes
     // le code ou le mot de pass pour accéder au compte
 
     @ManyToOne
@@ -97,8 +102,8 @@ public class Compte implements Serializable {
         this.solde=solde;
         this.intitule=intitule;
 //        this.statut=status;
-        this.dateUpdate=date1;
-        this.dernierOperation=date2;
+//        this.dateUpdate=date1; // no nood to this date in cnstr , we already defend it @CreationTimeStamp
+//        this.dernierOperation=date2;
         this.client=client;
 
     }
