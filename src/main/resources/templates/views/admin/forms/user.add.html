@@ -26,10 +26,10 @@
             <label for="role">Le role d'utilisateur</label>
             <select class="form-control" id="role"  th:field="*{role}">
                 <option value="ADMIN">Administrateur</option>
-                <option value="AGENT">Agent</option>
+                <option value="AGENT" th:if="${not #lists.isEmpty(agences)}">Agent</option>
             </select>
         </div>
-        <div class="form-group" id="agences-group">
+        <div class="form-group" id="agences-group" th:if="${not #lists.isEmpty(agences)}">
             <label for="agence">Affecter à une agence</label>
             <select class="form-control" id="agence" th:field="*{agent.agence}">
                 <option th:each="agence: ${agences}" th:value="${agence.id}" th:text="${agence.ville + ' / ' + agence.libelleAgence}"></option>

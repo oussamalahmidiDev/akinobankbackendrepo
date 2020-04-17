@@ -57,16 +57,19 @@ public class AdminPanelController {
     }
     @PostMapping("users/ajouter")
     public String addUser(@ModelAttribute User user) {
-        Agence chosenAgence = user.getAgent().getAgence();
-        // pour eviter le probleme de transaction
-        user.setAgent(null);
+//        if (user.getAgent() )
         if (user.getRole().name().equals("ADMIN")) {
-            System.out.println("SAVING ADMIN : " + user.toString());
+//            System.out.println("SAVING ADMIN : " + user.toString());
+            // pour eviter le probleme de transaction
+            user.setAgent(null);
             user = userRepository.save(user);
             adminRepository.save(Admin.builder().user(user).build());
         }
         if (user.getRole().name().equals("AGENT")) {
-            System.out.println("SAVING AGENT : " + user.toString());
+//            System.out.println("SAVING AGENT : " + user.toString());
+            Agence chosenAgence = user.getAgent().getAgence();
+            // pour eviter le probleme de transaction
+            user.setAgent(null);
             user = userRepository.save(user);
             // c juste parcequ'on n'a pas encore implemente l'auth.
             Admin admin = adminRepository.getOne((long) 1);
@@ -84,7 +87,7 @@ public class AdminPanelController {
 
     @PostMapping("users/update/{id}")
     public String updateUser(@ModelAttribute User user) {
-        System.out.println(user.toString());
+//        System.out.println(user.toString());
         User userToUpdate = userRepository.getOne(user.getId());
         userToUpdate.setEmail(user.getEmail());
         userToUpdate.setNom(user.getNom());
@@ -103,6 +106,42 @@ public class AdminPanelController {
         return "redirect:/admin/users";
     }
 
-
+    @GetMapping("agences")
+    public String agencesView(Model model) {
+//        model.addAttribute("agents", agentRepository.findAll());
+        model.addAttribute("agences", agenceRepository.findAll());
+        return ADMIN_VIEWS_PATH + "agences";
+    }
+    @GetMapping("agences/ajouter")
+    public String addAgenceView(Model model) {
+        model.addAttribute("agence", new Agence());
+        return ADMIN_VIEWS_PATH + "forms/agence.add";
+    }
+    @PostMapping("agences/ajouter")
+    public String addAgence(@ModelAttribute Agence agence) {
+        Admin admin = adminRepository.getOne((long) 1);
+        agenceRepository.save(Agence.builder().ville(agence.getVille()).libelleAgence(agence.getLibelleAgence()).admin(admin).build());
+        return "redirect:/admin/agences";
+    }
+    @GetMapping("agences/update/{id}")
+    public String updateAgenceView(Model model, @PathVariable(value = "id") Long id) {
+        model.addAttribute("agence", agenceRepository.getOne(id));
+        return ADMIN_VIEWS_PATH + "forms/agence.update";
+    }
+    @PostMapping("agences/update/{id}")
+    public String updateAgence(@ModelAttribute Agence agence) {
+//        System.out.println(agence.toString());
+        Agence agenceToUpdate = agenceRepository.getOne(agence.getId());
+        agenceToUpdate.setLibelleAgence(agence.getLibelleAgence());
+        agenceToUpdate.setVille(agence.getVille());
+        agenceRepository.save(agenceToUpdate);
+        return "redirect:/admin/agences";
+    }
+    @PostMapping("agences/delete/{id}")
+    public String deleteAgence(@PathVariable(value = "id") Long id) {
+        Agence agence = agenceRepository.getOne(id);
+        agenceRepository.delete(agence);
+        return "redirect:/admin/agences";
+    }
 
 }

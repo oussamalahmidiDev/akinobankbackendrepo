@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="views/admin/fragments :: head(title = 'Panneau d\'administrateur')"></head>
+<body>
+<nav th:replace="views/admin/fragments :: navbar"></nav>
+<div th:replace="views/admin/fragments ::
+    header(title = 'Gestion d\'agences',
+    description = 'Ici vous gérer  les agences de l\'application.')">
+</div>
+<!--Main section-->
+<div class="ml-5 mr-5 mb-5">
+    <a th:href="@{/admin/agences/ajouter/}" class="ml-auto mb-2">
+        <button type="button" class="btn mb-3 btn-primary" style="display: block;margin-left: auto;">Ajouter une agence</button>
+    </a>
+    <p th:if="${ #lists.isEmpty(agences)}">Aucune agence ajoutée.</p>
+    <table class="table" th:if="${not #lists.isEmpty(agences)}">
+        <thead>
+        <tr>
+            <th scope="col">Nom de l'agence</th>
+            <th scope="col">Ville</th>
+            <th scope="col">list des agents</th>
+            <th scope="col">Date d'ajout</th>
+            <th scope="col">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr  th:each="agence : ${agences}">
+            <th scope="row" >
+                <div th:text="${agence.libelleAgence}"></div>
+            </th>
+            <td th:text="${agence.ville}">Kech</td>
+            <td >
+                <div th:if="${ #lists.isEmpty(agence.agents)}">Aucun agent affecté.</div>
+                <div th:each="agent: ${agence.agents}"  th:if="${not #lists.isEmpty(agence.agents)}">
+                    <div th:text="${agent.user.nom + ' ' + agent.user.prenom}"></div>
+                    <hr style="margin: 0;margin-top: 5px;">
+                </div>
+            </td>
+            <td th:text="${agence.dateDeCreation}">30 Mars 2020</td>
+            <td>
+                <a th:href="@{'agences/update/' + ${agence.id}}">
+                    <button class="btn btn-outline-primary mr-2 btn-sm">Modifier</button>
+                </a>
+                <form method="post" style="display: inline-block" th:action="${'/admin/agences/delete/' + agence.id}">
+                    <input type="hidden" name="_method" value="DELETE" id="">
+                    <button class="btn btn-outline-danger btn-sm">Supprimer</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<!---->
+<div th:replace="views/admin/fragments :: scripts"></div>
+</body>
+</html>
