@@ -9,7 +9,7 @@
 </div>
 <!--Main section-->
 <div class="ml-5 mr-5 mb-5">
-    <a th:href="@{users/ajouter/}" class="ml-auto mb-2">
+    <a th:href="@{/admin/users/ajouter/}" class="ml-auto mb-2">
         <button type="button" class="btn mb-3 btn-primary" style="display: block;margin-left: auto;">Ajouter un utilisateur</button>
     </a>
     <p th:if="${ #lists.isEmpty(users)}">Aucun utilisateur ajouté.</p>
@@ -27,7 +27,7 @@
         <tr  th:each="user : ${users}">
             <th scope="row" >
                 <div th:text="${user.getNom() + ' ' +  user.getPrenom()}"></div>
-                <p  th:if="${user.role.equals('AGENT')}" style="opacity: 0.65;font-size: 12px;" th:text="${user.agent.getAgence().getVille() + ' / ' + user.agent.getAgence().getLibelleAgence()}"></p>
+                <p  th:if="${user.role.name().equals('AGENT')}" style="opacity: 0.65;font-size: 12px;" th:text="${user.agent.getAgence().getVille() + ' / ' + user.agent.getAgence().getLibelleAgence()}"></p>
             </th>
             <td th:text="${user.email}">o@g.c</td>
             <td th:text="${user.role}">AGENT</td>

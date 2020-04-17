@@ -1,4 +1,6 @@
 package com.akinobank.app.models;
+import com.akinobank.app.enumerations.CompteStatus;
+import com.akinobank.app.enumerations.Role;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
@@ -12,10 +14,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @AllArgsConstructor
@@ -47,7 +46,8 @@ public class User implements UserDetails { // We use interface UserDetials inste
     private String nom , prenom  ;
 
     @NotNull
-    private String role ;
+    @Enumerated(EnumType.STRING)
+    private Role role ;
 
     @OneToOne(mappedBy = "user")
     private Admin admin;
@@ -63,6 +63,14 @@ public class User implements UserDetails { // We use interface UserDetials inste
 
     @UpdateTimestamp
     private Date dateUpdate;
+
+    // triggered at begining of transaction : generate default values for User
+    @PrePersist
+    void beforeInsert() {
+        System.out.println("SETTING DEFAULT VALUES FOR USER");
+        verificationToken = UUID.randomUUID().toString();
+        emailConfirmed = false;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -105,7 +113,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
     }
 
     //Just for test
-    public User(String nom, String prenom, String email, String password , String role,String token ) {
+    public User(String nom, String prenom, String email, String password , Role role,String token ) {
         this.nom=nom;
         this.prenom=prenom;
         this.email=email;

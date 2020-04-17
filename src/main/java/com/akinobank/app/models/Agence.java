@@ -1,9 +1,6 @@
 package com.akinobank.app.models;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -20,6 +17,8 @@ import java.util.Date;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
+@ToString
 public class Agence implements Serializable {
 
     @Id // la cle prm
@@ -36,8 +35,7 @@ public class Agence implements Serializable {
     private String ville , libelleAgence; // libelleAgenece : nom agence
 
     @ManyToOne
-    @JoinColumn(name = "id_admin") // pour la relation : chaque agence a un seul admin
-    @NotNull
+    @JoinColumn(name = "id_admin", nullable = false) // pour la relation : chaque agence a un seul admin
     private Admin admin;
 
 

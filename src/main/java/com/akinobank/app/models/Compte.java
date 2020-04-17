@@ -1,28 +1,26 @@
 package com.akinobank.app.models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.akinobank.app.enumerations.CompteStatus;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.id.UUIDGenerator;
-import org.hibernate.id.UUIDHexGenerator;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Random;
-import java.util.UUID;
+
+
 @Entity // pour la générer du table User
 // annotation de Lombok : pour générer les getters&setters et les constructeurs par default et avec des args
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Compte implements Serializable {
 
 //     @Id @GeneratedValue(generator = "UUID")
@@ -30,11 +28,19 @@ public class Compte implements Serializable {
 ////     @Column(name = "numero_compte", length = 16)
 //     private UUIDHexGenerator numeroCompte =UUIDHexGenerator;
 
+//    @Id
+//    @GeneratedValue(generator = "hibernate-uuid")
+//    @GenericGenerator(name = "hibernate-uuid", strategy = "org.hibernate.id.UUIDGenerator")
+//    @Column(name = "numeroCompte", unique = true)
+//    private String numeroCompte;
+
     @Id
-    @GeneratedValue(generator = "hibernate-uuid")
-    @GenericGenerator(name = "hibernate-uuid", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "numeroCompte", unique = true)
+    @GeneratedValue(generator = "cn-generator")
+    @GenericGenerator(name = "cn-generator", strategy = "com.akinobank.app.utilities.CreditCardNumberGenerator")
+    // This CC number generated using Luhn Algorithm found in CreditCardNumberGenerator
     private String numeroCompte;
+
+
     //  i change the type from UUID to String just because UUID gives a HEX return number with prefix 0x
     // But with String the returm gonna be like xxxx-xxxx-xxx-xx and thats what we want
 
@@ -44,8 +50,8 @@ public class Compte implements Serializable {
     @NotNull
     private String intitule ;
 
-    @NotNull
-    private String statut; // status : etat du compte : active-block-...etc
+    @Enumerated(EnumType.STRING)
+    private CompteStatus statut; // status : etat du compte : active-block-...etc
 
     @CreationTimestamp
     private Date dateDeCreation;
@@ -75,6 +81,14 @@ public class Compte implements Serializable {
     private Collection<Recharge> recharges; //pour la relation : chaque compte a 0 ou pls recharge
 
 
+    // triggered at begining of transaction : generate default values for Compte
+    @PrePersist
+    void beforeInsert() {
+        System.out.println("SETTING DEFAULT VALUES FOR COMPTE");
+        solde = 0;
+        statut = CompteStatus.ACTIVE;
+        codeSecret = new Random().nextInt(90000000) + 10000000;
+    }
 
     //just for test
 
@@ -82,7 +96,7 @@ public class Compte implements Serializable {
 
         this.solde=solde;
         this.intitule=intitule;
-        this.statut=status;
+//        this.statut=status;
         this.dateUpdate=date1;
         this.dernierOperation=date2;
         this.client=client;

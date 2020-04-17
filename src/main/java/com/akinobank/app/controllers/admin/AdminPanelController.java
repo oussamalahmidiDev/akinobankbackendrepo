@@ -57,18 +57,17 @@ public class AdminPanelController {
     }
     @PostMapping("users/ajouter")
     public String addUser(@ModelAttribute User user) {
-        // generation du token de confirmation
-        user.setVerificationToken(UUID.randomUUID().toString());
-        System.out.println(user.toString());
-        if (user.getRole().equals("ADMIN")) {
+        Agence chosenAgence = user.getAgent().getAgence();
+        // pour eviter le probleme de transaction
+        user.setAgent(null);
+        if (user.getRole().name().equals("ADMIN")) {
+            System.out.println("SAVING ADMIN : " + user.toString());
             user = userRepository.save(user);
             adminRepository.save(Admin.builder().user(user).build());
-        } else {
-            Agence chosenAgence = user.getAgent().getAgence();
-            // pour eviter le probleme de transaction
-            user.setAgent(null);
+        }
+        if (user.getRole().name().equals("AGENT")) {
+            System.out.println("SAVING AGENT : " + user.toString());
             user = userRepository.save(user);
-
             // c juste parcequ'on n'a pas encore implemente l'auth.
             Admin admin = adminRepository.getOne((long) 1);
             agentRepository.save(Agent.builder().user(user).admin(admin).agence(chosenAgence).build());
