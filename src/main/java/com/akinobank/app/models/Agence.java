@@ -9,6 +9,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.Date;
 
 @Entity // pour la générer du table User
@@ -37,6 +38,9 @@ public class Agence implements Serializable {
     @ManyToOne
     @JoinColumn(name = "id_admin", nullable = false) // pour la relation : chaque agence a un seul admin
     private Admin admin;
+
+    @OneToMany(mappedBy = "agence", fetch = FetchType.LAZY)// pour la relation : chaque agence a pls agents
+    private Collection<Client> agents;
 
 
     //Just for test
