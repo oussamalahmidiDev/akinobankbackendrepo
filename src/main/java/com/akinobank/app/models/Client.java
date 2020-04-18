@@ -25,7 +25,7 @@ public class Client implements Serializable {
     private String photo ;
 
 //    @NotNull
-    private String numeroTelephone;
+
 
     @ManyToOne
     @JoinColumn(name = "id_agent") // pour la relation : chaque client a un seul agent

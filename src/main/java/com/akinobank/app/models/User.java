@@ -1,6 +1,7 @@
 package com.akinobank.app.models;
 import com.akinobank.app.enumerations.CompteStatus;
 import com.akinobank.app.enumerations.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
@@ -35,16 +36,14 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @Email
     private String email ;
 
-
-//    @NotBlank(message = "Le mot de passe est obligatoire")
-
     @Size(min = 6)
-    @Column(unique = true)
     private String password;
 
     private boolean emailConfirmed ;
 
     private String verificationToken;
+
+    private String numeroTelephone;
 
     @NotNull
     private String nom , prenom  ;
@@ -60,6 +59,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
     private Agent agent;
 
     @OneToOne(mappedBy = "user")
+    @JsonIgnore
     private Client client;
 
     @CreationTimestamp

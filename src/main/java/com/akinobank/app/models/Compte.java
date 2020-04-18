@@ -24,26 +24,11 @@ import java.util.Random;
 @Builder
 public class Compte implements Serializable {
 
-//     @Id @GeneratedValue(generator = "UUID")
-//    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-////     @Column(name = "numero_compte", length = 16)
-//     private UUIDHexGenerator numeroCompte =UUIDHexGenerator;
-
-//    @Id
-//    @GeneratedValue(generator = "hibernate-uuid")
-//    @GenericGenerator(name = "hibernate-uuid", strategy = "org.hibernate.id.UUIDGenerator")
-//    @Column(name = "numeroCompte", unique = true)
-//    private String numeroCompte;
-
     @Id
     @GeneratedValue(generator = "cn-generator")
     @GenericGenerator(name = "cn-generator", strategy = "com.akinobank.app.utilities.CreditCardNumberGenerator")
     // This CC number generated using Luhn Algorithm found in CreditCardNumberGenerator
     private String numeroCompte;
-
-
-    //  i change the type from UUID to String just because UUID gives a HEX return number with prefix 0x
-    // But with String the returm gonna be like xxxx-xxxx-xxx-xx and thats what we want
 
     @NotNull
     private double solde;
@@ -63,16 +48,7 @@ public class Compte implements Serializable {
     @UpdateTimestamp
     private Date dateUpdate;
 
-    @Column(unique = true)
     private int codeSecret;
-
-
-//    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)// pour ne pas afficher le code secret
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    @Size(min = 4 , max = 8)
-//    @GeneratedValue(strategy=GenerationType.IDENTITY)
-//    = new Random().nextInt(90000000) + 10000000; //generate a random secret code for client comptes
-    // le code ou le mot de pass pour accéder au compte
 
     @ManyToOne
     @JoinColumn(name = "id_client") // pour la relation : chaque compte a un seul client
@@ -97,13 +73,9 @@ public class Compte implements Serializable {
 
     //just for test
 
-    public Compte(int solde, String intitule, String status, Date date1, Date date2, Client client) {
+    public Compte(String intitule, Client client) {
 
-        this.solde=solde;
         this.intitule=intitule;
-//        this.statut=status;
-//        this.dateUpdate=date1; // no nood to this date in cnstr , we already defend it @CreationTimeStamp
-//        this.dernierOperation=date2;
         this.client=client;
 
     }

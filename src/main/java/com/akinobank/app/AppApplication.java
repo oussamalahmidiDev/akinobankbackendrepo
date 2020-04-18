@@ -3,6 +3,8 @@ package com.akinobank.app;
 import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.models.*;
 import com.akinobank.app.repositories.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -34,10 +36,17 @@ public class AppApplication implements CommandLineRunner {
     @Autowired
     private UserRepository userRepository;
 
+//    private static final Logger logger = LoggerFactory.getLogger(AppApplication.class); // for logs
+
+
 
     public static void main(String[] args) {
 
         ApplicationContext ctx = SpringApplication.run(AppApplication.class, args);
+
+//            System.out.println("Current Directory = " + System.getProperty("user.dir")); // for logs
+//            SpringApplication.run(AppApplication.class, args);
+//            logger.info("just a test info log");
     }
 
     //Just for test
@@ -46,7 +55,7 @@ public class AppApplication implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         //admin
-        User user1 = userRepository.save(new User("oussama","vox","oussama@gmail.com",Role.ADMIN));
+        User user1 = userRepository.save(new User("testt","vox","test@gmail.com",Role.ADMIN));
         Admin admin = adminRepository.save(new Admin(user1));
 
         //agence
@@ -54,18 +63,18 @@ public class AppApplication implements CommandLineRunner {
         Agence agence1 = agenceRepository.save(new Agence("FES","AGENCE de FES",admin));
 
         //agent
-        User user2 = userRepository.save(new User("khalil","vox","khalil@gmail.com",Role.AGENT));
+        User user2 = userRepository.save(new User("khalil","vox","ffsd@gmail.com",Role.AGENT));
         User user4 = userRepository.save(new User("inas","vox","inas@gmail.com",Role.AGENT));
         Agent agent = agentRepository.save(new Agent(user2,admin,agence));
         Agent agent1 = agentRepository.save(new Agent(user4,admin,agence1));
 
         //client
-        User user3 = userRepository.save(new User("abdo","vox","abdo@gmail.com",Role.CLIENT));
-        Client client1 = clientRepository.save(new Client(user3,agent,agence));
+        User user3 = userRepository.save(new User("abdo","vox","khalilomogiwara@gmail.com",Role.CLIENT));
+        Client client1 = clientRepository.save(new Client(user3,agent1,agence));
 
         //comptes
-        Compte compte1 = compteRepository.save(new Compte(1500,"khalil","khalil",new Date(),new Date(),client1));
-        Compte compte2 = compteRepository.save(new Compte(1500,"nouhaila","Active",new Date(),new Date(),client1));
-        Compte compte3 = compteRepository.save(new Compte(1500,"oussama","Active",new Date(),new Date() ,client1));
+        Compte compte1 = compteRepository.save(new Compte("khalil",client1));
+        Compte compte2 = compteRepository.save(new Compte("nouhaila",client1));
+        Compte compte3 = compteRepository.save(new Compte("oussama",client1));
     }
 }
