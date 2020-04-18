@@ -8,8 +8,10 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/agent")
@@ -122,11 +124,17 @@ public class AgentPanelController {
     //    **********************************************************************************************************************
     //    ******************************************************** API get Client Comptes***************************************
 
-    @GetMapping(value = "/clients/{id}/comptes") // works
-    public Collection<Compte> getAllComptes(@PathVariable(value = "id")Long id){
-//        Agent agent = agentRepository.findById(1L).get(); // not necessary all agents can see all clients comptes
-        Client client = clientRepository.findById(id).get();
-        return compteRepository.findAllByClientId(client.getId());
+    @GetMapping(value = "/clients/{id}/comptes") // works v2
+    public Collection<Compte> getAllComptes(@PathVariable(value = "id")Long id) throws NoSuchElementException , RuntimeException{
+//        Agent agent = agentRepository.findById(1L).get(); // not necessary all agents can see all clients comptes : false
+        //Agents can see their clients in the same agence
+        if(clientRepository.findById(id).isPresent()) { //isPresent is the best solution to check the existance of an element in BD
+            Client client = clientRepository.findById(id).get();
+            return compteRepository.findAllByClientId(client.getId());
+        }
+        else{
+            return null; // We will controle it in the front if null then we need to genere a error msg as a span
+        }
     }
 
     //    **********************************************************************************************************************
