@@ -134,7 +134,7 @@ public class AgentPanelController {
                 return compteRepository.findAllByClientId(client.getId());
             }
             else{
-                return null; // We will controle it in the front if null then we need to genere a error msg as a span
+                return null; // We will control it in the front if null then we need to genere a error msg as a span
             }
         }catch (Exception e){
 
@@ -159,17 +159,17 @@ public class AgentPanelController {
     //    **********************************************************************************************************************
     //    *********************************************************** API Delete Client Compte *********************************
 
-    @DeleteMapping(value = "/clients/{id}/comptes/{num}/delete") //works
-    public String deleteClientCompte(@PathVariable(value = "id") Long id ,@PathVariable(value = "num") String numero_compte){
+    @DeleteMapping(value = "/comptes/{id}/delete") //works
+    public String deleteClientCompte(@PathVariable(value = "id") String numero_compte){
         if(compteRepository.findById(numero_compte).isPresent()){
         Agent agent = agentRepository.findById(1L).get(); //just for test , choose the agent with id 2
-        Compte compte =  compteRepository.findAllByClientIdAndNumeroCompte(id,numero_compte);
+        Compte compte =  compteRepository.findById(numero_compte).get();
 
-        System.out.println(compte);
+//        System.out.println(compte);
 
         if(agent.getAgence().getId().equals(compte.getClient().getAgence().getId())){
         try{
-            compteRepository.delete(compte);
+            compteRepository.deleteById(numero_compte);
          return "The compte with number "+numero_compte+" HAS BEEN DELETED";}
         catch (Exception e){
             return e.toString();
