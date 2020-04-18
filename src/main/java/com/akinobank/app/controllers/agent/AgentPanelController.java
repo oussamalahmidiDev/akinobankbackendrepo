@@ -125,15 +125,20 @@ public class AgentPanelController {
     //    ******************************************************** API get Client Comptes***************************************
 
     @GetMapping(value = "/clients/{id}/comptes") // works v2
-    public Collection<Compte> getAllComptes(@PathVariable(value = "id")Long id) throws NoSuchElementException , RuntimeException{
+    public Collection<Compte> getAllComptes(@PathVariable(value = "id")Long id) throws NoSuchElementException {
 //        Agent agent = agentRepository.findById(1L).get(); // not necessary all agents can see all clients comptes : false
         //Agents can see their clients in the same agence
-        if(clientRepository.findById(id).isPresent()) { //isPresent is the best solution to check the existance of an element in BD
-            Client client = clientRepository.findById(id).get();
-            return compteRepository.findAllByClientId(client.getId());
-        }
-        else{
-            return null; // We will controle it in the front if null then we need to genere a error msg as a span
+        try{
+            if(clientRepository.findById(id).isPresent()) { //isPresent is the best solution to check the existance of an element in BD
+                Client client = clientRepository.findById(id).get();
+                return compteRepository.findAllByClientId(client.getId());
+            }
+            else{
+                return null; // We will controle it in the front if null then we need to genere a error msg as a span
+            }
+        }catch (Exception e){
+
+            return null;
         }
     }
 
