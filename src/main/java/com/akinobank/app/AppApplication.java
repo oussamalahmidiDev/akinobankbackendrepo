@@ -69,12 +69,14 @@ public class AppApplication implements CommandLineRunner {
         Agent agent1 = agentRepository.save(new Agent(user4,admin,agence1));
 
         //client
-        User user3 = userRepository.save(new User("abdo","vox","khalilomogiwara@gmail.com",Role.CLIENT));
-        Client client1 = clientRepository.save(new Client(user3,agent1,agence));
+        User user3 = userRepository.save(new User("nouhaila","test","nouhail@gmail.com",Role.CLIENT));
+        User user5 = userRepository.save(new User("inass","test","inass@gmail.com",Role.CLIENT));
+        Client client1 = clientRepository.save(new Client(user3,agent,agence));
+        Client client2 = clientRepository.save(new Client(user5,agent,agence));
 
         //comptes
-        Compte compte1 = compteRepository.save(new Compte("khalil",client1));
-        Compte compte2 = compteRepository.save(new Compte("nouhaila",client1));
-        Compte compte3 = compteRepository.save(new Compte("oussama",client1));
+        Compte compte1 = compteRepository.save(new Compte("khalil",client1,0));
+        Compte compte2 = compteRepository.save(new Compte("nouhaila",client1,0));
+        Compte compte3 = compteRepository.save(new Compte("oussama",client1,0));
     }
 }

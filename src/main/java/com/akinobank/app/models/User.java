@@ -53,9 +53,11 @@ public class User implements UserDetails { // We use interface UserDetials inste
     private Role role ;
 
     @OneToOne(mappedBy = "user")
+    @JsonIgnore
     private Admin admin;
 
     @OneToOne(mappedBy = "user")
+    @JsonIgnore
     private Agent agent;
 
     @OneToOne(mappedBy = "user")
@@ -124,4 +126,5 @@ public class User implements UserDetails { // We use interface UserDetials inste
         this.role=role;
 
     }
+
 }

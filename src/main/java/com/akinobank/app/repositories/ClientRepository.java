@@ -14,7 +14,7 @@ import java.util.List;
 @RepositoryRestController
 public interface ClientRepository extends JpaRepository<Client,Long> {
 
-
+    Client findClientByUserId(Long id);
 
 //    @RestResource(path = "agent/client/bynum")
 //    Page<Client> findByNumeroTelephone(String numeroTelephone, Pageable pageable);

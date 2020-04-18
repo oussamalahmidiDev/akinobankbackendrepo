@@ -1,6 +1,7 @@
 package com.akinobank.app.models;
 
 import com.akinobank.app.enumerations.CompteStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
@@ -9,6 +10,8 @@ import org.hibernate.validator.constraints.UniqueElements;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
@@ -30,7 +33,7 @@ public class Compte implements Serializable {
     // This CC number generated using Luhn Algorithm found in CreditCardNumberGenerator
     private String numeroCompte;
 
-    @NotNull
+//    @Positive
     private double solde;
 
     @NotNull
@@ -42,17 +45,18 @@ public class Compte implements Serializable {
     @CreationTimestamp
     private Date dateDeCreation;
 
-    @CreationTimestamp
     private Date dernierOperation;
 
     @UpdateTimestamp
     private Date dateUpdate;
 
+//    @Size(min = 8 ,max = 8)
     private int codeSecret;
 
     @ManyToOne
     @JoinColumn(name = "id_client") // pour la relation : chaque compte a un seul client
 //    @NotBlank(message = "le client est obligatoire")
+    @JsonIgnore
     private Client client;
 
     @OneToMany(mappedBy = "compte",fetch = FetchType.LAZY)
@@ -66,17 +70,18 @@ public class Compte implements Serializable {
     @PrePersist
     void beforeInsert() {
         System.out.println("SETTING DEFAULT VALUES FOR COMPTE");
-        solde = 0;
+        //solde = 0;
         statut = CompteStatus.ACTIVE;
         codeSecret = new Random().nextInt(90000000) + 10000000;
     }
 
     //just for test
 
-    public Compte(String intitule, Client client) {
+    public Compte(String intitule, Client client,double solde) {
 
         this.intitule=intitule;
         this.client=client;
+        this.solde = solde;
 
     }
 }

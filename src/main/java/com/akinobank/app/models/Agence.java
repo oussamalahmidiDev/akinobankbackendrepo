@@ -1,5 +1,6 @@
 package com.akinobank.app.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -37,9 +38,11 @@ public class Agence implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "id_admin", nullable = false) // pour la relation : chaque agence a un seul admin
+    @JsonIgnore
     private Admin admin;
 
     @OneToMany(mappedBy = "agence", fetch = FetchType.LAZY)// pour la relation : chaque agence a pls agents
+    @JsonIgnore
     private Collection<Agent> agents;
 
 
