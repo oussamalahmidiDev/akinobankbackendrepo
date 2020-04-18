@@ -26,11 +26,11 @@ spring.servlet.multipart.max-request-size=215MB
 file.upload-dir=./src/main/resources/uploads
 
 # Mail settings
-spring.mail.host= smtp.mailtrap.io
-spring.mail.port=587
-spring.mail.username=d4f216b4252763
-spring.mail.password=48a63b5e4ffe3d
-spring.mail.properties.mail.smtp.auth=true
-spring.mail.properties.mail.smtp.starttls.enable=false
-spring.mail.defaultEncoding=UTF-8
-mail.from = ouss@.c
+spring.mail.host = <host>
+spring.mail.port = <port>
+spring.mail.username = <username>
+spring.mail.password = <password>
+spring.mail.properties.mail.smtp.auth = true
+spring.mail.properties.mail.smtp.starttls.enable = false
+spring.mail.defaultEncoding = UTF-8
+mail.from = team@akinobank.com

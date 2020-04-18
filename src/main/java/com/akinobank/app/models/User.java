@@ -11,6 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -31,6 +32,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
 
     @NotNull
     @Column(unique = true)
+    @Email
     private String email ;
 
 
@@ -70,7 +72,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @PrePersist
     void beforeInsert() {
         System.out.println("SETTING DEFAULT VALUES FOR USER");
-        verificationToken = UUID.randomUUID().toString();
+        verificationToken = (UUID.randomUUID().toString() + UUID.randomUUID().toString()).replace("-", "");
         emailConfirmed = false;
     }
 

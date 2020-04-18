@@ -35,8 +35,7 @@ public class Notification implements Serializable {
     private Date dateDeNotification;
 
     @ManyToOne
-    @JoinColumn(name = "id_client") // pour la relation : chaque Notification appartient a un seul client
-    @NotNull
+    @JoinColumn(name = "id_client", nullable = false) // pour la relation : chaque Notification appartient a un seul client
     private Client client;
 
 }

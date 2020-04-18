@@ -48,8 +48,7 @@ public class Virement implements Serializable {
 
 
     @ManyToOne
-    @JoinColumn(name = "uuid_compte") // pour la relation : plusieur virement apprtient a un seul compte
-    @NotNull
+    @JoinColumn(name = "uuid_compte", nullable = false) // pour la relation : plusieur virement apprtient a un seul compte
     private Compte compte;
 
     @OneToOne
