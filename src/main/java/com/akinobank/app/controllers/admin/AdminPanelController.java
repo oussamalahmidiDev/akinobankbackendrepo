@@ -7,6 +7,7 @@ import com.akinobank.app.models.Agent;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.*;
 import com.akinobank.app.services.MailService;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -58,7 +59,7 @@ public class AdminPanelController {
         return ADMIN_VIEWS_PATH + "forms/user.add";
     }
     @PostMapping("users/ajouter")
-    public String addUser(@ModelAttribute User user, HttpServletRequest request) {
+    public String addUser(@ModelAttribute User user, HttpServletRequest request) throws UnirestException {
 //        if (user.getAgent() )
         if (user.getRole().name().equals("ADMIN")) {
 //            System.out.println("SAVING ADMIN : " + user.toString());
@@ -81,7 +82,9 @@ public class AdminPanelController {
 
         // generation du lien de confirmation et envoie par mail
         String confirmationURL = rootURL + "/confirm?token=" + user.getVerificationToken();
-        mailService.send(user.getEmail(), "Confirmation d'email", confirmationURL);
+//        mailService.sendVerificationMail(user, confirmationURL);
+        mailService.sendVerificationMailViaMG(user, confirmationURL);
+
 
         return "redirect:/admin/users";
     }
