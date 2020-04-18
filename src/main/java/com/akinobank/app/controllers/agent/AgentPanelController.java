@@ -91,7 +91,7 @@ public class AgentPanelController {
         User user = userRepository.findById(id).get();
         if(user.getRole().equals(Role.CLIENT)){
         userRepository.deleteById(id);
-        return "YOUR CLIENT with id =  "+id+" WAS DELETED";}
+        return "YOUR CLIENT with id =  "+id+" HES BEEN DELETED";}
         else{
             return "Client not found";
         }
@@ -146,40 +146,52 @@ public class AgentPanelController {
     //    *********************************************************** API Add Client Compte *************************************
 
     @PostMapping(value = "/clients/{id}/comptes/ajouter") // works
-    public Compte addClientCompte(@PathVariable(value = "id")Long id,@RequestBody Compte compte){ // PS : if you didnt insert the solde , will be auto 0.0 and always its >0
+    public Serializable addClientCompte(@PathVariable(value = "id")Long id,@RequestBody Compte compte){ // PS : if you didnt insert the solde , will be auto 0.0 and always its >0
+        if(clientRepository.findById(id).isPresent()){ //check firstly if client exist
         Client client = clientRepository.findById(id).get();
         compte.setClient(client);
-        return compteRepository.save(compte);
+        return compteRepository.save(compte);}
+        else {
+            return null;
+        }
     }
 
     //    **********************************************************************************************************************
     //    *********************************************************** API Delete Client Compte *********************************
 
-    @DeleteMapping(value = "/clients/{id}/comptes/delete") //works
-    public String deleteClientCompte(@PathVariable(value = "id") String numero_compte ){
-        Agent agent = agentRepository.findById(2L).get(); //just for test , choose the agent with id 2
-        Compte compte = compteRepository.findById(numero_compte).get();
+    @DeleteMapping(value = "/clients/{id}/comptes/{num}/delete") //works
+    public String deleteClientCompte(@PathVariable(value = "id") Long id ,@PathVariable(value = "num") String numero_compte){
+        if(compteRepository.findById(numero_compte).isPresent()){
+        Agent agent = agentRepository.findById(1L).get(); //just for test , choose the agent with id 2
+        Compte compte =  compteRepository.findAllByClientIdAndNumeroCompte(id,numero_compte);
+
+        System.out.println(compte);
 
         if(agent.getAgence().getId().equals(compte.getClient().getAgence().getId())){
         try{
-         compteRepository.delete(compte);
-         return "The compte with number "+numero_compte+" WAS DELETED";}
+            compteRepository.delete(compte);
+         return "The compte with number "+numero_compte+" HAS BEEN DELETED";}
         catch (Exception e){
             return e.toString();
         }}
         else {
             return "Agent is not allowed for this action";// if Agent is not from the same agence as client
+        }}
+        else {
+            return "Compte Not Exist";
         }
     }
     //    **********************************************************************************************************************
     //    *********************************************************** API modify Client Compte *********************************
 
-        @PutMapping(value = "/clients/{id}/comptes/modify")
+        @PutMapping(value = "/clients/comptes/{id}/modify")
     public Serializable modifyClientCompte(@PathVariable(value = "id") String numero_compte ,@RequestBody Compte compte) {
-            Agent agent = agentRepository.findById(1L).get();//just for test , agent couldnt modify 2 comptes from diff agence
-            Compte old_compte = compteRepository.findById(numero_compte).get();//for the creation date
-            Client client = clientRepository.findById(old_compte.getClient().getId()).get();  // for the id Client
-            compte.setNumeroCompte(numero_compte);
+            if (compteRepository.findById(numero_compte).isPresent()) {
+
+                Agent agent = agentRepository.findById(1L).get();//just for test , agent couldnt modify 2 comptes from diff agence
+                Compte old_compte = compteRepository.findById(numero_compte).get();//for the creation date
+                Client client = clientRepository.findById(old_compte.getClient().getId()).get();  // for the id Client
+                compte.setNumeroCompte(numero_compte);
 //            if(agent.getAgence().getId().equals(compte.getClient().getAgence().getId())){ // check if the agent work in the same agence
                 //specify which id client
                 compte.setClient(client);
@@ -187,7 +199,10 @@ public class AgentPanelController {
                 compteRepository.save(compte);
 //            }
 
-            return compte;
+                return compte;
 
+            } else {
+                return null;
+            }
         }
 }
