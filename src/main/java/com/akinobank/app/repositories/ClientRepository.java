@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 
+import java.util.Collection;
 import java.util.List;
 
 
@@ -16,6 +17,7 @@ public interface ClientRepository extends JpaRepository<Client,Long> {
 
     Client findClientByUserId(Long id);
 
+    Collection<Client> findAllByAgenceId(Long id);
 //    @RestResource(path = "agent/client/bynum")
 //    Page<Client> findByNumeroTelephone(String numeroTelephone, Pageable pageable);
 }

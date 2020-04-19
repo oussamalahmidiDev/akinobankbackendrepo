@@ -66,6 +66,8 @@ public class AgentPanelController {
 
     @GetMapping(value = "/clients") //show all clients , works
     public List<User> getClients(){
+        Agent agent = agentRepository.findById(1L).get(); // just for test : the idea is agent could see just his agence client
+        Agence agence = agent.getAgence();
         return userRepository.findAllByRole(Role.CLIENT);
     }
 
@@ -94,6 +96,8 @@ public class AgentPanelController {
         User user = userRepository.findById(id).get();
         if(user.getRole().equals(Role.CLIENT)){
         userRepository.deleteById(id);
+        clientRepository.delete(user.getClient());
+        compteRepository.deleteAll(user.getClient().getComptes());
         return "YOUR CLIENT with id =  "+id+" HES BEEN DELETED";}
         else{
             return "Client not found";
@@ -115,7 +119,7 @@ public class AgentPanelController {
 
             user.setId(id); // specified the id and role of client you want to modify
             user.setRole(Role.CLIENT);
-            //in case you didnt leave some null value for some user args
+            //in case you leave some null value for user args
             if(user.getEmail()==null) user.setEmail(old_user.getEmail());
             if(user.getNom()==null) user.setNom(old_user.getNom());
             if(user.getPrenom()==null) user.setPrenom(old_user.getPrenom());
@@ -180,8 +184,6 @@ public class AgentPanelController {
         if(compteRepository.findById(numero_compte).isPresent()){
         Agent agent = agentRepository.findById(1L).get(); //just for test , choose the agent with id 2
         Compte compte =  compteRepository.findById(numero_compte).get();
-
-//        System.out.println(compte);
 
         if(agent.getAgence().getId().equals(compte.getClient().getAgence().getId())){
         try{
