@@ -2,6 +2,7 @@ package com.akinobank.app.models;
 import com.akinobank.app.enumerations.CompteStatus;
 import com.akinobank.app.enumerations.Role;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
@@ -53,15 +54,18 @@ public class User implements UserDetails { // We use interface UserDetials inste
     private Role role ;
 
     @OneToOne(mappedBy = "user")
-    @JsonIgnore
+//    @JsonIgnore
+    @JsonIgnoreProperties("user") // choose one of the column you dont want it to show as Json output , a solution for infinity of recursion
     private Admin admin;
 
     @OneToOne(mappedBy = "user")
     @JsonIgnore
+//    @JsonIgnoreProperties({"agence","admin","user"})
     private Agent agent;
 
     @OneToOne(mappedBy = "user")
-    @JsonIgnore
+//    @JsonIgnore
+    @JsonIgnoreProperties({"agent", "agence","user"})
     private Client client;
 
     @CreationTimestamp

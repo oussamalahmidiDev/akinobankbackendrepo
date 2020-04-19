@@ -59,7 +59,7 @@ public class AgentPanelController {
             return agentRepository.getOne(id).getUser();
         }
         catch (EntityNotFoundException e){
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client avec id = " + id + " est introuvable.");}
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "L'agent avec id = " + id + " est introuvable.");}
 
     }
 
