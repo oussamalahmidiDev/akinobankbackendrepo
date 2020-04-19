@@ -5,9 +5,11 @@ import com.akinobank.app.models.*;
 import com.akinobank.app.repositories.*;
 import com.akinobank.app.services.MailService;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -87,8 +89,9 @@ public class AgentPanelController {
 
 
     @PostMapping("/clients/ajouter") //add new client , works
-    public User addClient(@RequestBody  User user) throws UnirestException {
-        user.setRole(Role.CLIENT);
+    public User addClient(@RequestBody  User user) throws DataIntegrityViolationException {
+        try{
+            user.setRole(Role.CLIENT);
         //find first the client
         Agent agent = agentRepository.findById(1L).get();  // i choose id 1 just for test
         userRepository.save(user); // add user in table
@@ -96,7 +99,10 @@ public class AgentPanelController {
         clientRepository.save(client); // add client in table
         mailService.sendVerificationMailViaMG(user);
 
-        return user;
+        return user;}
+        catch (DataIntegrityViolationException | UnirestException e){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Le mail vous avez entrée est deja existe !")  ;
+        }
     }
 
     //    *********************************************************************************************************************
