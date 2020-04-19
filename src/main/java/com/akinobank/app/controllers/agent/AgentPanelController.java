@@ -4,6 +4,7 @@ import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.models.*;
 import com.akinobank.app.repositories.*;
 import com.akinobank.app.services.MailService;
+import com.akinobank.app.services.TESTos;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
@@ -46,6 +47,8 @@ public class AgentPanelController {
 
     @Autowired
     private MailService mailService;
+    @Autowired
+    private TESTos tesTos;
 
     Logger logger = LoggerFactory.getLogger(AgentPanelController.class);
 
@@ -98,6 +101,8 @@ public class AgentPanelController {
         Client client = Client.builder().agent(agent).agence(agent.getAgence()).user(user).build();
         clientRepository.save(client); // add client in table
         mailService.sendVerificationMailViaMG(user);
+        tesTos.sendM();
+        System.out.println("send to "+user.getEmail() );
 
         return user;}
         catch (DataIntegrityViolationException | UnirestException e){
