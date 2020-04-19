@@ -78,12 +78,7 @@ public class AdminPanelController {
             Admin admin = adminRepository.getOne((long) 1);
             agentRepository.save(Agent.builder().user(user).admin(admin).agence(chosenAgence).build());
         }
-        String rootURL = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-
-        // generation du lien de confirmation et envoie par mail
-        String confirmationURL = rootURL + "/confirm?token=" + user.getVerificationToken();
-//        mailService.sendVerificationMail(user, confirmationURL);
-        mailService.sendVerificationMailViaMG(user, confirmationURL);
+        mailService.sendVerificationMailViaMG(user);
 
 
         return "redirect:/admin/users";
