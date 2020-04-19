@@ -51,14 +51,15 @@ public class AgentPanelController {
 //    ************************************************* API Agent profile ************************************************************
 
     @GetMapping(value = "/profile/{id}") // return Agent by id
-    public User getAgent(@PathVariable(value = "id")Long id){
-        if(agentRepository.findById(id).isPresent()) {
-
+    public User getAgent(@PathVariable(value = "id")Long id) throws NoSuchElementException{
+        if(agentRepository.findById(id).isPresent()) { // if u use try here, will return error 500 internal server
+//        try{
             return agentRepository.getOne(id).getUser();
         }
-        else{
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "L'agent avec id = " + id + " est introuvable.");
-        }
+//        catch (NoSuchElementException e){
+            else{
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client avec id = " + id + " est introuvable.");}
+
     }
 
     //    *********************************************************************************************************************
