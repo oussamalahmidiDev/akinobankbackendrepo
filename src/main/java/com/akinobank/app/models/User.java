@@ -12,6 +12,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import javax.transaction.Transactional;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -36,7 +37,6 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @Email
     private String email ;
 
-    @Size(min = 6)
     private String password;
 
     private boolean emailConfirmed ;
@@ -45,7 +45,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
 
     private String numeroTelephone;
 
-    @NotNull
+//    @NotNull
     private String nom , prenom  ;
 
     @NotNull

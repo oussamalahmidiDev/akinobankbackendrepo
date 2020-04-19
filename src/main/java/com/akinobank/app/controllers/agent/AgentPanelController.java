@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,6 +16,7 @@ import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/agent")
+@Transactional
 public class AgentPanelController {
 
     @Autowired
@@ -31,6 +33,7 @@ public class AgentPanelController {
 
     @Autowired
     private CompteRepository compteRepository;
+
 
 //    ************************************************* API Agent profile ************************************************************
 
@@ -102,23 +105,32 @@ public class AgentPanelController {
 
 
     @PutMapping(value = "/clients/{id}/modifier") // modify client , works
-    public Serializable modifyClient(@PathVariable("id") Long id , @RequestBody User user){
+    public Serializable modifyClient(@PathVariable(name = "id") Long id , @RequestBody User user){
        if(userRepository.findById(id).isPresent()){ // if id user already exist
         try {
+            Agent agent = agentRepository.findById(1L).get(); // just for test
+            Agence agence = agenceRepository.findById(1L).get();//just for test
+
+            User old_user = userRepository.findById(id).get(); // call the old user data
+
             user.setId(id); // specified the id and role of client you want to modify
             user.setRole(Role.CLIENT);
-            User old_user = userRepository.findById(id).get(); // call the old user data
-             Agent agent = agentRepository.findById(1L).get(); // just for test
-             Agence agence = agenceRepository.findById(1L).get();
+            //in case you didnt leave some null value for some user args
+            if(user.getEmail()==null) user.setEmail(old_user.getEmail());
+            if(user.getNom()==null) user.setNom(old_user.getNom());
+            if(user.getPrenom()==null) user.setPrenom(old_user.getPrenom());
+            if(user.getVerificationToken()==null) user.setVerificationToken(old_user.getVerificationToken());
+            if(user.getNumeroTelephone()==null) user.setNumeroTelephone(old_user.getNumeroTelephone());
              user.setDateDeCreation(old_user.getDateDeCreation()); // get the first creation date and set it for the date creation
              userRepository.save(user); // save the modify info into user
+
              Client client = clientRepository.findClientByUserId(user.getId()); // search for client with the is user
-             client.setAgent(agent); // save the agent
-             client.setAgence(agence); //save the agence
+             client.setAgent(agent); // save the agent for client
+             client.setAgence(agence); //save the agence client
              clientRepository.save(client);// save the new info of client
         return user;}
         catch (Exception e){
-            return "Its not allowed";
+            return "It's not allowed";
         }}
        else{
            return "Id incorrect , Client not Found";
