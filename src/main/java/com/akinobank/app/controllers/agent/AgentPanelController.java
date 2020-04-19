@@ -103,6 +103,7 @@ public class AgentPanelController {
 
     @PutMapping(value = "/clients/{id}/modifier") // modify client , works
     public Serializable modifyClient(@PathVariable("id") Long id , @RequestBody User user){
+       if(userRepository.findById(id).isPresent()){ // if id user already exist
         try {
             user.setId(id); // specified the id and role of client you want to modify
             user.setRole(Role.CLIENT);
@@ -118,7 +119,10 @@ public class AgentPanelController {
         return user;}
         catch (Exception e){
             return "Its not allowed";
-        }
+        }}
+       else{
+           return "Id incorrect , Client not Found";
+       }
     }
 
     //    **********************************************************************************************************************
