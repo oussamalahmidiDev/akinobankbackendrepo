@@ -163,7 +163,7 @@ public class AgentPanelController {
     //    *********************************************************** API Add Client Compte *************************************
 
     @PostMapping(value = "/clients/{id}/comptes/ajouter") // works
-    public Serializable addClientCompte(@PathVariable(value = "id")Long id,@RequestBody Compte compte){ // PS : if you didnt insert the solde , will be auto 0.0 and always its >0
+    public Compte addClientCompte(@PathVariable(value = "id")Long id,@RequestBody Compte compte){ // PS : if you didnt insert the solde , will be auto 0.0 and always its >0
        try{ //check firstly if client exist
         Client client = clientRepository.findById(id).get();
         compte.setClient(client);
@@ -176,7 +176,7 @@ public class AgentPanelController {
     //    **********************************************************************************************************************
     //    *********************************************************** API Delete Client Compte *********************************
 
-    @DeleteMapping(value = "/comptes/{id}/delete") //works
+    @DeleteMapping(value = "/comptes/{id}/supprimer") //works
     public ResponseEntity<String> deleteClientCompte(@PathVariable(value = "id") String numeroCompte){
 
         Agent agent = agentRepository.findById(1L).get();
@@ -184,7 +184,7 @@ public class AgentPanelController {
             // verifier si le compte est de meme agence que l'agent
             Compte compte = compteRepository.findByClient_Agent_AgenceAndNumeroCompte(agent.getAgence(), numeroCompte).get();
             compteRepository.delete(compte);
-            return new ResponseEntity<>("Client est supprime avec succes." , HttpStatus.OK);
+            return new ResponseEntity<>("Client est supprimer avec succes." , HttpStatus.OK);
         } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le compte avec le numero = " + numeroCompte + " est introuvable.");
         }
@@ -192,8 +192,8 @@ public class AgentPanelController {
     //    **********************************************************************************************************************
     //    *********************************************************** API modify Client Compte *********************************
 
-        @PutMapping(value = "/comptes/{id}/modify")
-    public Serializable modifyClientCompte(@PathVariable(value = "id") String numeroCompte ,@RequestBody Compte compte) {
+        @PutMapping(value = "/comptes/{id}/modifer")
+    public Compte modifyClientCompte(@PathVariable(value = "id") String numeroCompte ,@RequestBody Compte compte) {
             try {
             Compte compteToModify = compteRepository.findById(numeroCompte).get();
             if (compte.getIntitule() != null)
