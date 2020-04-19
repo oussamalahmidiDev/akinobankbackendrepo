@@ -83,7 +83,7 @@ public class AdminPanelController {
         // generation du lien de confirmation et envoie par mail
         String confirmationURL = rootURL + "/confirm?token=" + user.getVerificationToken();
 //        mailService.sendVerificationMail(user, confirmationURL);
-        mailService.sendVerificationMailViaMG(user, confirmationURL);
+        mailService.sendVerificationMailViaMG(user);
 
 
         return "redirect:/admin/users";
