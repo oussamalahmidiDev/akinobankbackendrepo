@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -51,13 +52,11 @@ public class AgentPanelController {
 //    ************************************************* API Agent profile ************************************************************
 
     @GetMapping(value = "/profile/{id}") // return Agent by id
-    public User getAgent(@PathVariable(value = "id")Long id) throws NoSuchElementException{
-        if(agentRepository.findById(id).isPresent()) { // if u use try here, will return error 500 internal server
-//        try{
+    public User getAgent(@PathVariable(value = "id")Long id) throws EntityNotFoundException {
+        try{
             return agentRepository.getOne(id).getUser();
         }
-//        catch (NoSuchElementException e){
-            else{
+        catch (EntityNotFoundException e){
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client avec id = " + id + " est introuvable.");}
 
     }
