@@ -51,6 +51,7 @@ public class Compte implements Serializable {
     private Date dateUpdate;
 
 //    @Size(min = 8 ,max = 8)
+    @JsonIgnore
     private int codeSecret;
 
     @ManyToOne

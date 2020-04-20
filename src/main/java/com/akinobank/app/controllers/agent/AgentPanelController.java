@@ -7,6 +7,7 @@ import com.akinobank.app.services.MailService;
 import com.akinobank.app.services.MailServiceV2;
 import com.akinobank.app.services.TESTos;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.http.HttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.EmptyStackException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -83,7 +85,7 @@ public class AgentPanelController {
 
 
     //    ************************************************************************************************************************
-    //    ************************************************* API Show All clients ******************************************************
+    //    ************************************************* API Get All Clients **************************************************
 
 
     @GetMapping(value = "/clients") //show all clients , works
@@ -92,8 +94,21 @@ public class AgentPanelController {
         return userRepository.findAllByRole(Role.CLIENT);
     }
 
-    //    ******************************************************************************************************************
-    //    ***************************************************** API ADD Client **********************************************
+    //    ************************************************************************************************************************
+    //    ************************************************* API Get One Client ***************************************************
+
+    @GetMapping(value="/clients/{id}")
+    public User getOneClient(@PathVariable(value = "id")Long id) throws EntityNotFoundException{
+        try{
+            return userRepository.findUserByRoleAndId(Role.CLIENT,id);
+        }catch (NoSuchElementException |EntityNotFoundException e){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client avec id = " + id + " est introuvable")  ;
+        }
+
+    }
+
+    //    **************************************************************************************************************************
+    //    ***************************************************** API ADD Client *****************************************************
 
 
     @PostMapping("/clients/ajouter") //add new client , works
@@ -201,7 +216,7 @@ public class AgentPanelController {
             // verifier si le compte est de meme agence que l'agent
             Compte compte = compteRepository.findByClient_Agent_AgenceAndNumeroCompte(agent.getAgence(), numeroCompte).get();
             compteRepository.delete(compte);
-            return new ResponseEntity<>("Client est supprimer avec succes." , HttpStatus.OK);
+            return new ResponseEntity<>("Compte est supprimer avec succes." , HttpStatus.OK);
         } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le compte avec le numero = " + numeroCompte + " est introuvable.");
         }
