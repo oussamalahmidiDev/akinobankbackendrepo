@@ -79,7 +79,7 @@ public class MailService  {
             messageHelper.setText(content, true);
             // Send message
             Transport.send(message);
-            logger.info("Compte details sent successfully.");
+            logger.info("Compte details sent to " + receiver.getEmail() + " successfully.");
         } catch (MessagingException e) {
             e.printStackTrace();
         }

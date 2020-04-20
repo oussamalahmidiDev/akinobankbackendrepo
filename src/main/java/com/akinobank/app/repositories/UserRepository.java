@@ -13,13 +13,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     User findUserByRoleAndId(Role role , Long id);
 
-    List<User> findUserByRoleAndNom(Role role , String nom);
-
     User deleteByIdAndRole(Long id , Role role);
 
 //    User findUserByNomOrPrenom(String nom);
 
     User findOneByVerificationToken(String token);
 
-    List<User> findUserByRoleAndNom(Role client, String clientName);
+    List<User> findUserByRoleAndNom(Role role, String clientName);
 }
