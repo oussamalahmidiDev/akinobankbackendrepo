@@ -4,23 +4,22 @@ import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.models.*;
 import com.akinobank.app.repositories.*;
 import com.akinobank.app.services.MailService;
+import com.akinobank.app.services.MailServiceV2;
 import com.akinobank.app.services.TESTos;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.mail.MessagingException;
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -28,6 +27,7 @@ import java.util.NoSuchElementException;
 @RestController
 @RequestMapping("/agent")
 @Transactional
+@CrossOrigin(value = "*")
 public class AgentPanelController {
 
     @Autowired
@@ -47,8 +47,13 @@ public class AgentPanelController {
 
     @Autowired
     private MailService mailService;
+
     @Autowired
     private TESTos tesTos;
+
+    @Autowired
+            private MailServiceV2 mailServiceV2;
+
 
     Logger logger = LoggerFactory.getLogger(AgentPanelController.class);
 
@@ -100,13 +105,14 @@ public class AgentPanelController {
         userRepository.save(user); // add user in table
         Client client = Client.builder().agent(agent).agence(agent.getAgence()).user(user).build();
         clientRepository.save(client); // add client in table
-        mailService.sendVerificationMailViaMG(user);
-        tesTos.sendM();
+//        mailService.sendVerificationMailViaMG(user);
+//        tesTos.sendM(user);
+            mailServiceV2.sendM(user);
         System.out.println("send to "+user.getEmail() );
 
         return user;}
-        catch (DataIntegrityViolationException | UnirestException e){
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Le mail vous avez entrée est deja existe !")  ;
+        catch (DataIntegrityViolationException e){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "L'email vous avez entrée est deja existe !")  ;
         }
     }
 

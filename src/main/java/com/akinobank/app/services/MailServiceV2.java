@@ -35,7 +35,7 @@ public class MailServiceV2 {
     @Value("${spring.mail.host}")
     private String HOST;
 
-    @Value("${spring.mail.port  }")
+    @Value("${spring.mail.port}")
     private String PORT;
 
     @Value("${spring.mail.properties.mail.smtp.auth}")
