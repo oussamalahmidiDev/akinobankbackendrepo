@@ -1,10 +1,7 @@
 package com.akinobank.app.models;
 import com.akinobank.app.enumerations.CompteStatus;
 import com.akinobank.app.enumerations.Role;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -42,6 +39,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
 
     private boolean emailConfirmed ;
 
+    @JsonIgnore
     private String verificationToken;
 
     private String numeroTelephone;
@@ -55,17 +53,14 @@ public class User implements UserDetails { // We use interface UserDetials inste
 
     @OneToOne(mappedBy = "user")
 //    @JsonIgnore
-    @JsonIgnoreProperties("user") // choose one of the column you dont want it to show as Json output , a solution for infinity of recursion
     private Admin admin;
 
-    @OneToOne(mappedBy = "user")
-    @JsonIgnore
-//    @JsonIgnoreProperties({"agence","admin","user"})
+    @OneToOne(mappedBy = "user", fetch = FetchType.EAGER)
+    @JsonIgnoreProperties({"user"})
     private Agent agent;
 
     @OneToOne(mappedBy = "user")
 //    @JsonIgnore
-    @JsonIgnoreProperties({"agent", "agence","user"})
     private Client client;
 
     @CreationTimestamp
@@ -83,6 +78,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
     }
 
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
 
         List<GrantedAuthority> list = new ArrayList<GrantedAuthority>();
@@ -98,26 +94,31 @@ public class User implements UserDetails { // We use interface UserDetials inste
     }
 
     @Override
+    @JsonIgnore
     public String getUsername() {
         return email;
     }
 
     @Override
+    @JsonIgnore
     public boolean isAccountNonExpired() {
         return true;
     }
 
     @Override
+    @JsonIgnore
     public boolean isAccountNonLocked() {
         return true;
     }
 
     @Override
+    @JsonIgnore
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
     @Override
+    @JsonIgnore
     public boolean isEnabled() {
         return true;
     }

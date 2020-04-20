@@ -1,7 +1,7 @@
 package com.akinobank.app.models;
 
 import com.akinobank.app.enumerations.CompteStatus;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
@@ -25,12 +25,14 @@ import java.util.Random;
 @Getter
 @Setter
 @Builder
-public class Compte implements Serializable {
+@JsonPropertyOrder({ "numeroCompte" })
+public class Compte  {
 
     @Id
     @GeneratedValue(generator = "cn-generator")
     @GenericGenerator(name = "cn-generator", strategy = "com.akinobank.app.utilities.CreditCardNumberGenerator")
     // This CC number generated using Luhn Algorithm found in CreditCardNumberGenerator
+    @JsonIgnore
     private String numeroCompte;
 
 //    @Positive
@@ -57,7 +59,7 @@ public class Compte implements Serializable {
     @ManyToOne
     @JoinColumn(name = "id_client") // pour la relation : chaque compte a un seul client
 //    @NotBlank(message = "le client est obligatoire")
-    @JsonIgnore
+    @JsonIgnoreProperties({"comptes", "notifications"})
     private Client client;
 
     @OneToMany(mappedBy = "compte",fetch = FetchType.LAZY)
@@ -76,7 +78,11 @@ public class Compte implements Serializable {
         codeSecret = new Random().nextInt(90000000) + 10000000;
     }
 
-    //just for test
+    @JsonProperty("numeroCompte")
+    public String getNumeroCompteHidden() {
+        // we will add condition on roles on this getter, for the moment let's hide the field on everyone.
+        return new String(new char[8]).replace('\0', '*').concat(numeroCompte.substring(12));
+    }
 
     public Compte(String intitule, Client client,double solde) {
 

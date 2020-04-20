@@ -1,5 +1,6 @@
 package com.akinobank.app.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
 import javax.persistence.*;
@@ -28,15 +29,18 @@ public class Client implements Serializable {
     @ManyToOne
     @JoinColumn(name = "id_agent") // pour la relation : chaque client a un seul agent
 //    @NotNull
+    @JsonIgnoreProperties({"clients", "agence", "admin",})
     private Agent agent;
 
     @ManyToOne
     @JoinColumn(name = "id_agence") // pour la relation : chaque client a un seul agent
 //    @NotNull
+    @JsonIgnoreProperties({"clients"})
     private Agence agence;
 
     @OneToMany(mappedBy = "client",fetch = FetchType.LAZY) // pour la relation : chaque client a pls comptes
 //    @NotNull
+    @JsonIgnoreProperties({"client"})
     private Collection<Compte> comptes;
 
     @OneToMany(mappedBy = "client",fetch = FetchType.LAZY)  // pour la relation : chaque client a 0 ou pls notification
@@ -44,6 +48,7 @@ public class Client implements Serializable {
 
     @OneToOne // pour la relation : un admin a un compte user pour la auth
     @JoinColumn(name = "id_user")
+    @JsonIgnoreProperties({"client", "authorities", "username"})
     private User user;
 
     //Just for test

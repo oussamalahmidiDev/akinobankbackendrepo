@@ -1,6 +1,7 @@
 package com.akinobank.app.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -44,6 +45,11 @@ public class Agence implements Serializable {
     @OneToMany(mappedBy = "agence", fetch = FetchType.LAZY)// pour la relation : chaque agence a pls agents
     @JsonIgnore
     private Collection<Agent> agents;
+
+    @OneToMany(mappedBy = "agence", fetch = FetchType.LAZY)// pour la relation : chaque agence a pls agents
+//    @JsonIgnore
+    @JsonIgnoreProperties({"agent","agence"})
+    private Collection<Client> clients;
 
 
     //Just for test

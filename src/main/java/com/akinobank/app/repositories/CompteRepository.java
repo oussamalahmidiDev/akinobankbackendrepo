@@ -24,7 +24,7 @@ public interface CompteRepository  extends JpaRepository<Compte, String> {
 
     Collection<Compte> findAllByClientIdAndNumeroCompte(Long id,String numero_compte);
 
-    Optional<Compte> findByClient_Agent_AgenceAndNumeroCompte(Agence agence, String id);
+//    Optional<Compte> findByClient_Agent_AgenceAndNumeroCompte(Agence agence, String id);
 //    Page<Compte> findAllByClientId(Long id, Pageable pageable);
 
 

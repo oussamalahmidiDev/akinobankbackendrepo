@@ -8,16 +8,20 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.Serializable;
+import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
 import java.util.*;
 
 @RestController
 @RequestMapping("/agent")
+@Transactional
+@CrossOrigin(value = "*")
 public class AgentPanelController {
 
     Logger logger = LoggerFactory.getLogger(AgentPanelController.class);
@@ -45,7 +49,7 @@ public class AgentPanelController {
     @GetMapping(value = "/profile/{id}") // return Agent by id
     public User getAgent(@PathVariable(value = "id")Long id){
         try {
-            return agentRepository.getOne(id).getUser();
+            return agentRepository.findById(id).get().getUser();
         } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "L'agent avec id = " + id + " est introuvable.");
         }
@@ -57,13 +61,12 @@ public class AgentPanelController {
     @GetMapping(value = "/agence")
     public Agence getAgence() {
         Long id = 2L; //just a test , we will use the token to get agent id
-        Agent agent = agentRepository.findById(id).get();
-        return agent.getAgence();
+        return agentRepository.findById(id).get().getAgence();
     }
 
 
     //    ************************************************************************************************************************
-    //    ************************************************* API Show All clients ******************************************************
+    //    ************************************************* API Get All clients ******************************************************
 
 
     @GetMapping(value = "/clients") //show all clients , works
@@ -71,24 +74,51 @@ public class AgentPanelController {
         return userRepository.findAllByRole(Role.CLIENT);
     }
 
+    //    ************************************************************************************************************************
+    //    ************************************************* API Get One Client ***************************************************
+
+    @GetMapping(value="/clients/{id}")
+    public Client getOneClient(@PathVariable(value = "id")Long id) {
+        try{
+            return clientRepository.findById(id).get();
+        } catch (NoSuchElementException | EntityNotFoundException e){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client avec id = " + id + " est introuvable")  ;
+        }
+    }
+
+    //    ************************************************************************************************************************
+    //    ************************************************* API Search for Client by Name ***************************************************
+
+    @GetMapping(value="/clients/rechercher/{nom}")
+    public List<User> getClientByName(@PathVariable(value = "nom") String clientName) {
+        try{
+            return userRepository.findUserByRoleAndNom(Role.CLIENT, clientName);
+        } catch (NoSuchElementException | EntityNotFoundException e){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client avec nom = " + clientName + " est introuvable")  ;
+        }
+    }
+
     //    ******************************************************************************************************************
     //    ***************************************************** API ADD Client **********************************************
 
 
     @PostMapping("/clients/ajouter") //add new client , works
-    public User addClient(@RequestBody  User user) throws UnirestException {
-        user.setRole(Role.CLIENT);
-        //find first the client
+    public User addClient(@RequestBody  User user) {
+        try {
+            user.setRole(Role.CLIENT);
+            //find first the client
 
-        Agent agent = agentRepository.findById(1L).get();  // i choose id 1 just for test
+            Agent agent = agentRepository.findById(1L).get();  // i choose id 1 just for test
 
-        userRepository.save(user); // add user in table
+            userRepository.save(user); // add user in table
 
-        Client client = Client.builder().agent(agent).agence(agent.getAgence()).user(user).build();
-        clientRepository.save(client); // add client in table
-
-        mailService.sendVerificationMailViaMG(user);
-        return user;
+            Client client = Client.builder().agent(agent).agence(agent.getAgence()).user(user).build();
+            clientRepository.save(client); // add client in table
+            mailService.sendVerificationMail(user);
+            return user;
+        } catch (DataIntegrityViolationException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "L'email que vous avez entré est déjà utilisé.")  ;
+        }
     }
 
     //    *********************************************************************************************************************
@@ -99,8 +129,10 @@ public class AgentPanelController {
     public ResponseEntity<String> deleteClient(@PathVariable(value = "id") Long id){
         try {
             Client client = clientRepository.findById(id).get();
-            clientRepository.delete(client);
             userRepository.delete(client.getUser());
+            clientRepository.delete(client);
+            compteRepository.deleteAll(client.getComptes());
+
             return new ResponseEntity<>("Client est supprime avec succes." ,HttpStatus.OK);
         } catch (NoSuchElementException e){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client avec id = " + id + " est introuvable.");
@@ -128,7 +160,7 @@ public class AgentPanelController {
             // renvoyer le code de confirmation pr verifier le nouveau email
             if (user.getEmail() != null && !user.getEmail().equals(userToModify.getEmail())) {
                 userToModify.setEmailConfirmed(false);
-                mailService.sendVerificationMailViaMG(user);
+                mailService.sendVerificationMail(user);
             }
             return userRepository.save(userToModify);
         }
@@ -154,10 +186,12 @@ public class AgentPanelController {
 
     @PostMapping(value = "/clients/{id}/comptes/ajouter") // works
     public Compte addClientCompte(@PathVariable(value = "id")Long id,@RequestBody Compte compte){ // PS : if you didnt insert the solde , will be auto 0.0 and always its >0
-        try {
+        try { //check firstly if client exist
             Client client = clientRepository.findById(id).get();
             compte.setClient(client);
-            return compteRepository.save(compte);
+            compte =  compteRepository.save(compte);
+            mailService.sendCompteDetails(client.getUser(), compte);
+            return compte;
         } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client avec id = " + id + " est introuvable.");
         }
@@ -173,7 +207,7 @@ public class AgentPanelController {
             // verifier si le compte est de meme agence que l'agent
             Compte compte = compteRepository.findByClient_Agent_AgenceAndNumeroCompte(agent.getAgence(), numeroCompte).get();
             compteRepository.delete(compte);
-            return new ResponseEntity<>("Client est supprime avec succes." , HttpStatus.OK);
+            return new ResponseEntity<>("Le compte est supprime avec succes." , HttpStatus.OK);
         } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le compte avec le numero = " + numeroCompte + " est introuvable.");
         }
@@ -182,7 +216,7 @@ public class AgentPanelController {
     //    *********************************************************** API modify Client Compte *********************************
 
     @PutMapping(value = "/comptes/{id}/modifier")
-    public Serializable modifyClientCompte(@PathVariable(value = "id") String numeroCompte ,@RequestBody Compte compte) {
+    public Compte modifyClientCompte(@PathVariable(value = "id") String numeroCompte ,@RequestBody Compte compte) {
         try {
             Compte compteToModify = compteRepository.findById(numeroCompte).get();
             if (compte.getIntitule() != null)

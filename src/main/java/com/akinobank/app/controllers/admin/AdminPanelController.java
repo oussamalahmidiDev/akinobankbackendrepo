@@ -59,7 +59,7 @@ public class AdminPanelController {
         return ADMIN_VIEWS_PATH + "forms/user.add";
     }
     @PostMapping("users/ajouter")
-    public String addUser(@ModelAttribute User user, HttpServletRequest request) throws UnirestException {
+    public String addUser(@ModelAttribute User user, HttpServletRequest request) {
 //        if (user.getAgent() )
         if (user.getRole().name().equals("ADMIN")) {
 //            System.out.println("SAVING ADMIN : " + user.toString());
@@ -78,8 +78,7 @@ public class AdminPanelController {
             Admin admin = adminRepository.getOne((long) 1);
             agentRepository.save(Agent.builder().user(user).admin(admin).agence(chosenAgence).build());
         }
-        mailService.sendVerificationMailViaMG(user);
-
+        mailService.sendVerificationMail(user);
 
         return "redirect:/admin/users";
     }
@@ -92,7 +91,6 @@ public class AdminPanelController {
 
     @PostMapping("users/update/{id}")
     public String updateUser(@ModelAttribute User user) {
-//        System.out.println(user.toString());
         User userToUpdate = userRepository.getOne(user.getId());
         userToUpdate.setEmail(user.getEmail());
         userToUpdate.setNom(user.getNom());

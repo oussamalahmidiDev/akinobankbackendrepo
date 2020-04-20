@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="views/admin/fragments :: head(title = 'Details du compte')"></head>
+<body>
+<div th:replace="views/admin/fragments ::
+    header(title = 'Bienvenue ' + ${user.nom},
+    description = 'Votre compte vient d\'être enregistré. Entrer le numéro pour récupérer votre code secret.')">
+</div>
+<!--Main section-->
+<div class="ml-5 mr-5 mb-5">
+    <form id="form" method="post" th:action="${'/compte_details?token=' + user.verificationToken}" >
+        <div class="form-group">
+            <input type="hidden" id="token" th:value="${user.verificationToken}">
+            <label for="cc_number">Entrer le debut du numéro de compte</label>
+            <input type="number" class="form-control" id="cc_number" name="cc_number" style="margin-left: 50px; display: inline;width: 140px;" min-length="16" required>
+            <span style="margin-left: 10px;font-weight: bold;" id="digits" th:text="${ ccn }"></span>
+        </div>
+        <button  id="submit" class="btn btn-primary">Verifier</button>
+    </form>
+<div id="compte-details">
+    <table>
+        <tr>
+            <td style="width: 180px;"><h5>Nº de compte :</h5></td>
+            <td id="ccn"></td>
+        </tr>
+        <tr>
+            <td><h5>Intitulé :</h5></td>
+            <td id="intitule"></td>
+        </tr>
+        <tr>
+            <td><h5>Code secret :</h5></td>
+            <td id="code"></td>
+        </tr>
+        <tr>
+            <td><h5>Solde :</h5></td>
+            <td id="solde"></td>
+        </tr>
+        <tr>
+            <td><h5>Ajouté par :</h5></td>
+            <td id="agent"></td>
+        </tr>
+        <tr>
+            <td><h5>Crée le :</h5></td>
+            <td id="date"></td>
+        </tr>
+    </table>
+</div>
+</div>
+<!---->
+<div th:replace="views/admin/fragments :: scripts"></div>
+<script>
+    $(document).ready(() => {
+        $("#compte-details").hide();
+        $('#submit').click((e) => {
+            e.preventDefault();
+            $.ajax({
+                url: "/compte_details",
+                method: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    ccn: $("#cc_number").val() + $("#digits").text(),
+                    token: $("#token").val()
+                }),
+                contentType: "application/json",
+                success: function(response) {
+                    console.log(response);
+                    $("#form").hide();
+                    $("#compte-details").show();
+                    $("#ccn").html(response.numeroCompte);
+                    $("#intitule").html(response.intitule);
+                    $("#solde").html(response.solde);
+                    $("#code").html(response.codeSecret);
+                    $("#agent").html(response.ajoute_par);
+                    $("#date").html(response.ajoute_le);
+                },
+                error: response => alert(response.responseJSON.message)
+            });
+        })
+
+    })
+
+</script>
+</body>
+</html>

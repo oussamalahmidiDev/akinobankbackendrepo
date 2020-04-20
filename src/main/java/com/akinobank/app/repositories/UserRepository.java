@@ -20,4 +20,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 //    User findUserByNomOrPrenom(String nom);
 
     User findOneByVerificationToken(String token);
+
+    List<User> findUserByRoleAndNom(Role client, String clientName);
 }
