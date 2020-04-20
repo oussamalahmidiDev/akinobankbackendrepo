@@ -7,7 +7,6 @@ import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.CompteRepository;
 import com.akinobank.app.repositories.UserRepository;
 import com.akinobank.app.services.MailService;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,10 +64,10 @@ public class GenericController {
                 return "redirect:/compte_details?ref=email&token=" + token + "&ccn=" + ccn;
             }
             else if (action.equals("confirm")) {
+                if (userToVerify.isEmailConfirmed() && userToVerify.getPassword() != "")
+                    return "redirect:/";
+
                 userToVerify.setEmailConfirmed(true);
-                // generation d'un nouveau token pour revoker l'ancien token
-                token = (UUID.randomUUID().toString() + UUID.randomUUID().toString()).replace("-", "");
-                userToVerify.setVerificationToken(token);
                 userRepository.save(userToVerify);
                 return "redirect:/set_password?token=" + token;
             } else {
