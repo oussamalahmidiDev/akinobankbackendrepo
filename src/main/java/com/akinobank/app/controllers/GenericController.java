@@ -57,10 +57,6 @@ public class GenericController {
                 if (ccn == null || ccn == "")
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
-                token = (UUID.randomUUID().toString() + UUID.randomUUID().toString()).replace("-", "");
-                userToVerify.setVerificationToken(token);
-                userRepository.save(userToVerify);
-
                 return "redirect:/compte_details?ref=email&token=" + token + "&ccn=" + ccn;
             }
             else if (action.equals("confirm")) {

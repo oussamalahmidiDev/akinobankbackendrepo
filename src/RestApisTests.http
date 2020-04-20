@@ -1,0 +1,27 @@
+
+###
+POST http://localhost:8080/agent/clients/ajouter
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+    "nom": "Bouzid",
+    "prenom": "Sara",
+    "email": "lahmidioussama14@gmail.com"
+}
+
+###
+
+POST http://localhost:8080/agent/clients/7/comptes/ajouter/
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+    "intitule": "M. DAOULAT KHALIL",
+    "solde": 500
+}
+
+###
+
+
+

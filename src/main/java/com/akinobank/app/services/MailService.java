@@ -98,6 +98,7 @@ public class MailService  {
 
             Context context = new Context();
             context.setVariable("url", url);
+            context.setVariable("receiver", receiver);
             String content = templateEngine.process("mails/confirm", context);
             messageHelper.setText(content, true);
             // Send message

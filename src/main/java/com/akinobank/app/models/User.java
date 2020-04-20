@@ -1,9 +1,11 @@
 package com.akinobank.app.models;
 import com.akinobank.app.enumerations.CompteStatus;
 import com.akinobank.app.enumerations.Role;
+import com.akinobank.app.utilities.VerificationTokenGenerator;
 import com.fasterxml.jackson.annotation.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -39,6 +41,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
 
     private boolean emailConfirmed ;
 
+
     @JsonIgnore
     private String verificationToken;
 
@@ -73,8 +76,8 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @PrePersist
     void beforeInsert() {
         System.out.println("SETTING DEFAULT VALUES FOR USER");
-        verificationToken = (UUID.randomUUID().toString() + UUID.randomUUID().toString()).replace("-", "");
         emailConfirmed = false;
+        verificationToken = VerificationTokenGenerator.generateVerificationToken();
     }
 
     @Override
