@@ -111,7 +111,7 @@ public class AgentPanelController {
     //    ************************************************* API Search for Client by Name ***************************************************
 
     @GetMapping(value="/clients/recherche/{nom}")
-    public User getClientByName(@PathVariable(value = "nom") String clientName) throws EntityNotFoundException{
+    public List<User> getClientByName(@PathVariable(value = "nom") String clientName) throws EntityNotFoundException{
         try{
             return userRepository.findUserByRoleAndNom(Role.CLIENT,clientName);
         }catch (NoSuchElementException |EntityNotFoundException e){
