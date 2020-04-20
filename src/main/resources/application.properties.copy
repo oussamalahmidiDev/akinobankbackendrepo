@@ -38,3 +38,20 @@ mail.from = team@akinobank.com
 # Mailgun settings
 mailgun.domain = sandbox94174dabe35f4036913a55661ad86045.mailgun.org
 mailgun.apikey = b2e8a94d913582cdd80ea176ec427f6f-915161b7-ea0ae542
+
+
+#********************  Mail settings ********************************
+
+spring.mail.host = 	smtp.gmail.com
+spring.mail.port = 465
+spring.mail.username = akinoobank@gmail.com
+spring.mail.password = vapquizftwplekiw
+spring.mail.properties.mail.smtp.auth = true
+spring.mail.properties.mail.smtp.starttls.enable = false
+spring.mail.properties.mail.smtp.ssl.enable = true
+spring.mail.defaultEncoding = UTF-8
+
+#********************************************************************
+
+
+
