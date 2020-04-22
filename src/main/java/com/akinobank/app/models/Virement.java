@@ -1,5 +1,7 @@
 package com.akinobank.app.models;
 
+import com.akinobank.app.enumerations.CompteStatus;
+import com.akinobank.app.enumerations.VirementStatus;
 import com.sun.istack.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,6 +19,7 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Random;
 import java.util.UUID;
 
 @Entity // pour la générer du table User
@@ -36,8 +39,7 @@ public class Virement implements Serializable {
     private String notes;
 
     @NotNull
-    @Size(min = 4,max=8)
-    private String codeVerification; // pour vérifier la transaction avant d'envoyer
+    private int codeVerification; // pour vérifier la transaction avant d'envoyer
 
     @NotNull
     @Positive
@@ -45,6 +47,17 @@ public class Virement implements Serializable {
 
     @CreationTimestamp
     private Date dateDeVirement;
+
+    @Enumerated(EnumType.STRING)
+    private VirementStatus statut;
+
+    // triggered at begining of transaction : generate default values for Virement
+    @PrePersist
+    void beforeInsert() {
+        System.out.println("SETTING DEFAULT VALUES FOR VIREMENT");
+        statut = VirementStatus.UNCOFIRMED;
+        codeVerification = new Random().nextInt(90000000) + 10000000;
+    }
 
 
     @ManyToOne
