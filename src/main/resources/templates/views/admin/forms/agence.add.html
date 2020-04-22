@@ -16,7 +16,11 @@
         </div>
         <div class="form-group">
             <label for="ville">Ville de L'agence</label>
-            <input type="text" class="form-control" id="ville" th:field="*{ville}" required>
+            <select class="form-control" id="ville" th:field="*{ville.id}">
+                <option th:each="ville: ${villes}" th:value="${ville.id}" th:text="${ville.nom}">
+                </option>
+            </select>
+            <!-- <input type="text" class="form-control" id="ville" th:field="*{ville}" required> -->
         </div>
 
         <button type="submit" class="btn btn-primary">Enregistrer</button>

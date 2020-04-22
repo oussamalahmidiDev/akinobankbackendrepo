@@ -39,7 +39,7 @@ public class Agent  {
 //    @JsonIgnore
     private Agence agence;
 
-    @OneToMany(mappedBy = "agent", fetch = FetchType.LAZY)// pour la relation : chaque agent a pls clients
+    @OneToMany(mappedBy = "agent", fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})// pour la relation : chaque agent a pls clients
     @JsonIgnoreProperties({"agent","agence"})
 //    @JsonIgnore
     private Collection<Client> clients;

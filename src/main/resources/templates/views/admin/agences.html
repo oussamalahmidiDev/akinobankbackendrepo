@@ -28,7 +28,7 @@
             <th scope="row" >
                 <div th:text="${agence.libelleAgence}"></div>
             </th>
-            <td th:text="${agence.ville}">Kech</td>
+            <td th:text="${agence.ville.nom}">Kech</td>
             <td >
                 <div th:if="${ #lists.isEmpty(agence.agents)}">Aucun agent affecté.</div>
                 <div th:each="agent: ${agence.agents}"  th:if="${not #lists.isEmpty(agence.agents)}">

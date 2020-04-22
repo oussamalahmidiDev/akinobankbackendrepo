@@ -54,15 +54,15 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @Enumerated(EnumType.STRING)
     private Role role ;
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user",  cascade={CascadeType.REMOVE})
 //    @JsonIgnore
     private Admin admin;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.EAGER)
+    @OneToOne(mappedBy = "user", fetch = FetchType.EAGER,  cascade={CascadeType.REMOVE})
     @JsonIgnoreProperties({"user"})
     private Agent agent;
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user",  cascade={CascadeType.REMOVE})
 //    @JsonIgnore
     private Client client;
 

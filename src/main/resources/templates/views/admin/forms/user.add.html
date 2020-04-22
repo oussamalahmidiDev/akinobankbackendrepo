@@ -32,7 +32,7 @@
         <div class="form-group" id="agences-group" th:if="${not #lists.isEmpty(agences)}">
             <label for="agence">Affecter à une agence</label>
             <select class="form-control" id="agence" th:field="*{agent.agence}">
-                <option th:each="agence: ${agences}" th:value="${agence.id}" th:text="${agence.ville + ' / ' + agence.libelleAgence}"></option>
+                <option th:each="agence: ${agences}" th:value="${agence.id}" th:text="${agence.ville.nom + ' / ' + agence.libelleAgence}"></option>
             </select>
         </div>
         <button type="submit" class="btn btn-primary">Enregistrer</button>

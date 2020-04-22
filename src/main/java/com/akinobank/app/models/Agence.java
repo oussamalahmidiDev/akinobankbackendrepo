@@ -35,26 +35,30 @@ public class Agence implements Serializable {
     private Date dateUpdate;
 
     @NotNull
-    private String ville , libelleAgence; // libelleAgenece : nom agence
+    private String  libelleAgence; // libelleAgenece : nom agence
+
+    @ManyToOne
+    @JsonIgnoreProperties({"agences"})
+    private Ville ville;
 
     @ManyToOne
     @JoinColumn(name = "id_admin", nullable = false) // pour la relation : chaque agence a un seul admin
     @JsonIgnore
     private Admin admin;
 
-    @OneToMany(mappedBy = "agence", fetch = FetchType.LAZY)// pour la relation : chaque agence a pls agents
+    @OneToMany(mappedBy = "agence", fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})// pour la relation : chaque agence a pls agents
     @JsonIgnore
     private Collection<Agent> agents;
 
-    @OneToMany(mappedBy = "agence", fetch = FetchType.LAZY)// pour la relation : chaque agence a pls agents
+    @OneToMany(mappedBy = "agence", fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})// pour la relation : chaque agence a pls agents
 //    @JsonIgnore
     @JsonIgnoreProperties({"agent","agence"})
     private Collection<Client> clients;
 
 
     //Just for test
-    public Agence(String ville, String libelle, Admin admin) {
-        this.ville=ville;
+    public Agence(Ville ville, String libelle, Admin admin) {
+        this.ville = ville;
         this.libelleAgence=libelle;
         this.admin=admin;
     }

@@ -12,6 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import com.akinobank.app.enumerations.Role;
+
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -35,7 +40,12 @@ public class AdminPanelController {
     private AgenceRepository agenceRepository;
 
     @Autowired
+    private VilleRepository villeRepository;
+
+    @Autowired
     private MailService mailService;
+
+    Logger logger = LoggerFactory.getLogger(AdminPanelController.class);
 
 
     final String ADMIN_VIEWS_PATH = "views/admin/";
@@ -48,7 +58,7 @@ public class AdminPanelController {
 
     @GetMapping("users")
     public String usersView(Model model) {
-        model.addAttribute("users", userRepository.findAllByOrderByDateDeCreationDesc());
+        model.addAttribute("users", userRepository.findAllByRoleIsNotOrderByDateDeCreationDesc(Role.CLIENT));
         return ADMIN_VIEWS_PATH + "users";
     }
 
@@ -75,7 +85,7 @@ public class AdminPanelController {
             user.setAgent(null);
             user = userRepository.save(user);
             // c juste parcequ'on n'a pas encore implemente l'auth.
-            Admin admin = adminRepository.getOne((long) 1);
+            Admin admin = adminRepository.getOne((long) 11);
             agentRepository.save(Agent.builder().user(user).admin(admin).agence(chosenAgence).build());
         }
         mailService.sendVerificationMail(user);
@@ -103,7 +113,7 @@ public class AdminPanelController {
     @PostMapping("users/delete/{id}")
     public String deleteUser(@PathVariable(value = "id") Long id) {
         User user = userRepository.getOne(id);
-        agentRepository.delete(user.getAgent());
+        // agentRepository.delete(user.getAgent());
         userRepository.delete(user);
 
         return "redirect:/admin/users";
@@ -118,17 +128,21 @@ public class AdminPanelController {
     @GetMapping("agences/ajouter")
     public String addAgenceView(Model model) {
         model.addAttribute("agence", new Agence());
+        model.addAttribute("villes", villeRepository.findAll());
         return ADMIN_VIEWS_PATH + "forms/agence.add";
     }
     @PostMapping("agences/ajouter")
     public String addAgence(@ModelAttribute Agence agence) {
-        Admin admin = adminRepository.getOne((long) 1);
-        agenceRepository.save(Agence.builder().ville(agence.getVille()).libelleAgence(agence.getLibelleAgence()).admin(admin).build());
+        Admin admin = adminRepository.getOne((long) 11);
+        agence = Agence.builder().ville(agence.getVille()).libelleAgence(agence.getLibelleAgence()).admin(admin).build();
+        agenceRepository.save(agence);
         return "redirect:/admin/agences";
     }
     @GetMapping("agences/update/{id}")
     public String updateAgenceView(Model model, @PathVariable(value = "id") Long id) {
         model.addAttribute("agence", agenceRepository.getOne(id));
+        model.addAttribute("villes", villeRepository.findAll());
+
         return ADMIN_VIEWS_PATH + "forms/agence.update";
     }
     @PostMapping("agences/update/{id}")

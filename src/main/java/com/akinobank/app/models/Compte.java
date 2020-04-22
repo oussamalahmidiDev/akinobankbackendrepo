@@ -62,10 +62,10 @@ public class Compte  {
     @JsonIgnoreProperties({"comptes", "notifications"})
     private Client client;
 
-    @OneToMany(mappedBy = "compte",fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "compte",fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})
     private Collection<Virement> virements; // pour la relation : chaque compte a 0 ou pls virement
 
-    @OneToMany(mappedBy = "compte",fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "compte",fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})
     private Collection<Recharge> recharges; //pour la relation : chaque compte a 0 ou pls recharge
 
 

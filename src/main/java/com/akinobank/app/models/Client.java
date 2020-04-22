@@ -38,12 +38,12 @@ public class Client implements Serializable {
     @JsonIgnoreProperties({"clients"})
     private Agence agence;
 
-    @OneToMany(mappedBy = "client",fetch = FetchType.LAZY) // pour la relation : chaque client a pls comptes
+    @OneToMany(mappedBy = "client",fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE}) // pour la relation : chaque client a pls comptes
 //    @NotNull
     @JsonIgnoreProperties({"client"})
     private Collection<Compte> comptes;
 
-    @OneToMany(mappedBy = "client",fetch = FetchType.LAZY)  // pour la relation : chaque client a 0 ou pls notification
+    @OneToMany(mappedBy = "client",fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})  // pour la relation : chaque client a 0 ou pls notification
     private Collection<Notification> notifications;
 
     @OneToOne // pour la relation : un admin a un compte user pour la auth
