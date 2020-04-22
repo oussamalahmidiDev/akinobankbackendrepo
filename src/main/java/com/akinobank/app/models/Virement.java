@@ -2,11 +2,10 @@ package com.akinobank.app.models;
 
 import com.akinobank.app.enumerations.CompteStatus;
 import com.akinobank.app.enumerations.VirementStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sun.istack.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -28,6 +27,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Virement implements Serializable {
 
     @Id
@@ -39,6 +39,7 @@ public class Virement implements Serializable {
     private String notes;
 
     @NotNull
+    @JsonIgnore
     private int codeVerification; // pour vérifier la transaction avant d'envoyer
 
     @NotNull
@@ -62,10 +63,12 @@ public class Virement implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "uuid_compte", nullable = false) // pour la relation : plusieur virement apprtient a un seul compte
+    @JsonIgnoreProperties({"virements", "recharges", "client"})
     private Compte compte;
 
     @OneToOne
     @JoinColumn(name = "compte_destinataire")
+    @JsonIgnoreProperties({"virements", "recharges", "client", "dateDeCreation", "dernierOperation", "intitule", "solde", })
     private Compte destCompte;  //la relation entre Virement 1,1 ---->1,1 Compte , envoyer 1 virement a un seul compte
     //a discuter
 

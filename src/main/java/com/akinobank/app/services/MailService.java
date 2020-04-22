@@ -3,6 +3,7 @@ package com.akinobank.app.services;
 import com.akinobank.app.models.Compte;
 import com.akinobank.app.models.User;
 
+import com.akinobank.app.models.Virement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,6 +110,27 @@ public class MailService  {
         }
     }
 
+    public void sendVirementCodeMail (User receiver, Virement virement) {
+        try {
+            MimeMessage message = getMimeMessage(
+                receiver.getEmail(),
+                "Code de verification de virement",
+                "Bienvenue "  + receiver.getPrenom()
+            );
+            MimeMessageHelper messageHelper = new MimeMessageHelper(message);
+
+            Context context = new Context();
+            context.setVariable("virement", virement);
+            context.setVariable("receiver", receiver);
+            String content = templateEngine.process("mails/virement", context);
+            messageHelper.setText(content, true);
+            // Send message
+            Transport.send(message);
+            logger.info("Virment Message sent successfully.");
+        } catch (MessagingException ex) {
+            ex.printStackTrace();
+        }
+    }
     private MimeMessage getMimeMessage(String to, String subject, String text) throws MessagingException {
         // Create a default MimeMessage object.
         MimeMessage message = new MimeMessage(getMailSession());
@@ -137,6 +159,7 @@ public class MailService  {
         properties.put("mail.smtp.port", PORT);
         properties.put("mail.smtp.ssl.enable", SMTP_SSL);
         properties.put("mail.smtp.auth", SMTP_AUTH);
+        properties.put("mail.mime.charset", "UTF-8");
 
         // Get the Session objec
         Session session = Session.getInstance(properties, new javax.mail.Authenticator() {

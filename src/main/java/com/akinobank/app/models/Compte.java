@@ -59,8 +59,10 @@ public class Compte  {
     @ManyToOne
     @JoinColumn(name = "id_client") // pour la relation : chaque compte a un seul client
 //    @NotBlank(message = "le client est obligatoire")
-    @JsonIgnoreProperties({"comptes", "notifications"})
+//    @JsonIgnoreProperties({"comptes", "notifications"})
+    @JsonIgnore
     private Client client;
+
 
     @OneToMany(mappedBy = "compte",fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})
     private Collection<Virement> virements; // pour la relation : chaque compte a 0 ou pls virement

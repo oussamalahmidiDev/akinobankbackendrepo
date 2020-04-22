@@ -1,10 +1,9 @@
 package com.akinobank.app.models;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -21,6 +20,7 @@ import java.util.Date;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Recharge implements Serializable {
 
     @Id // la cle prm
@@ -42,6 +42,7 @@ public class Recharge implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "uuid_compte", nullable = false) // pour la relation : chaque recharge appartient a un seul compte
+    @JsonIgnoreProperties({"recharges", "virements", "client"})
     private Compte compte;
 
 }

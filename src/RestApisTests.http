@@ -12,13 +12,13 @@ Content-Type: application/json
 
 ###
 
-POST http://localhost:8080/agent/clients/8/comptes/ajouter/
+POST http://localhost:8080/agent/clients/1/comptes/ajouter/
 Cache-Control: no-cache
 Content-Type: application/json
 
 {
-    "intitule": "M. DAOULAT KHALIL",
-    "solde": 500
+    "intitule": "Mme. SARA BOUZID",
+    "solde": 600
 }
 
 ###
@@ -28,6 +28,38 @@ GET http://localhost:8080/agent/clients/
 ###
 
 GET http://localhost:8080/agent/profile/4
+
+###
+
+GET http://localhost:8080/client/api/1/comptes
+
+###
+
+POST http://localhost:8080/client/api/recharges/create
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+    "numeroCompte": "2442365958750258",
+    "montant": 500,
+    "operateur": "orange",
+    "codeSecret": 82417748,
+    "numeroTelephone": "NMRA DIAL SAHBTI"
+}
+
+###
+
+POST http://localhost:8080/client/api/virements/create
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+    "numeroCompte": "2442365958750258",
+    "numeroCompteDest": "2226101696931450",
+    "montant": 100,
+    "notes": "WA FLOOOSSSI",
+    "codeSecret": 82417748
+}
 
 ###
 
