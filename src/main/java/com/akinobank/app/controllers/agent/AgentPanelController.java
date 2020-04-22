@@ -198,14 +198,32 @@ public class AgentPanelController {
     }
 
     //    **********************************************************************************************************************
+    //    *********************************************************** API get Client Compte by numero compte *********************************
+// just for test
+    @GetMapping(value = "/comptes/{id}") //works
+    public Compte getClientCompteByNum(@PathVariable(value = "id") String numeroCompte){
+        Agent agent = agentRepository.findById(1L).get();
+        try {
+//            String subNumero = numeroCompte.substring(8);
+            Compte compte = compteRepository.findByClient_Agent_AgenceAndNumeroCompteContaining(agent.getAgence(), numeroCompte).get();
+            return compte;
+        } catch (NoSuchElementException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le compte avec le numero = " + numeroCompte + " est introuvable.");
+        }
+    }
+    //    **********************************************************************************************************************
     //    *********************************************************** API Delete Client Compte *********************************
 
-    @DeleteMapping(value = "/comptes/{id}/delete") //works
+    @DeleteMapping(value = "/comptes/{id}/supprimer") //works
     public ResponseEntity<String> deleteClientCompte(@PathVariable(value = "id") String numeroCompte){
         Agent agent = agentRepository.findById(1L).get();
         try {
+            String subNumero = numeroCompte.substring(8);
+            System.out.println(subNumero);
+//            compteRepository.findCompteByNumeroCompteIsContaining(subNumero);
+//            System.out.println(compteRepository.findCompteByNumeroCompteIsContaining(subNumero).getSolde());
             // verifier si le compte est de meme agence que l'agent
-            Compte compte = compteRepository.findByClient_Agent_AgenceAndNumeroCompte(agent.getAgence(), numeroCompte).get();
+            Compte compte = compteRepository.findByClient_Agent_AgenceAndNumeroCompteContaining(agent.getAgence(), subNumero).get();
             compteRepository.delete(compte);
             return new ResponseEntity<>("Le compte est supprime avec succes." , HttpStatus.OK);
         } catch (NoSuchElementException e) {
@@ -218,7 +236,8 @@ public class AgentPanelController {
     @PutMapping(value = "/comptes/{id}/modifier")
     public Compte modifyClientCompte(@PathVariable(value = "id") String numeroCompte ,@RequestBody Compte compte) {
         try {
-            Compte compteToModify = compteRepository.findById(numeroCompte).get();
+//            Compte compteToModify = compteRepository.findById(numeroCompte).get();
+            Compte compteToModify = compteRepository.findByNumeroCompteContaining(numeroCompte); // just for test
             if (compte.getIntitule() != null)
                 compteToModify.setIntitule(compte.getIntitule());
             if (compte.getSolde() != 0.0)

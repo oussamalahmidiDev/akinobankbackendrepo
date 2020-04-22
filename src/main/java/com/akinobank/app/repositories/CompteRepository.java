@@ -21,6 +21,12 @@ public interface CompteRepository  extends JpaRepository<Compte, String> {
 
     Optional<Compte> findByClient_Agent_AgenceAndNumeroCompte(Agence agence, String id);
 
+    Compte findByNumeroCompteContaining(String id);
+
+    Compte findCompteByNumeroCompteIsContaining(String numeroCompte);
+
+    Optional<Compte> findByClient_Agent_AgenceAndNumeroCompteContaining(Agence agence, String id); // that s what we need because numeroCompte is hidden we saw just the last 4 numbers
+
 
     Collection<Compte> findAllByClientIdAndNumeroCompte(Long id,String numero_compte);
 
