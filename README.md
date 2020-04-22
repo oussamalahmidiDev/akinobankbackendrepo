@@ -4,3 +4,4 @@
 2. cp application.properties.copy application.properties
 3. setup database url, username, password accordingly.
 4. run SpringApplication
+5. Run **ville.sql** file in your database to fill **ville** table.
