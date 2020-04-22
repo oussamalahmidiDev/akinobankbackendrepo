@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="views/admin/fragments :: head(title = 'Erreur de serveur')"></head>
+<body>
+<div th:replace="views/admin/fragments ::
+    header(title = 'Erreur dans le serveur 500',
+    description = 'Il y a un erreur interne dans le serveur.')">
+</div>
+</body>
+</html>

@@ -60,9 +60,10 @@ public class AgentPanelController {
 
     @GetMapping(value = "/agence")
     public Agence getAgence() {
-        Long id = 2L; //just a test , we will use the token to get agent id
+        Long id = 11L; //just a test , we will use the token to get agent id
         return agentRepository.findById(id).get().getAgence();
     }
+
 
 
     //    ************************************************************************************************************************
@@ -108,7 +109,7 @@ public class AgentPanelController {
             user.setRole(Role.CLIENT);
             //find first the client
 
-            Agent agent = agentRepository.findById(1L).get();  // i choose id 1 just for test
+            Agent agent = agentRepository.findById(11L).get();  // i choose id 1 just for test
 
             userRepository.save(user); // add user in table
 
@@ -202,7 +203,7 @@ public class AgentPanelController {
 // just for test
     @GetMapping(value = "/comptes/{id}") //works
     public Compte getClientCompteByNum(@PathVariable(value = "id") String numeroCompte){
-        Agent agent = agentRepository.findById(1L).get();
+        Agent agent = agentRepository.findById(11L).get();
         try {
 //            String subNumero = numeroCompte.substring(8);
             Compte compte = compteRepository.findByClient_Agent_AgenceAndNumeroCompteContaining(agent.getAgence(), numeroCompte).get();
@@ -216,7 +217,7 @@ public class AgentPanelController {
 
     @DeleteMapping(value = "/comptes/{id}/supprimer") //works
     public ResponseEntity<String> deleteClientCompte(@PathVariable(value = "id") String numeroCompte){
-        Agent agent = agentRepository.findById(1L).get();
+        Agent agent = agentRepository.findById(11L).get();
         try {
             String subNumero = numeroCompte.substring(8);
             System.out.println(subNumero);

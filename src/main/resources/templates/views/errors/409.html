@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="views/admin/fragments :: head(title = 'Erreur de conflit')"></head>
+<body>
+<div th:replace="views/admin/fragments ::
+    header(title = 'Erreur 409',
+    description = 'les données que vous venez d\'entrer causent un conflit.')">
+</div>
+</body>
+</html>

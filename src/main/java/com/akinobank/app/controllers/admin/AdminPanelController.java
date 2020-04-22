@@ -9,6 +9,8 @@ import com.akinobank.app.repositories.*;
 import com.akinobank.app.services.MailService;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,7 @@ import com.akinobank.app.enumerations.Role;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -71,24 +74,29 @@ public class AdminPanelController {
     @PostMapping("users/ajouter")
     public String addUser(@ModelAttribute User user, HttpServletRequest request) {
 //        if (user.getAgent() )
-        if (user.getRole().name().equals("ADMIN")) {
+        try {
+            if (user.getRole().name().equals("ADMIN")) {
 //            System.out.println("SAVING ADMIN : " + user.toString());
-            // pour eviter le probleme de transaction
-            user.setAgent(null);
-            user = userRepository.save(user);
-            adminRepository.save(Admin.builder().user(user).build());
-        }
-        if (user.getRole().name().equals("AGENT")) {
+                // pour eviter le probleme de transaction
+                user.setAgent(null);
+                user = userRepository.save(user);
+                adminRepository.save(Admin.builder().user(user).build());
+            }
+            if (user.getRole().name().equals("AGENT")) {
 //            System.out.println("SAVING AGENT : " + user.toString());
-            Agence chosenAgence = user.getAgent().getAgence();
-            // pour eviter le probleme de transaction
-            user.setAgent(null);
-            user = userRepository.save(user);
-            // c juste parcequ'on n'a pas encore implemente l'auth.
-            Admin admin = adminRepository.getOne((long) 11);
-            agentRepository.save(Agent.builder().user(user).admin(admin).agence(chosenAgence).build());
+                Agence chosenAgence = user.getAgent().getAgence();
+                // pour eviter le probleme de transaction
+                user.setAgent(null);
+                user = userRepository.save(user);
+                // c juste parcequ'on n'a pas encore implemente l'auth.
+                Admin admin = adminRepository.getOne((long) 1);
+                agentRepository.save(Agent.builder().user(user).admin(admin).agence(chosenAgence).build());
+            }
+            mailService.sendVerificationMail(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Cet email existe déjà.");
         }
-        mailService.sendVerificationMail(user);
+
 
         return "redirect:/admin/users";
     }
@@ -133,7 +141,7 @@ public class AdminPanelController {
     }
     @PostMapping("agences/ajouter")
     public String addAgence(@ModelAttribute Agence agence) {
-        Admin admin = adminRepository.getOne((long) 11);
+        Admin admin = adminRepository.getOne((long) 1);
         agence = Agence.builder().ville(agence.getVille()).libelleAgence(agence.getLibelleAgence()).admin(admin).build();
         agenceRepository.save(agence);
         return "redirect:/admin/agences";

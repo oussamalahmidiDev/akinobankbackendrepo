@@ -35,7 +35,7 @@ public class Agent  {
     @ManyToOne
     @JoinColumn(name = "id_agence") // pour la relation : un agent affecter a une seule agence
     @NotNull
-    @JsonIgnoreProperties({"admin", "agents"})
+    @JsonIgnoreProperties({"admin", "agents", "clients"})
 //    @JsonIgnore
     private Agence agence;
 
