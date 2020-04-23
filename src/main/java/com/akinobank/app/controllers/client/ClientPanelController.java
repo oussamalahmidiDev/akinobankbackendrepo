@@ -193,7 +193,6 @@ public class ClientPanelController {
     public ResponseEntity<String> virementConfirmation(@PathVariable(value = "id") Long id, @RequestBody HashMap<String, Integer> request) {
         try {
             Virement virement = virementRepository.findById(id).get();
-            logger.info("Virement status : {}", virement.getStatut().name());
             // verifier si le virement est confirmé
             if (virement.getStatut().name().equals(VirementStatus.CONFIRMED.name()) || virement.getStatut().name().equals(VirementStatus.RECEIVED.name())) {
                 logger.info("Virement status : {}", virement.getStatut().name());
@@ -250,7 +249,7 @@ public class ClientPanelController {
     public ResponseEntity<String> compteBlock(@RequestBody CompteCredentialsRequest request) {
         try {
             Compte compte = compteRepository.findById(request.getNumeroCompte()).get();
-            if (compte.getStatut().name().equals(CompteStatus.BLOCKED))
+            if (compte.getStatut().name().equals(CompteStatus.BLOCKED.name()))
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Le compte est déjà bloqué.");
             if (compte.getCodeSecret() != request.getCodeSecret())
                 throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
@@ -300,8 +299,6 @@ public class ClientPanelController {
 
         } catch (NoSuchElementException | EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le virement avec le id= " + id + " est introuvable.");
-        } catch (IllegalArgumentException | NullPointerException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Les données invalides.");
         }
     }
 
