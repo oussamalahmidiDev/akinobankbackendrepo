@@ -1,7 +1,6 @@
 package com.akinobank.app.services;
 
 import com.akinobank.app.config.Storage;
-import com.akinobank.app.exceptions.FileNotFoundException;
 import com.akinobank.app.exceptions.StorageException;
 import com.akinobank.app.utilities.FilenameUtils;
 import org.slf4j.Logger;
