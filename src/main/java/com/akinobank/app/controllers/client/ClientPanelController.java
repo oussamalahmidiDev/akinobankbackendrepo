@@ -6,15 +6,23 @@ import com.akinobank.app.enumerations.VirementStatus;
 import com.akinobank.app.models.*;
 import com.akinobank.app.repositories.*;
 import com.akinobank.app.services.MailService;
+import com.akinobank.app.services.UploadService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.persistence.EntityNotFoundException;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.*;
 
 @RestController
@@ -40,6 +48,9 @@ public class ClientPanelController {
 
     @Autowired
     private MailService mailService;
+
+    @Autowired
+    private UploadService uploadService;
 
 
     //    ***************** API Client profile ********************
@@ -315,5 +326,92 @@ public class ClientPanelController {
     public void verifyCompteStatus (Compte compte) {
         if (!compte.getStatut().name().equals(CompteStatus.ACTIVE.name()))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Ce compte n'est pas actif.");
+    }
+
+    //***************************
+//    ****** API to upload avatar image *******
+
+    @PostMapping("/{id}/avatar/upload")
+    public ResponseEntity<String> uploadAvatar (@PathVariable("id") Long id, @RequestParam("image") MultipartFile image) {
+        try {
+            Client client = clientRepository.findById(id).get();
+
+            String fileName = uploadService.store(image);
+
+            // generate download link
+            String imageDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/client/api/")
+                .path(id + "/avatar")
+                .toUriString();
+
+            // check if client has already uploaded an image
+            if (client.getPhoto() != null)
+                uploadService.delete(client.getPhoto());
+
+            client.setPhoto(fileName);
+            clientRepository.save(client);
+
+
+            return new ResponseEntity<>("Image enregistrée avec succès : " + imageDownloadUri, HttpStatus.CREATED);
+        } catch (NoSuchElementException | EntityNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client est introuvable.");
+        }
+    }
+
+    //***************************
+//    ****** API to get avatar image *******
+    @GetMapping("/{id}/avatar")
+    public ResponseEntity<Resource> getAvatar (@PathVariable("id") Long id, HttpServletRequest request) {
+        try {
+            Client client = clientRepository.findById(id).get();
+
+            if (client.getPhoto() == null)
+                throw new ResponseStatusException(HttpStatus.OK, "Pas de photo définie.");
+
+            Resource resource = uploadService.get(client.getPhoto());
+
+            // setting content-type header
+            String contentType = null;
+            try {
+                // setting content-type header according to file type
+                contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
+            } catch (IOException e) {
+                System.out.println("Type indéfini.");
+            }
+            // setting content-type header to generic octet-stream
+            if(contentType == null) {
+                contentType = "application/octet-stream";
+            }
+
+            return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
+
+        } catch (NoSuchElementException | EntityNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client est introuvable.");
+        }
+    }
+
+    //***************************
+//    ****** API to get avatar image *******
+    @DeleteMapping("/{id}/avatar/delete")
+    public ResponseEntity<String> deleteAvatar (@PathVariable("id") Long id) {
+        try {
+            Client client = clientRepository.findById(id).get();
+
+            // check if client has already uploaded an image
+            if (client.getPhoto() != null)
+                uploadService.delete(client.getPhoto());
+            else
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+
+            client.setPhoto(null);
+            clientRepository.save(client);
+
+            return ResponseEntity.ok("Le fichier est supprimé avec succès.");
+        } catch (NoSuchElementException | EntityNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client est introuvable.");
+        }
     }
 }
