@@ -1,5 +1,6 @@
 package com.akinobank.app.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
@@ -44,6 +45,7 @@ public class Client implements Serializable {
     private Collection<Compte> comptes;
 
     @OneToMany(mappedBy = "client",fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})  // pour la relation : chaque client a 0 ou pls notification
+    @JsonIgnore
     private Collection<Notification> notifications;
 
     @OneToOne // pour la relation : un admin a un compte user pour la auth

@@ -65,6 +65,7 @@ public class Compte  {
 
 
     @OneToMany(mappedBy = "compte",fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})
+    @JsonIgnoreProperties({"compte"})
     private Collection<Virement> virements; // pour la relation : chaque compte a 0 ou pls virement
 
     @OneToMany(mappedBy = "compte",fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})

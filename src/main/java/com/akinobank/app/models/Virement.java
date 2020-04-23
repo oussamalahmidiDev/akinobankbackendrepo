@@ -31,10 +31,9 @@ import java.util.UUID;
 public class Virement implements Serializable {
 
     @Id
-    @GeneratedValue(generator = "hibernate-uuid")
-    @GenericGenerator(name = "hibernate-uuid", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_virement", unique = true)
-    private String id ;
+    private Long id ;
 
     private String notes;
 
@@ -68,7 +67,7 @@ public class Virement implements Serializable {
 
     @OneToOne
     @JoinColumn(name = "compte_destinataire")
-    @JsonIgnoreProperties({"virements", "recharges", "client", "dateDeCreation", "dernierOperation", "intitule", "solde", })
+    @JsonIgnoreProperties({"virements", "recharges", "client", "dateDeCreation", "dernierOperation", "intitule", "solde", "dateUpdate", "statut" })
     private Compte destCompte;  //la relation entre Virement 1,1 ---->1,1 Compte , envoyer 1 virement a un seul compte
     //a discuter
 

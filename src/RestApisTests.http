@@ -56,12 +56,60 @@ Content-Type: application/json
 {
     "numeroCompte": "2442365958750258",
     "numeroCompteDest": "2226101696931450",
-    "montant": 100,
+    "montant": 120,
     "notes": "WA FLOOOSSSI",
     "codeSecret": 82417748
 }
 
 ###
 
+GET http://localhost:8080/client/api/1/virements
 
+###
+
+POST http://localhost:8080/client/api/virements/1/confirm
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+    "codeVerification": 52031022
+}
+
+###
+
+POST http://localhost:8080/client/api/verify_number
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+    "numeroCompte": 2226101696931450
+}
+
+###
+
+PUT http://localhost:8080/client/api/comptes/block
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+    "numeroCompte": 2442365958750258,
+    "codeSecret": 82417748
+}
+
+###
+
+POST http://localhost:8080/client/api/comptes/suspend
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+    "numeroCompte": 2442365958750258,
+    "codeSecret": 82417748
+}
+
+###
+
+DELETE http://localhost:8080/client/api/virements/1/delete
+
+###
 

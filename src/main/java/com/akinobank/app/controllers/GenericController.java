@@ -1,5 +1,6 @@
 package com.akinobank.app.controllers;
 
+import com.akinobank.app.enumerations.CompteStatus;
 import com.akinobank.app.exceptions.ConfirmationPasswordException;
 import com.akinobank.app.exceptions.InvalidVerificationTokenException;
 import com.akinobank.app.models.Compte;
@@ -126,6 +127,11 @@ public class GenericController {
 
         try {
             Compte compte =  compteRepository.findById(numeroCompte).get();
+            if (compte.getStatut().name().equals(CompteStatus.PENDING_ACTIVE.name())) {
+                compte.setStatut(CompteStatus.ACTIVE);
+                compteRepository.save(compte);
+            }
+
             HashMap<String, Object> response = new HashMap<>();
 
             response.put("numeroCompte", compte.getNumeroCompteHidden());
