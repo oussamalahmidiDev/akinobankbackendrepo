@@ -2,15 +2,15 @@ package com.akinobank.app.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "file")
+@ConfigurationProperties(prefix = "spring.servlet.multipart")
 public class Storage {
-    private String uploadDir;
+    private String location;
 
-    public String getUploadDir() {
-        return uploadDir;
+    public String getLocation() {
+        return location;
     }
 
-    public void setUploadDir(String uploadDir) {
-        this.uploadDir = uploadDir;
+    public void setLocation(String location) {
+        this.location = location;
     }
 }

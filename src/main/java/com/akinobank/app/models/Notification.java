@@ -1,9 +1,8 @@
 package com.akinobank.app.models;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.akinobank.app.utilities.VerificationTokenGenerator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -17,8 +16,8 @@ import java.util.Date;
 // annotation de Lombok : pour générer les getters&setters et les constructeurs par default et avec des args
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
+@Data
+@Builder
 public class Notification implements Serializable {
 
     @Id // la cle prm
@@ -28,7 +27,7 @@ public class Notification implements Serializable {
     private String contenu ;
     private boolean lue;
 
-    @NotNull
+//    @NotNull
     private String type;
 
     @CreationTimestamp
@@ -36,6 +35,11 @@ public class Notification implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "id_client", nullable = false) // pour la relation : chaque Notification appartient a un seul client
+    @JsonIgnore
     private Client client;
 
+    @PrePersist
+    void beforeInsert() {
+        lue = false;
+    }
 }

@@ -36,7 +36,7 @@ public class UploadService {
     private final Path fileStorageLocation;
 
     public UploadService (Storage fileStorageProperties) {
-        this.fileStorageLocation = Paths.get(fileStorageProperties.getUploadDir())
+        this.fileStorageLocation = Paths.get(fileStorageProperties.getLocation())
             .toAbsolutePath().normalize();
         try {
             Files.createDirectories(this.fileStorageLocation);
@@ -54,7 +54,7 @@ public class UploadService {
         // normaliser le nom de fichier avec un nom standard (timestamp)
         String fileName = StringUtils.cleanPath(System.currentTimeMillis() + "." + FilenameUtils.getExtension(file));
 
-        logger.info("New file name : {}", fileName);
+        logger.info("New file name : {}, file size = {}", fileName, file.getSize());
 
         try {
             //verifier le nom de fichier
@@ -69,6 +69,7 @@ public class UploadService {
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible de stocker le fichier " + fileName);
         }
+
     }
 
     public Resource get (String fileName) {

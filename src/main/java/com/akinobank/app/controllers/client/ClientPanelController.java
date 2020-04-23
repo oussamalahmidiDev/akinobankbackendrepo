@@ -7,6 +7,7 @@ import com.akinobank.app.models.*;
 import com.akinobank.app.repositories.*;
 import com.akinobank.app.services.MailService;
 import com.akinobank.app.services.UploadService;
+import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/client/api")
@@ -44,7 +46,7 @@ public class ClientPanelController {
     private RechargeRepository rechargeRepository;
 
     @Autowired
-    private NotificationsRepository notificationsRepository;
+    private NotificationRepository notificationRepository;
 
     @Autowired
     private MailService mailService;
@@ -168,6 +170,12 @@ public class ClientPanelController {
 
             mailService.sendVirementCodeMail(compte.getClient().getUser(), virement);
 
+            Notification notification = notificationRepository.save(Notification.builder()
+                .client(compte.getClient())
+                .contenu("Un <b>nouveau virement</b> à été effectué ! Veuillez verifier votre e-mail pour le confirmer.")
+                .build()
+            );
+
             return new ResponseEntity<>(virement, HttpStatus.CREATED);
 
         } catch (NoSuchElementException | EntityNotFoundException e) {
@@ -229,6 +237,7 @@ public class ClientPanelController {
 
             virement.setStatut(VirementStatus.CONFIRMED);
             virementRepository.save(virement);
+
 
             return new ResponseEntity<>( "Votre virement a été bien confirmé !", HttpStatus.OK);
 
@@ -317,6 +326,23 @@ public class ClientPanelController {
     public Collection<Notification> getAllNotifications (@PathVariable("id") Long id) {
         try {
             return clientRepository.findById(id).get().getNotifications();
+        } catch (NoSuchElementException | EntityNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client est introuvable.");
+        }
+    }
+
+    @PutMapping("{id}/notifications/mark_seen")
+    public ResponseEntity<String> markNotificationsSeen (@PathVariable("id") Long id) {
+        try {
+            Collection<Notification> notifications = clientRepository.findById(id).get().getNotifications()
+                .stream()
+                .map(notification -> {notification.setLue(true); return notification; })
+                .collect(Collectors.toList());
+
+            notificationRepository.saveAll(notifications);
+
+            return ResponseEntity.ok().body("OK");
+
         } catch (NoSuchElementException | EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client est introuvable.");
         }

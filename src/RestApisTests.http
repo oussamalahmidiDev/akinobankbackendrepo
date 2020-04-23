@@ -113,3 +113,8 @@ DELETE http://localhost:8080/client/api/virements/1/delete
 
 ###
 
+GET http://localhost:8080/client/api/1/notifications/
+
+###
+
+DELETE http://localhost:8080//comptes/{id}/supprimer

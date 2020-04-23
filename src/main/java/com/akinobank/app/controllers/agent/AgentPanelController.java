@@ -42,6 +42,9 @@ public class AgentPanelController {
     private CompteRepository compteRepository;
 
     @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired
     private MailService mailService;
 
 //    ************************************************* API Agent profile ************************************************************
@@ -192,6 +195,12 @@ public class AgentPanelController {
             compte.setClient(client);
             compte =  compteRepository.save(compte);
             mailService.sendCompteDetails(client.getUser(), compte);
+
+            Notification notification = notificationRepository.save(Notification.builder()
+                .client(compte.getClient())
+                .contenu("Un <b>nouveau compte</b> à été ajouté ! Veuillez verifier votre e-mail pour récupérer votre code.")
+                .build()
+            );
             return compte;
         } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client avec id = " + id + " est introuvable.");
@@ -226,6 +235,13 @@ public class AgentPanelController {
             // verifier si le compte est de meme agence que l'agent
             Compte compte = compteRepository.findByClient_Agent_AgenceAndNumeroCompteContaining(agent.getAgence(), subNumero).get();
             compteRepository.delete(compte);
+
+            Notification notification = notificationRepository.save(Notification.builder()
+                .client(compte.getClient())
+                .contenu("Le compte de nº <b>" + compte.getNumeroCompteHidden() + "</b> à été supprimé.")
+                .build()
+            );
+
             return new ResponseEntity<>("Le compte est supprime avec succes." , HttpStatus.OK);
         } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le compte avec le numero = " + numeroCompte + " est introuvable.");
@@ -243,6 +259,12 @@ public class AgentPanelController {
                 compteToModify.setIntitule(compte.getIntitule());
             if (compte.getSolde() != 0.0)
                 compteToModify.setSolde(compte.getSolde());
+
+            Notification notification = notificationRepository.save(Notification.builder()
+                .client(compte.getClient())
+                .contenu("Le compte de nº <b>" + compte.getNumeroCompteHidden() + "</b> à été modifié par votre agent.")
+                .build()
+            );
 
             return compteRepository.save(compteToModify);
         }  catch (NoSuchElementException e) {

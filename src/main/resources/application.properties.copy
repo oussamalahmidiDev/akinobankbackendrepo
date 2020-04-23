@@ -20,10 +20,8 @@ spring.servlet.multipart.file-size-threshold=2KB
 spring.servlet.multipart.max-file-size=4MB
 # Max Request Size
 spring.servlet.multipart.max-request-size=4MB
-
-## File Storage Properties
-# All files uploaded through the REST API will be stored in this directory
-file.upload-dir=./src/main/resources/uploads
+# Default files location
+spring.servlet.multipart.location=./src/main/resources/uploads
 
 # Mail settings
 spring.mail.host = <host>

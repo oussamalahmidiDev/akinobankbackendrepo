@@ -6,5 +6,5 @@ import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.stereotype.Repository;
 
 @RepositoryRestController
-public interface NotificationsRepository extends JpaRepository<Notification,Long> {
+public interface NotificationRepository extends JpaRepository<Notification,Long> {
 }
