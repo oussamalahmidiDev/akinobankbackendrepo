@@ -30,6 +30,9 @@ build/
 ### VS Code ###
 .vscode/
 
+# Ignore upload folder
+src/main/resources/uploads
+
 ### CONFIG FILE ###
 src/main/resources/application.properties
 /bin/
