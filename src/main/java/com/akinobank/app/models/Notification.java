@@ -1,15 +1,13 @@
 package com.akinobank.app.models;
 
-import com.akinobank.app.utilities.VerificationTokenGenerator;
+import com.akinobank.app.services.NotificationService;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.io.Serializable;
 import java.util.Date;
 
 @Entity // pour la générer du table User
@@ -18,7 +16,10 @@ import java.util.Date;
 @NoArgsConstructor
 @Data
 @Builder
-public class Notification implements Serializable {
+@ToString
+@EntityListeners(NotificationListener.class) // Link Notification entity to NotifiationListener
+public class Notification {
+
 
     @Id // la cle prm
     @GeneratedValue(strategy = GenerationType.AUTO) // generation auto
@@ -42,4 +43,20 @@ public class Notification implements Serializable {
     void beforeInsert() {
         lue = false;
     }
+
+
+}
+
+// Notification listener to send notification after persisting entity in the DB.
+@Component
+class NotificationListener {
+
+    @Autowired
+    private NotificationService notificationService;
+
+    @PostPersist
+    void send (Notification notification) {
+        notificationService.publish(notification);
+    }
+
 }

@@ -3,6 +3,7 @@ package com.akinobank.app;
 import com.akinobank.app.config.Storage;
 import com.akinobank.app.models.*;
 import com.akinobank.app.repositories.*;
+import com.akinobank.app.services.AuthService;
 import com.akinobank.app.utilities.VerificationTokenGenerator;
 import org.hibernate.annotations.GenericGenerator;
 import org.slf4j.Logger;
@@ -43,6 +44,11 @@ public class AppApplication  extends SpringBootServletInitializer implements Com
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private AuthService authService;
+
+
+
 
     public static void main(String[] args)  {
 
@@ -50,19 +56,12 @@ public class AppApplication  extends SpringBootServletInitializer implements Com
     }
 
 //    //Just for test
-//    // Add below your test if you want
     @Override
     public void run(String... args) throws Exception {
-        //
-//        //client
-//        User user3 = userRepository.save(User.builder().email("c@ousam.c").role("CLIENT").nom("Oussam").prenom("LAH").build());
-//        Client client1 = clientRepository.save(new Client(user3,agentRepository.getOne((long) 3),agenceRepository.getOne((long) 1)));
 
-//        //comptes
-//        Compte compte = new Compte();
-//        compte.setClient(clientRepository.getOne((long)5));
-//        compte.setIntitule("R LAH");
-//        compteRepository.save(compte);
-//       Compte  compte = compteRepository.save(Compte.builder().client(clientRepository.getOne((long)5)).intitule("MR DAOUL").build());
+        // Mocking up currently authenticated user
+        User user = clientRepository.findById(1L).get().getUser();
+        authService.setCurrentUser(user);
+
     }
 }

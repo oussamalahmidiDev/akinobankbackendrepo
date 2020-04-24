@@ -5,9 +5,10 @@ import com.akinobank.app.enumerations.CompteStatus;
 import com.akinobank.app.enumerations.VirementStatus;
 import com.akinobank.app.models.*;
 import com.akinobank.app.repositories.*;
+import com.akinobank.app.services.AuthService;
 import com.akinobank.app.services.MailService;
+import com.akinobank.app.services.NotificationService;
 import com.akinobank.app.services.UploadService;
-import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +21,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import reactor.core.publisher.Flux;
 
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -54,11 +57,17 @@ public class ClientPanelController {
     @Autowired
     private UploadService uploadService;
 
+    @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
+    private AuthService authService;
+
 
     //    ***************** API Client profile ********************
 
     @GetMapping(value = "/profile/{id}") // return Client by id
-    public User getClient(@PathVariable(value = "id") Long id) {
+    public User getClient(@PathVariable("id") Long id) {
         try {
             return clientRepository.findById(id).get().getUser();
         } catch (NoSuchElementException | EntityNotFoundException e) {
@@ -170,11 +179,12 @@ public class ClientPanelController {
 
             mailService.sendVirementCodeMail(compte.getClient().getUser(), virement);
 
-            Notification notification = notificationRepository.save(Notification.builder()
+            Notification notification = Notification.builder()
                 .client(compte.getClient())
                 .contenu("Un <b>nouveau virement</b> à été effectué ! Veuillez verifier votre e-mail pour le confirmer.")
-                .build()
-            );
+                .build();
+
+            notificationRepository.save(notification);
 
             return new ResponseEntity<>(virement, HttpStatus.CREATED);
 
@@ -322,13 +332,30 @@ public class ClientPanelController {
         }
     }
 
-    @GetMapping("{id}/notifications")
+    @GetMapping(path = "{id}/notifications")
     public Collection<Notification> getAllNotifications (@PathVariable("id") Long id) {
         try {
             return clientRepository.findById(id).get().getNotifications();
         } catch (NoSuchElementException | EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client est introuvable.");
         }
+    }
+
+    // api to subscribe to notifications event stream via SSE
+    @GetMapping(path="/subscribe", produces=MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<Notification> receive() {
+        return Flux.create(sink -> notificationService.subscribe(sink::next));
+    }
+
+    // this api is only to test notifications "Try sending a cute message to SARA <3 "
+    @PostMapping(path="/notification" )
+    public String sendNotification (@RequestBody Notification notification) {
+        logger.info("NOTIF = {}", notification.getContenu());
+
+        // we set notification reciever to current client.
+        notification.setClient(authService.getCurrentUser().getClient());
+        notificationService.publish(notification);
+        return "OK";
     }
 
     @PutMapping("{id}/notifications/mark_seen")

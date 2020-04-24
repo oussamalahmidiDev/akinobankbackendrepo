@@ -118,3 +118,14 @@ GET http://localhost:8080/client/api/1/notifications/
 ###
 
 DELETE http://localhost:8080//comptes/{id}/supprimer
+
+###
+# API to test notifications (check http://localhost:8080/admin)
+POST http://localhost:8080/client/api/notification
+Content-Type: application/json
+
+{
+    "contenu": "salut <3"
+}
+
+###

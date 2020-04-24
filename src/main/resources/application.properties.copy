@@ -23,6 +23,13 @@ spring.servlet.multipart.max-request-size=4MB
 # Default files location
 spring.servlet.multipart.location=./src/main/resources/uploads
 
+# Add resources mapping to avoid error 404 in assets
+spring.resources.add-mappings=true
+
+# Activate GZIP compression to reduce http payload size
+server.compression.enabled = true
+server.compression.mime-types=application/json,application/xml,text/html,text/xml,text/plain,application/javascript,text/css,image/jpeg
+
 # Mail settings
 spring.mail.host = <host>
 spring.mail.port = <port>
