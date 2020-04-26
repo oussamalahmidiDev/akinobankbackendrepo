@@ -1,23 +1,24 @@
 package com.akinobank.app.models;
-import com.akinobank.app.enumerations.CompteStatus;
+
 import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.utilities.VerificationTokenGenerator;
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import javax.transaction.Transactional;
 import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 
 @Entity
 @AllArgsConstructor
@@ -64,6 +65,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
 
     @OneToOne(mappedBy = "user",  cascade={CascadeType.REMOVE})
 //    @JsonIgnore
+//    @JsonIgnoreProperties({"user"})
     private Client client;
 
     @CreationTimestamp

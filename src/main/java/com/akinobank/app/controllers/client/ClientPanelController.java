@@ -3,7 +3,6 @@ package com.akinobank.app.controllers.client;
 
 import com.akinobank.app.enumerations.CompteStatus;
 import com.akinobank.app.enumerations.VirementStatus;
-import com.akinobank.app.exceptions.ResponseException;
 import com.akinobank.app.models.*;
 import com.akinobank.app.repositories.*;
 import com.akinobank.app.services.AuthService;
@@ -24,12 +23,13 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import reactor.core.publisher.Flux;
 
-import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 @RestController
@@ -71,11 +71,9 @@ public class ClientPanelController {
 
     //    ***************** API Client profile ********************
 
-    @GetMapping(value = "/profile/{id}") // return Client by id
-    public User getClient(@PathVariable("id") Long id) {
-        return clientRepository.findById(id).orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client avec id = " + id + " est introuvable.")
-        ).getUser();
+    @GetMapping(value = "/profile") // return Client by id
+    public Client getClient() {
+        return clientRepository.findClientByUserId(authService.getCurrentUser().getId());
     }
 
     //*****************************
@@ -83,7 +81,7 @@ public class ClientPanelController {
 
     @PostMapping(value = "/profile/changer")
     public Demande sendChangeDemande(@RequestBody Demande demande) {
-        Client client = authService.getCurrentUser().getClient();
+        Client client = getClient();
 
         logger.info("CURRENT CLIENT ID = {}", client.getId());
         Demande demandeFromDB = demandeRepository.findByClient(client);
@@ -98,17 +96,15 @@ public class ClientPanelController {
 //    ***************************************
 //    ***************** API Client comptes ********************
 
-    @GetMapping(value = "/{id}/comptes")// return listes des comptes d'un client
-    public Collection<Compte> getClientComptes(@PathVariable(value = "id") Long id) {
-        return Optional.of(compteRepository.findAllByClientId(id)).orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client avec id = " + id + " est introuvable.")
-        );
+    @GetMapping(value = "/comptes")// return listes des comptes d'un client
+    public Collection<Compte> getClientComptes() {
+        return getClient().getComptes();
     }
 
     //    ** API to change code secret ***
     @PostMapping("/comptes/management/changer_code")
     public Compte changeCodeSecret(@RequestBody @Valid CodeChangeRequest request) {
-        Compte compte = compteRepository.findById(request.getNumeroCompte()).orElseThrow(
+        Compte compte = compteRepository.findByNumeroCompteAndClient(request.getNumeroCompte(), getClient()).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le compte est introuvable")
         );
 
@@ -126,33 +122,29 @@ public class ClientPanelController {
 //    ***************************************
     //    ***************** API Client Recharges ********************
 
-    @GetMapping(value = "/{id}/recharges")// return listes des recharges  d'un client
-    public Collection<Recharge> getAllRecharges(@PathVariable(value = "id") long id) {
-        try {
-            Collection<Compte> comptes = getClientComptes(id);
-            Collection<Recharge> recharges = new ArrayList<>();
+    @GetMapping(value = "/recharges")// return listes des recharges  d'un client
+    public Collection<Recharge> getAllRecharges() {
+        Collection<Compte> comptes = getClientComptes();
+        Collection<Recharge> recharges = new ArrayList<>();
 
-            for (Compte compte : comptes) {
-                recharges.addAll(compte.getRecharges());
-            }
-
-            return recharges;
-
-        } catch (NoSuchElementException | EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client avec le id= " + id + " est introuvable.");
+        for (Compte compte : comptes) {
+            recharges.addAll(compte.getRecharges());
         }
+
+        return recharges;
     }
 
     //    ***************************************
 //    ***************** API to create Recharge ********************
 
     @PostMapping(value = "/recharges/create")
-    public ResponseEntity<Recharge> createRecharge(@RequestBody RechargeRequest rechargeRequest) {
-        Compte compte = compteRepository.findById(rechargeRequest.getNumeroCompte()).orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Les données invalides.")
+    public ResponseEntity<Recharge> createRecharge(@RequestBody @Valid RechargeRequest rechargeRequest) {
+        Compte compte = compteRepository.findByNumeroCompteAndClient(rechargeRequest.getNumeroCompte(), getClient()).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le nº de compte est erroné.")
         );
 
         verifyCompteStatus(compte);
+
 
         if (!compte.getCodeSecret().equals(rechargeRequest.getCodeSecret()))
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
@@ -179,17 +171,18 @@ public class ClientPanelController {
 
     @PostMapping(value = "/virements/create")
     public ResponseEntity<Virement> createVirement(@RequestBody VirementRequest virementRequest) {
-        Compte compte = compteRepository.findById(virementRequest.getNumeroCompte()).orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Les données invalides.")
+        Compte compte = compteRepository.findByNumeroCompteAndClient(virementRequest.getNumeroCompte(), getClient()).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le nº de compte est erroné.")
         );
-        Compte compteDest = compteRepository.findById(virementRequest.getNumeroCompteDest()).orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Les données invalides.")
-        );
-
-        verifyCompteStatus(compte);
 
         if (!compte.getCodeSecret().equals(virementRequest.getCodeSecret()))
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
+
+        verifyCompteStatus(compte);
+
+        Compte compteDest = compteRepository.findById(virementRequest.getNumeroCompteDest()).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le nº de compte de destination est erroné.")
+        );
 
         if (compteDest == compte)
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Impossible d'effectuer le virement au meme compte.");
@@ -226,21 +219,17 @@ public class ClientPanelController {
 
     //    ****** API Client Virements *******
 
-    @GetMapping(value = "/{id}/virements")// return listes des virements  d'un client
-    public Collection<Virement> getAllVirements(@PathVariable(value = "id") long id) {
-        try {
-            Collection<Compte> comptes = getClientComptes(id);
-            Collection<Virement> virements = new ArrayList<>();
+    @GetMapping(value = "/virements")// return listes des virements  d'un client
+    public Collection<Virement> getAllVirements() {
+        Collection<Compte> comptes = getClientComptes();
+        Collection<Virement> virements = new ArrayList<>();
 
-            for (Compte compte : comptes) {
-                virements.addAll(compte.getVirements());
-            }
-
-            return virements;
-
-        } catch (NoSuchElementException | EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client avec le id= " + id + " est introuvable.");
+        for (Compte compte : comptes) {
+            virements.addAll(compte.getVirements());
         }
+
+        return virements;
+
     }
 
     //    ************************
@@ -249,7 +238,7 @@ public class ClientPanelController {
 
     @PostMapping(value = "/virements/{id}/confirm")
     public ResponseEntity<String> virementConfirmation(@PathVariable(value = "id") Long id, @RequestBody HashMap<String, Integer> request) {
-        Virement virement = virementRepository.findById(id).orElseThrow(
+        Virement virement = virementRepository.findByIdAndAndCompte_Client(id, getClient()).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Le virement avec le id= " + id + " est introuvable.")
         );
         // verifier si le virement est confirmé
@@ -286,8 +275,8 @@ public class ClientPanelController {
     //******** API Verify compte number **************
     @PostMapping(value = "/verify_number")
     public ResponseEntity<String> verifyCompteNumber(@RequestBody CompteCredentialsRequest request) {
-        Compte compte = compteRepository.findById(request.getNumeroCompte()).orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le numero est incorrect.")
+        Compte compte = compteRepository.findByNumeroCompteAndClient(request.getNumeroCompte(), getClient()).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le nº de compte est erroné.")
         );
         verifyCompteStatus(compte);
         return new ResponseEntity<>("OK", HttpStatus.OK);
@@ -297,68 +286,53 @@ public class ClientPanelController {
     //    ****** API  Block Compte *******
     @PutMapping(value = "/comptes/block")
     public ResponseEntity<String> compteBlock(@RequestBody CompteCredentialsRequest request) {
-        try {
-            Compte compte = compteRepository.findById(request.getNumeroCompte()).get();
-            if (compte.getStatut().name().equals(CompteStatus.BLOCKED.name()))
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Le compte est déjà bloqué.");
-            if (compte.getCodeSecret() != request.getCodeSecret())
-                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
+        Compte compte = compteRepository.findByNumeroCompteAndClient(request.getNumeroCompte(), getClient()).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le nº de compte est erroné.")
+        );
+        if (compte.getStatut().name().equals(CompteStatus.BLOCKED.name()))
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Le compte est déjà bloqué.");
+        if (!compte.getCodeSecret().equals(request.getCodeSecret()))
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
 
-            compte.setStatut(CompteStatus.PENDING_BLOCKED);
-            compteRepository.save(compte);
+        compte.setStatut(CompteStatus.PENDING_BLOCKED);
+        compteRepository.save(compte);
 
-            return new ResponseEntity<>("Votre demande de blocage a été envoyée aux agents.", HttpStatus.OK);
-
-        } catch (NoSuchElementException | EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Les données invalides.");
-        } catch (IllegalArgumentException | NullPointerException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Les données invalides.");
-        }
+        return new ResponseEntity<>("Votre demande de blocage a été envoyée aux agents.", HttpStatus.OK);
     }
+
     //***************************
 //    ****** API  Suspend Compte *******
 
     @PutMapping(value = "/comptes/suspend")
     public ResponseEntity<String> compteSuspend(@RequestBody CompteCredentialsRequest request) {
-        try {
-            Compte compte = compteRepository.findById(request.getNumeroCompte()).get();
-            if (compte.getStatut().name().equals(CompteStatus.BLOCKED))
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Le compte est bloqué.");
-            if (compte.getCodeSecret() != request.getCodeSecret())
-                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
+        Compte compte = compteRepository.findByNumeroCompteAndClient(request.getNumeroCompte(), getClient()).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le nº de compte est erroné.")
+        );
 
-            compte.setStatut(CompteStatus.PENDING_SUSPENDED);
-            compteRepository.save(compte);
+        if (compte.getStatut().name().equals(CompteStatus.BLOCKED))
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Le compte est bloqué.");
+        if (!compte.getCodeSecret().equals(request.getCodeSecret()))
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
 
-            return new ResponseEntity<>("Votre demande de supsension a été envoyée aux agents.", HttpStatus.OK);
+        compte.setStatut(CompteStatus.PENDING_SUSPENDED);
+        compteRepository.save(compte);
 
-        } catch (NoSuchElementException | EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Les données invalides.");
-        } catch (IllegalArgumentException | NullPointerException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Les données invalides.");
-        }
+        return new ResponseEntity<>("Votre demande de supsension a été envoyée aux agents.", HttpStatus.OK);
     }
 
     @DeleteMapping("/virements/{id}/delete")
     public ResponseEntity<String> deleteVirement(@PathVariable("id") Long id) {
-        try {
-            Virement virement = virementRepository.findById(id).get();
-            logger.info("Virement status : {}", virement.getStatut().name());
-            virementRepository.delete(virement);
-            return new ResponseEntity<>("Votre virement a été bien supprimé !", HttpStatus.OK);
-
-        } catch (NoSuchElementException | EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le virement avec le id= " + id + " est introuvable.");
-        }
+        Virement virement = virementRepository.findByIdAndAndCompte_Client(id, getClient()).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Le virement avec le id= " + id + " est introuvable.")
+        );
+        logger.info("Virement status : {}", virement.getStatut().name());
+        virementRepository.delete(virement);
+        return new ResponseEntity<>("Votre virement a été bien supprimé !", HttpStatus.OK);
     }
 
-    @GetMapping(path = "{id}/notifications")
-    public Collection<Notification> getAllNotifications(@PathVariable("id") Long id) {
-        try {
-            return clientRepository.findById(id).get().getNotifications();
-        } catch (NoSuchElementException | EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client est introuvable.");
-        }
+    @GetMapping(path = "/notifications")
+    public Collection<Notification> getAllNotifications() {
+        return getClient().getNotifications();
     }
 
     // api to subscribe to notifications event stream via SSE
@@ -373,29 +347,25 @@ public class ClientPanelController {
         logger.info("NOTIF = {}", notification.getContenu());
 
         // we set notification reciever to current client.
-        notification.setClient(authService.getCurrentUser().getClient());
+        notification.setClient(getClient());
         notificationService.publish(notification);
         return "OK";
     }
 
-    @PutMapping("{id}/notifications/mark_seen")
-    public ResponseEntity<String> markNotificationsSeen(@PathVariable("id") Long id) {
-        try {
-            Collection<Notification> notifications = clientRepository.findById(id).get().getNotifications()
-                .stream()
-                .map(notification -> {
-                    notification.setLue(true);
-                    return notification;
-                })
-                .collect(Collectors.toList());
+    // ******** this api to mark all notifications as seen *******
+    @PutMapping("/notifications/mark_seen")
+    public ResponseEntity<String> markNotificationsSeen() {
+        Collection<Notification> notifications = getClient().getNotifications()
+            .stream()
+            .map(notification -> {
+                notification.setLue(true);
+                return notification;
+            })
+            .collect(Collectors.toList());
 
-            notificationRepository.saveAll(notifications);
+        notificationRepository.saveAll(notifications);
 
-            return ResponseEntity.ok().body("OK");
-
-        } catch (NoSuchElementException | EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client est introuvable.");
-        }
+        return ResponseEntity.ok().body("OK");
     }
 
     // helper function to check if Compte is active.
@@ -407,87 +377,75 @@ public class ClientPanelController {
     //***************************
 //    ****** API to upload avatar image *******
 
-    @PostMapping("/{id}/avatar/upload")
-    public ResponseEntity<String> uploadAvatar(@PathVariable("id") Long id, @RequestParam("image") MultipartFile image) {
-        try {
-            Client client = clientRepository.findById(id).get();
+    @PostMapping("/avatar/upload")
+    public ResponseEntity<String> uploadAvatar(@RequestParam("image") MultipartFile image) {
+        Client client = getClient();
 
-            String fileName = uploadService.store(image);
+        String fileName = uploadService.store(image);
 
-            // generate download link
-            String imageDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/client/api/")
-                .path(id + "/avatar")
-                .toUriString();
+        // generate download link
+        String imageDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+            .path("/client/api/")
+            .path(client.getId() + "/avatar")
+            .toUriString();
 
-            // check if client has already uploaded an image
-            if (client.getPhoto() != null)
-                uploadService.delete(client.getPhoto());
+        // check if client has already uploaded an image
+        if (client.getPhoto() != null)
+            uploadService.delete(client.getPhoto());
 
-            client.setPhoto(fileName);
-            clientRepository.save(client);
+        client.setPhoto(fileName);
+        clientRepository.save(client);
 
 
-            return new ResponseEntity<>("Image enregistrée avec succès : " + imageDownloadUri, HttpStatus.CREATED);
-        } catch (NoSuchElementException | EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client est introuvable.");
-        }
+        return new ResponseEntity<>("Image enregistrée avec succès : " + imageDownloadUri, HttpStatus.CREATED);
+
     }
 
     //***************************
 //    ****** API to get avatar image *******
-    @GetMapping("/{id}/avatar")
-    public ResponseEntity<Resource> getAvatar(@PathVariable("id") Long id, HttpServletRequest request) {
+    @GetMapping("/avatar")
+    public ResponseEntity<Resource> getAvatar(HttpServletRequest request) {
+        Client client = getClient();
+
+        if (client.getPhoto() == null)
+            throw new ResponseStatusException(HttpStatus.OK, "Pas de photo définie.");
+
+        Resource resource = uploadService.get(client.getPhoto());
+
+        // setting content-type header
+        String contentType = null;
         try {
-            Client client = clientRepository.findById(id).get();
-
-            if (client.getPhoto() == null)
-                throw new ResponseStatusException(HttpStatus.OK, "Pas de photo définie.");
-
-            Resource resource = uploadService.get(client.getPhoto());
-
-            // setting content-type header
-            String contentType = null;
-            try {
-                // setting content-type header according to file type
-                contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
-            } catch (IOException e) {
-                System.out.println("Type indéfini.");
-            }
-            // setting content-type header to generic octet-stream
-            if (contentType == null) {
-                contentType = "application/octet-stream";
-            }
-
-            return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
-
-        } catch (NoSuchElementException | EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client est introuvable.");
+            // setting content-type header according to file type
+            contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
+        } catch (IOException e) {
+            System.out.println("Type indéfini.");
         }
+        // setting content-type header to generic octet-stream
+        if (contentType == null) {
+            contentType = "application/octet-stream";
+        }
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType(contentType))
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+            .body(resource);
     }
 
     //***************************
 //    ****** API to get avatar image *******
-    @DeleteMapping("/{id}/avatar/delete")
-    public ResponseEntity<String> deleteAvatar(@PathVariable("id") Long id) {
-        try {
-            Client client = clientRepository.findById(id).get();
+    @DeleteMapping("/avatar/delete")
+    public ResponseEntity<String> deleteAvatar() {
+        Client client = getClient();
 
-            // check if client has already uploaded an image
-            if (client.getPhoto() != null)
-                uploadService.delete(client.getPhoto());
-            else
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        // check if client has already uploaded an image
+        if (client.getPhoto() != null)
+            uploadService.delete(client.getPhoto());
+        else
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
-            client.setPhoto(null);
-            clientRepository.save(client);
+        client.setPhoto(null);
+        clientRepository.save(client);
 
-            return ResponseEntity.ok("Le fichier est supprimé avec succès.");
-        } catch (NoSuchElementException | EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client est introuvable.");
-        }
+        return ResponseEntity.ok("Le fichier est supprimé avec succès.");
     }
 }

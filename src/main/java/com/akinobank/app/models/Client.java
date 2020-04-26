@@ -2,11 +2,14 @@ package com.akinobank.app.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import java.io.Serializable;
 import java.util.Collection;
 
 @Entity // pour la générer du table User
@@ -15,6 +18,7 @@ import java.util.Collection;
 @AllArgsConstructor
 @Data
 @Builder
+@JsonPropertyOrder({ "user" })
 public class Client {
 
     @Id // la cle prm
@@ -53,7 +57,8 @@ public class Client {
 
     @OneToOne // pour la relation : un admin a un compte user pour la auth
     @JoinColumn(name = "id_user")
-    @JsonIgnoreProperties({"client", "authorities", "username"})
+    @JsonIgnoreProperties({"id","client", "authorities", "username"})
+    @JsonUnwrapped
     private User user;
 
     //Just for test

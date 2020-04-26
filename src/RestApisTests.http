@@ -9,6 +9,9 @@ Content-Type: application/json
     "prenom": "Sara",
     "email": "sara@gmailos.com"
 }
+###
+
+GET http://localhost:8080/agent/profile/11
 
 ###
 
@@ -27,11 +30,15 @@ GET http://localhost:8080/agent/clients/
 
 ###
 
-GET http://localhost:8080/client/api/profile/4
+GET http://localhost:8080/client/api/profile/
 
 ###
 
-GET http://localhost:8080/client/api/19999/comptes
+GET http://localhost:8080/client/api/comptes
+
+###
+
+GET http://localhost:8080/client/api/recharges
 
 ###
 
@@ -40,11 +47,11 @@ Cache-Control: no-cache
 Content-Type: application/json
 
 {
-    "numeroCompte": "2442365958750258",
+    "numeroCompte": "2225258215186460",
     "montant": 500,
     "operateur": "orange",
-    "codeSecret": 82417748,
-    "numeroTelephone": "NMRA DIAL SAHBTI"
+    "codeSecret": 25368306,
+    "numeroTelephone": "+212 623 56 78 09"
 }
 
 ###
@@ -54,16 +61,16 @@ Cache-Control: no-cache
 Content-Type: application/json
 
 {
-    "numeroCompte": "2442365958750258",
-    "numeroCompteDest": "2226101696931450",
-    "montant": 120,
+    "numeroCompte": "2390293863491069",
+    "numeroCompteDest": "2259675349164775",
+    "montant": 80,
     "notes": "WA FLOOOSSSI",
-    "codeSecret": 82417748
+    "codeSecret": "00000000"
 }
 
 ###
 
-GET http://localhost:8080/client/api/9991/virements
+GET http://localhost:8080/client/api/virements
 
 ###
 
@@ -72,7 +79,7 @@ Cache-Control: no-cache
 Content-Type: application/json
 
 {
-    "codeVerification": 52031022
+    "codeVerification": 99235085
 }
 
 ###
@@ -92,19 +99,19 @@ Cache-Control: no-cache
 Content-Type: application/json
 
 {
-    "numeroCompte": 2442365958750258,
-    "codeSecret": 82417748
+    "numeroCompte": 2225258215186460,
+    "codeSecret": "00000000"
 }
 
 ###
 
-POST http://localhost:8080/client/api/comptes/suspend
+PUT http://localhost:8080/client/api/comptes/suspend
 Cache-Control: no-cache
 Content-Type: application/json
 
 {
-    "numeroCompte": 2442365958750258,
-    "codeSecret": 82417748
+    "numeroCompte": 2225258215186460,
+    "codeSecret": "00000000"
 }
 
 ###
@@ -113,7 +120,7 @@ DELETE http://localhost:8080/client/api/virements/1/delete
 
 ###
 
-GET http://localhost:8080/client/api/1/notifications/
+GET http://localhost:8080/client/api/notifications/
 
 ###
 
@@ -125,7 +132,7 @@ POST http://localhost:8080/client/api/notification
 Content-Type: application/json
 
 {
-    "contenu": "kkkk"
+    "contenu": "salut"
 }
 
 ###
@@ -133,12 +140,12 @@ POST http://localhost:8080/client/api/profile/changer
 Content-Type: application/json
 
 {
-    "email": "oussama.lahmidi@icloudo.com"
+    "email": "oussama.lahmidi@icloud.com"
 }
 
 ###
 
-PUT http://localhost:8080/agent/demandes/111/approve/
+PUT http://localhost:8080/agent/demandes/131/approve/
 
 ###
 
@@ -146,8 +153,8 @@ POST http://localhost:8080/client/api/comptes/management/changer_code
 Content-Type: application/json
 
 {
-    "numeroCompte": "2442365958750258",
-    "codeSecret": "00000009",
+    "numeroCompte": "2225258215186460",
+    "codeSecret": "25368306",
     "newCodeSecret": "00000000",
     "newCodeSecretConf": "00000000"
 }

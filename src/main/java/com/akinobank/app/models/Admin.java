@@ -1,18 +1,13 @@
 package com.akinobank.app.models;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.*;
 
 import javax.persistence.*;
-import javax.swing.*;
-import javax.validation.constraints.NotNull;
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 @Entity // pour la générer du table User
 // annotation de Lombok : pour générer les getters&setters et les constructeurs par default et avec des args
@@ -21,7 +16,8 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class Admin implements Serializable {
+@JsonPropertyOrder({ "user" })
+public class Admin {
 
     @Id // la cle prm
     @GeneratedValue(strategy = GenerationType.IDENTITY) //pour la generation auto
@@ -35,7 +31,8 @@ public class Admin implements Serializable {
 
     @OneToOne // pour la relation : un admin a un compte user pour la auth
     @JoinColumn(name = "id_user")
-    @JsonIgnoreProperties({"admin", "emailConfirmed", "dateUpdate", "dateDeCreation", })
+    @JsonIgnoreProperties({"admin", "emailConfirmed", "dateUpdate", "dateDeCreation", "id"})
+    @JsonUnwrapped
     private User user;
 
     //Just for test
