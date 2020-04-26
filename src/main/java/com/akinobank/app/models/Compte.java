@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.validator.constraints.CreditCardNumber;
 import org.hibernate.validator.constraints.UniqueElements;
 
 import javax.persistence.*;
@@ -33,6 +34,7 @@ public class Compte  {
     @GenericGenerator(name = "cn-generator", strategy = "com.akinobank.app.utilities.CreditCardNumberGenerator")
     // This CC number generated using Luhn Algorithm found in CreditCardNumberGenerator
     @JsonIgnore
+    @CreditCardNumber
     private String numeroCompte;
 
 //    @Positive
@@ -54,7 +56,7 @@ public class Compte  {
 
 //    @Size(min = 8 ,max = 8)
     @JsonIgnore
-    private int codeSecret;
+    private String codeSecret;
 
     @ManyToOne
     @JoinColumn(name = "id_client") // pour la relation : chaque compte a un seul client
@@ -78,7 +80,7 @@ public class Compte  {
         System.out.println("SETTING DEFAULT VALUES FOR COMPTE");
         //solde = 0;
         statut = CompteStatus.ACTIVE;
-        codeSecret = new Random().nextInt(90000000) + 10000000;
+        codeSecret = String.valueOf(new Random().nextInt(90000000) + 10000000);
     }
 
     @JsonProperty("numeroCompte")

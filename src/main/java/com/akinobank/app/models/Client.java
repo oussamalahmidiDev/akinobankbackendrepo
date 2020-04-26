@@ -13,10 +13,9 @@ import java.util.Collection;
 // annotation de Lombok : pour générer les getters&setters et les constructeurs par default et avec des args
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
+@Data
 @Builder
-public class Client implements Serializable {
+public class Client {
 
     @Id // la cle prm
     @GeneratedValue(strategy = GenerationType.IDENTITY)//generation auto
@@ -47,6 +46,10 @@ public class Client implements Serializable {
     @OneToMany(mappedBy = "client",fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})  // pour la relation : chaque client a 0 ou pls notification
     @JsonIgnore
     private Collection<Notification> notifications;
+
+    @OneToOne(mappedBy = "client", fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})
+    @JsonIgnoreProperties("client")
+    private Demande demande;
 
     @OneToOne // pour la relation : un admin a un compte user pour la auth
     @JoinColumn(name = "id_user")

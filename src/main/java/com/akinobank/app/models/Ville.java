@@ -10,7 +10,6 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @Builder
-@ToString
 public class Ville {
 
     @Id

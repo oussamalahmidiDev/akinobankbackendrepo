@@ -45,6 +45,9 @@ public class AgentPanelController {
     private NotificationRepository notificationRepository;
 
     @Autowired
+    private DemandeRepository demandeRepository;
+
+    @Autowired
     private MailService mailService;
 
 //    ************************************************* API Agent profile ************************************************************
@@ -270,5 +273,34 @@ public class AgentPanelController {
         }  catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le compte avec le numero = " + numeroCompte + " est introuvable.");
         }
+    }
+
+    @PutMapping(value = "/demandes/{id}/approve")
+    public ResponseEntity<String> approveDemande (@PathVariable("id") Long id) {
+        Demande demande = demandeRepository.findById(id).get();
+        User clientUser = demande.getClient().getUser();
+
+        if (demande.getEmail() != null && !demande.getEmail().equalsIgnoreCase(clientUser.getEmail())) {
+            clientUser.setEmail(demande.getEmail());
+            clientUser.setEmailConfirmed(false);
+            mailService.sendVerificationMail(clientUser);
+        }
+        if (demande.getNom() != null)
+            clientUser.setNom(demande.getNom());
+        if (demande.getPrenom() != null)
+            clientUser.setPrenom(demande.getPrenom());
+
+        userRepository.save(clientUser);
+        demandeRepository.delete(demande);
+
+        Notification notification = Notification.builder()
+            .contenu("Vos données ont été mises à jour. Voir votre profil.")
+            .client(clientUser.getClient())
+            .build();
+
+        notificationRepository.save(notification);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+
     }
 }

@@ -46,7 +46,7 @@ public class GenericController {
     @GetMapping("/confirm")
     public String confirmEmail(HttpServletRequest request) {
         String token = request.getParameter("token");
-        logger.info("Verif token", token);
+        logger.info("Verif token : {}", token);
         User userToVerify = userRepository.findOneByVerificationToken(token);
         if (userToVerify == null) throw new InvalidVerificationTokenException();
         String action = request.getParameter("action");
@@ -61,11 +61,13 @@ public class GenericController {
                 return "redirect:/compte_details?ref=email&token=" + token + "&ccn=" + ccn;
             }
             else if (action.equals("confirm")) {
-                if (userToVerify.isEmailConfirmed() && userToVerify.getPassword() != "")
+                if (userToVerify.isEmailConfirmed() && userToVerify.getPassword() != null)
                     return "redirect:/";
 
                 userToVerify.setEmailConfirmed(true);
                 userRepository.save(userToVerify);
+                if (userToVerify.getPassword() != null)
+                    return "redirect:/";
                 return "redirect:/set_password?token=" + token;
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST);

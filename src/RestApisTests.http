@@ -27,11 +27,11 @@ GET http://localhost:8080/agent/clients/
 
 ###
 
-GET http://localhost:8080/agent/profile/4
+GET http://localhost:8080/client/api/profile/4
 
 ###
 
-GET http://localhost:8080/client/api/1/comptes
+GET http://localhost:8080/client/api/19999/comptes
 
 ###
 
@@ -63,7 +63,7 @@ Content-Type: application/json
 
 ###
 
-GET http://localhost:8080/client/api/1/virements
+GET http://localhost:8080/client/api/9991/virements
 
 ###
 
@@ -125,7 +125,31 @@ POST http://localhost:8080/client/api/notification
 Content-Type: application/json
 
 {
-    "contenu": "salut <3"
+    "contenu": "kkkk"
+}
+
+###
+POST http://localhost:8080/client/api/profile/changer
+Content-Type: application/json
+
+{
+    "email": "oussama.lahmidi@icloudo.com"
+}
+
+###
+
+PUT http://localhost:8080/agent/demandes/111/approve/
+
+###
+
+POST http://localhost:8080/client/api/comptes/management/changer_code
+Content-Type: application/json
+
+{
+    "numeroCompte": "2442365958750258",
+    "codeSecret": "00000009",
+    "newCodeSecret": "00000000",
+    "newCodeSecretConf": "00000000"
 }
 
 ###

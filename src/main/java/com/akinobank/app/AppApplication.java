@@ -12,18 +12,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import javax.persistence.GeneratedValue;
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
 
 @SpringBootApplication
 @EnableConfigurationProperties({ Storage.class })
-public class AppApplication  extends SpringBootServletInitializer implements CommandLineRunner   {
+public class AppApplication implements CommandLineRunner     {
 
     Logger logger = LoggerFactory.getLogger(AppApplication.class);
     @Autowired
@@ -45,6 +50,10 @@ public class AppApplication  extends SpringBootServletInitializer implements Com
     private UserRepository userRepository;
 
     @Autowired
+    private DemandeRepository demandeRepository;
+
+
+    @Autowired
     private AuthService authService;
 
 
@@ -60,8 +69,13 @@ public class AppApplication  extends SpringBootServletInitializer implements Com
     public void run(String... args) throws Exception {
 
         // Mocking up currently authenticated user
-        User user = clientRepository.findById(1L).get().getUser();
-        authService.setCurrentUser(user);
+        Optional<Client> user = clientRepository.findById(1L);
+
+        authService.setCurrentUser(user.orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client de test est introuvable")
+        ).getUser());
+
+
 
     }
 }

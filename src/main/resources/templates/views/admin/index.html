@@ -17,9 +17,10 @@
         eventSource.onmessage = e => {
             const msg = e.data;
             var node = document.createElement("li");
-            node.innerHTML = msg;
+            notif = JSON.parse(msg);
+            node.innerHTML = notif.contenu;
 
-            console.log(msg);
+            console.log(notif);
             document.getElementById("greet").appendChild(node);
         };
 
@@ -37,8 +38,16 @@
         eventSource.addEventListener('second', function(e) {
             console.log('second', e.data);
         }, false);
+
+        $(window).on("unload", function(e) {
+            console.log("CLOSING EVENT SOURCE");
+            eventSource.close();
+            // Do Something
+        });
     }
     window.onload = initialize;
+
+
 </script>
 </body>
 </html>
