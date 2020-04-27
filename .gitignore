@@ -34,5 +34,5 @@ build/
 src/main/resources/uploads
 
 ### CONFIG FILE ###
-src/main/resources/application.properties
+#src/main/resources/application.properties
 /bin/
