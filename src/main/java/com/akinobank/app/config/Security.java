@@ -1,14 +1,12 @@
 package com.akinobank.app.config;
 
-import com.akinobank.app.filters.XSSFilter;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.annotation.Bean;
+//import com.akinobank.app.filters.XSSFilter;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
@@ -33,13 +31,13 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
     }
 
 //    @Bean
-    public FilterRegistrationBean xssPreventFilter() {
-        FilterRegistrationBean registrationBean = new FilterRegistrationBean();
-
-        registrationBean.setFilter(new XSSFilter());
-        registrationBean.addUrlPatterns("/*");
-
-        return registrationBean;
-    }
+//    public FilterRegistrationBean xssPreventFilter() {
+//        FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+//
+//        registrationBean.setFilter(new XSSFilter());
+//        registrationBean.addUrlPatterns("/*");
+//
+//        return registrationBean;
+//    }
 
 }

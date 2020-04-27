@@ -11,7 +11,7 @@
     function initialize() {
 
         // Subscribing to Server events to receive notifications.
-        const eventSource = new EventSource('http://localhost:8080/client/api/subscribe');
+        const eventSource = new EventSource(window.location.origin + '/client/api/subscribe');
 
         // Handling data received from server event
         eventSource.onmessage = e => {
