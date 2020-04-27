@@ -2,14 +2,11 @@ package com.akinobank.app.services;
 
 import com.akinobank.app.models.Compte;
 import com.akinobank.app.models.User;
-
 import com.akinobank.app.models.Virement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
@@ -21,6 +18,8 @@ import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Properties;
 
+//import org.springframework.mail.javamail.JavaMailSender;
+
 @Component
 public class MailService  {
 
@@ -29,8 +28,8 @@ public class MailService  {
 
     private Logger logger = LoggerFactory.getLogger(MailService.class);
 
-    @Autowired
-    public JavaMailSender javaMailSender;
+//    @Autowired
+//    public JavaMailSender javaMailSender;
 
     @Autowired
     private TemplateEngine templateEngine;
