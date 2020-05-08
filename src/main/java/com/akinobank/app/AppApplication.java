@@ -60,12 +60,12 @@ public class AppApplication implements CommandLineRunner     {
     @Override
     public void run(String... args) throws Exception {
 
-        // Mocking up currently authenticated client
-        Optional<User> authenticatedUser = userRepository.findByEmail("oussama.lahmidi@icloud.com");
+         // Mocking up currently authenticated client
+         Optional<User> authenticatedUser = userRepository.findByEmail("oussama.lahmidi@icloud.com");
 
-        authService.setCurrentUser(authenticatedUser.orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Email not found")
-        ));
+         authService.setCurrentUser(authenticatedUser.orElseThrow(
+             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Email not found")
+         ));
 
 
 

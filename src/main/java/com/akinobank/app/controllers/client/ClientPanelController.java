@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.stream.Collectors;
 
 @RestController
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping("/client/api")
 public class ClientPanelController {
 
@@ -341,7 +342,6 @@ public class ClientPanelController {
         return Flux.create(sink -> notificationService.subscribe(sink::next));
     }
 
-    // this api is only to test notifications "Try sending a cute message to SARA <3 "
     @PostMapping(path = "/notification")
     public String sendNotification(@RequestBody Notification notification) {
         logger.info("NOTIF = {}", notification.getContenu());

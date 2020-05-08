@@ -5,9 +5,9 @@ Cache-Control: no-cache
 Content-Type: application/json
 
 {
-    "nom": "Bouzid",
-    "prenom": "Sara",
-    "email": "sara@gmailos.com"
+    "nom": "Ipsum",
+    "prenom": "Lorem",
+    "email": "Lorem@gmailos.com"
 }
 ###
 
@@ -15,12 +15,12 @@ GET http://localhost:8080/agent/profile/11
 
 ###
 
-POST http://localhost:8080/agent/clients/1/comptes/ajouter/
+POST http://localhost:8080/agent/clients/31/comptes/ajouter/
 Cache-Control: no-cache
 Content-Type: application/json
 
 {
-    "intitule": "Mme. SARA BOUZID",
+    "intitule": "Mme. Lorem Ipsum",
     "solde": 600
 }
 
