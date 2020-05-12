@@ -12,6 +12,8 @@ import com.akinobank.app.services.UploadService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -26,10 +28,7 @@ import reactor.core.publisher.Flux;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -73,17 +72,29 @@ public class ClientPanelController {
     //    ***************** API Client profile ********************
 
     @GetMapping(value = "/profile") // return Client by id
+    @Cacheable(cacheNames = "clients")
     public Client getClient() {
         return clientRepository.findClientByUserId(authService.getCurrentUser().getId());
     }
+
+    @GetMapping(value = "/profile/cached") // return Client by id
+    @Cacheable(cacheNames = "clients")
+    public Client getClientTest(@PathVariable Long id) throws InterruptedException {
+        Thread.sleep(8000);
+        return clientRepository.findClientByUserId(id);
+    }
+
 
     //*****************************
     //******* API to modify Client Info *************
 
     @PostMapping(value = "/profile/changer")
+    @CacheEvict(cacheNames = "clients", allEntries = true)
     public Demande sendChangeDemande(@RequestBody Demande demande) {
         Client client = getClient();
 
+//        client.setPhoto(UUID.randomUUID().toString());
+//        clientRepository.save(client);
         logger.info("CURRENT CLIENT ID = {}", client.getId());
         Demande demandeFromDB = demandeRepository.findByClient(client);
         if (demandeFromDB != null)
@@ -378,7 +389,8 @@ public class ClientPanelController {
 //    ****** API to upload avatar image *******
 
     @PostMapping("/avatar/upload")
-    public ResponseEntity<String> uploadAvatar(@RequestParam("image") MultipartFile image) {
+    @CacheEvict(cacheNames = "clients", allEntries = true)
+    public ResponseEntity<?> uploadAvatar(@RequestParam("image") MultipartFile image) {
         Client client = getClient();
 
         String fileName = uploadService.store(image);
@@ -386,7 +398,8 @@ public class ClientPanelController {
         // generate download link
         String imageDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
             .path("/client/api/")
-            .path(client.getId() + "/avatar")
+            .path("/avatar/")
+            .path(fileName)
             .toUriString();
 
         // check if client has already uploaded an image
@@ -396,15 +409,17 @@ public class ClientPanelController {
         client.setPhoto(fileName);
         clientRepository.save(client);
 
+        Map<String, String> response = new HashMap<>();
+        response.put("link", imageDownloadUri);
 
-        return new ResponseEntity<>("Image enregistrée avec succès : " + imageDownloadUri, HttpStatus.CREATED);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
 
     }
 
     //***************************
 //    ****** API to get avatar image *******
-    @GetMapping("/avatar")
-    public ResponseEntity<Resource> getAvatar(HttpServletRequest request) {
+    @GetMapping("/avatar/{filename}")
+    public ResponseEntity<Resource> getAvatar(HttpServletRequest request, @PathVariable("filename") String filename) {
         Client client = getClient();
 
         if (client.getPhoto() == null)
@@ -434,6 +449,7 @@ public class ClientPanelController {
     //***************************
 //    ****** API to get avatar image *******
     @DeleteMapping("/avatar/delete")
+    @CacheEvict(cacheNames = "clients", allEntries = true)
     public ResponseEntity<String> deleteAvatar() {
         Client client = getClient();
 
