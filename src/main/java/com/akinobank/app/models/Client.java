@@ -22,10 +22,8 @@ import java.util.Collection;
 public class Client {
 
     @Id // la cle prm
-    @GeneratedValue(strategy = GenerationType.IDENTITY)//generation auto
+    @GeneratedValue(strategy = GenerationType.IDENTITY )//generation auto
     private Long id;
-
-    private String photo ;
 
 //    @NotNull
 

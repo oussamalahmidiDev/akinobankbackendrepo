@@ -41,6 +41,7 @@ public class Agence implements Serializable {
     @JsonIgnoreProperties({"agences"})
     private Ville ville;
 
+
     @ManyToOne
     @JoinColumn(name = "id_admin", nullable = false) // pour la relation : chaque agence a un seul admin
     @JsonIgnore

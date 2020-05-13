@@ -42,6 +42,11 @@ public class User implements UserDetails { // We use interface UserDetials inste
 
     private boolean emailConfirmed ;
 
+    private String photo ;
+    private String adresse;
+    private Long codePostale;
+
+
 
     @JsonIgnore
     private String verificationToken;

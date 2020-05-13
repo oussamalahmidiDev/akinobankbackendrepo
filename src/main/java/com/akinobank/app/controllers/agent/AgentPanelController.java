@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Example;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ import javax.transaction.Transactional;
 import java.util.*;
 
 @RestController
-@RequestMapping("/agent")
+@RequestMapping("/agent/api")
 @Transactional
 @CrossOrigin(value = "*")
 public class AgentPanelController {
@@ -52,21 +53,33 @@ public class AgentPanelController {
 
 //    ************************************************* API Agent profile ************************************************************
 
-    @GetMapping(value = "/profile/{id}") // return Agent by id
-    public User getAgent(@PathVariable(value = "id")Long id){
-        try {
-            return agentRepository.findById(id).get().getUser();
-        } catch (NoSuchElementException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "L'agent avec id = " + id + " est introuvable.");
-        }
+//    @GetMapping(value = "/profile") // return Agent by id
+//    public User getAgent(){
+//        try {
+//            return agentRepository.findById(2L).get().getUser();
+//        } catch (NoSuchElementException e) {
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "L'agent avec id = " + id + " est introuvable.");
+//        }
+//    }
+
+//    **************************************************************************************************************************
+
+    @GetMapping(value = "/profile") // return Agent by id
+    public Agent getAgent(){
+        long id = 2L;
+        return agentRepository.findById(id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "L'agent avec id = " + id + " est introuvable."));
     }
+//just for test
+    @GetMapping("/all")
+    public Collection<User> getAllAgents(){
+        return  userRepository.findAllByRole(Role.AGENT);    }
 
     //    *********************************************************************************************************************
     //    *****************************************************API Agence profile **********************************************
 
     @GetMapping(value = "/agence")
     public Agence getAgence() {
-        Long id = 11L; //just a test , we will use the token to get agent id
+        Long id = 1L; //just a test , we will use the token to get agent id
         return agentRepository.findById(id).get().getAgence();
     }
 
@@ -115,7 +128,7 @@ public class AgentPanelController {
             user.setRole(Role.CLIENT);
             //find first the client
 
-            Agent agent = agentRepository.findById(11L).get();  // i choose id 1 just for test
+            Agent agent = agentRepository.findById(1L).get();  // i choose id 1 just for test
 
             userRepository.save(user); // add user in table
 
@@ -124,7 +137,7 @@ public class AgentPanelController {
             mailService.sendVerificationMail(user);
             return user;
         } catch (DataIntegrityViolationException e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "L'email que vous avez entré est déjà utilisé.")  ;
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "L'email que vous avez entré est déjà utilisé."+e.toString())  ;
         }
     }
 
@@ -215,7 +228,7 @@ public class AgentPanelController {
 // just for test
     @GetMapping(value = "/comptes/{id}") //works
     public Compte getClientCompteByNum(@PathVariable(value = "id") String numeroCompte){
-        Agent agent = agentRepository.findById(11L).get();
+        Agent agent = agentRepository.findById(1L).get();
         try {
 //            String subNumero = numeroCompte.substring(8);
             Compte compte = compteRepository.findByClient_Agent_AgenceAndNumeroCompteContaining(agent.getAgence(), numeroCompte).get();
@@ -229,7 +242,7 @@ public class AgentPanelController {
 
     @DeleteMapping(value = "/comptes/{id}/supprimer") //works
     public ResponseEntity<String> deleteClientCompte(@PathVariable(value = "id") String numeroCompte){
-        Agent agent = agentRepository.findById(11L).get();
+        Agent agent = agentRepository.findById(1L).get();
         try {
             String subNumero = numeroCompte.substring(8);
             System.out.println(subNumero);
@@ -303,4 +316,12 @@ public class AgentPanelController {
         return new ResponseEntity<>(HttpStatus.OK);
 
     }
+
+    @GetMapping(value = "/demandes")
+    public List<Demande> getDemandes () {
+
+        return  demandeRepository.findAll();
+
+    }
+
 }
