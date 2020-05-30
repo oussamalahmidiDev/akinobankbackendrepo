@@ -1,6 +1,7 @@
 package com.akinobank.app.models;
 
 
+import com.akinobank.app.enumerations.RechargeStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
@@ -27,15 +28,16 @@ public class Recharge implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)//generation auto
     private Long id;
 
-    @NotNull
+//    @NotNull
     private String operateur ;
 
-    @NotNull
+//    @NotNull
     private String numeroTelephone;
 
-    @NotNull
-    @Positive
+//    @NotNull
+//    @Positive
     private double montant ;
+    private RechargeStatus statut;
 
     @CreationTimestamp
     private Date dateDeRecharge;

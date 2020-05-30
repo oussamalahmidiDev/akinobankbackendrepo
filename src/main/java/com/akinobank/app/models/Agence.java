@@ -34,7 +34,7 @@ public class Agence implements Serializable {
     @UpdateTimestamp
     private Date dateUpdate;
 
-    @NotNull
+//    @NotNull
     private String  libelleAgence; // libelleAgenece : nom agence
 
     @ManyToOne

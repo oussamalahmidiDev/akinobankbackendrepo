@@ -37,11 +37,11 @@ public class Virement implements Serializable {
 
     private String notes;
 
-    @NotNull
+//    @NotNull
     @JsonIgnore
     private int codeVerification; // pour vérifier la transaction avant d'envoyer
 
-    @NotNull
+//    @NotNull
     @Positive
     private double montant;
 

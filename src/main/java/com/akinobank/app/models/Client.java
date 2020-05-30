@@ -49,21 +49,21 @@ public class Client {
     @JsonIgnore
     private Collection<Notification> notifications;
 
-    @OneToOne(mappedBy = "client", fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})
+    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})
     @JsonIgnoreProperties("client")
-    private Demande demande;
+    private Collection<Demande> demandes;
 
     @OneToOne // pour la relation : un admin a un compte user pour la auth
     @JoinColumn(name = "id_user")
-    @JsonIgnoreProperties({"id","client", "authorities", "username"})
+    @JsonIgnoreProperties({"id","client", "authorities", "username" , "admin"})
     @JsonUnwrapped
     private User user;
 
-    //Just for test
-    public Client(User user,Agent agent,Agence agence) {
-        this.user=user;
-        this.agent=agent;
-        this.agence=agence;
-    }
+//    //Just for test
+//    public Client(User user,Agent agent,Agence agence) {
+//        this.user=user;
+//        this.agent=agent;
+//        this.agence=agence;
+//    }
 
 }

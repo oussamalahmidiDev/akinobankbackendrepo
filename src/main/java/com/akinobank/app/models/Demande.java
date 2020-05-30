@@ -1,5 +1,6 @@
 package com.akinobank.app.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,9 +28,10 @@ public class Demande {
 
     private Boolean acceptee;
 
-    @OneToOne // pour la relation : un admin a un compte user pour la auth
+    @ManyToOne // pour la relation : un admin a un compte user pour la auth
     @JoinColumn(name = "client_id")
-    @JsonIgnoreProperties({ "comptes", "notifications", "agent", "agence","photo" })
+//    @JsonIgnoreProperties({ "comptes", "notifications", "agent", "agence","photo" })
+    @JsonIgnore
     private Client client;
 
     @UpdateTimestamp

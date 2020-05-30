@@ -33,17 +33,19 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @NotNull
+//    @NotNull
     @Column(unique = true)
     @Email
     private String email ;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     private boolean emailConfirmed ;
 
     private String photo ;
     private String adresse;
+    private String ville;
     private Long codePostale;
 
 
@@ -56,7 +58,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
 //    @NotNull
     private String nom , prenom  ;
 
-    @NotNull
+//    @NotNull
     @Enumerated(EnumType.STRING)
     private Role role ;
 
@@ -70,7 +72,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
 
     @OneToOne(mappedBy = "user",  cascade={CascadeType.REMOVE})
 //    @JsonIgnore
-//    @JsonIgnoreProperties({"user"})
+    @JsonIgnoreProperties({"user"})
     private Client client;
 
     @CreationTimestamp
@@ -133,13 +135,13 @@ public class User implements UserDetails { // We use interface UserDetials inste
         return true;
     }
 
-    //Just for test
-    public User(String nom, String prenom, String email, Role role ) {
-        this.nom=nom;
-        this.prenom=prenom;
-        this.email=email;
-        this.role=role;
-
-    }
+//    //Just for test
+//    public User(String nom, String prenom, String email, Role role ) {
+//        this.nom=nom;
+//        this.prenom=prenom;
+//        this.email=email;
+//        this.role=role;
+//
+//    }
 
 }

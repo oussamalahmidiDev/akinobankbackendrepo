@@ -27,6 +27,7 @@ import java.util.Random;
 @Setter
 @Builder
 @JsonPropertyOrder({ "numeroCompte" })
+
 public class Compte  {
 
     @Id
@@ -40,7 +41,7 @@ public class Compte  {
 //    @Positive
     private double solde;
 
-    @NotNull
+//    @NotNull
     private String intitule ;
 
     @Enumerated(EnumType.STRING)
@@ -59,7 +60,7 @@ public class Compte  {
     private String codeSecret;
 
     @ManyToOne
-    @JoinColumn(name = "id_client") // pour la relation : chaque compte a un seul client
+//    @JoinColumn(name = "id_client") // pour la relation : chaque compte a un seul client
 //    @NotBlank(message = "le client est obligatoire")
 //    @JsonIgnoreProperties({"comptes", "notifications"})
     @JsonIgnore

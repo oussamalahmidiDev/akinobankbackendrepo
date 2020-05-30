@@ -403,10 +403,10 @@ public class ClientPanelController {
             .toUriString();
 
         // check if client has already uploaded an image
-        if (client.getPhoto() != null)
-            uploadService.delete(client.getPhoto());
+        if (client.getUser().getPhoto() != null)
+            uploadService.delete(client.getUser().getPhoto());
 
-        client.setPhoto(fileName);
+        client.getUser().setPhoto(fileName);
         clientRepository.save(client);
 
         Map<String, String> response = new HashMap<>();
@@ -421,11 +421,12 @@ public class ClientPanelController {
     @GetMapping("/avatar/{filename}")
     public ResponseEntity<Resource> getAvatar(HttpServletRequest request, @PathVariable("filename") String filename) {
         Client client = getClient();
+//        System.out.println(filename);
 
-        if (client.getPhoto() == null)
+        if (client.getUser().getPhoto() == null)
             throw new ResponseStatusException(HttpStatus.OK, "Pas de photo définie.");
 
-        Resource resource = uploadService.get(client.getPhoto());
+        Resource resource = uploadService.get(client.getUser().getPhoto());
 
         // setting content-type header
         String contentType = null;
@@ -454,12 +455,12 @@ public class ClientPanelController {
         Client client = getClient();
 
         // check if client has already uploaded an image
-        if (client.getPhoto() != null)
-            uploadService.delete(client.getPhoto());
+        if (client.getUser().getPhoto() != null)
+            uploadService.delete(client.getUser().getPhoto());
         else
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
-        client.setPhoto(null);
+        client.getUser().setPhoto(null);
         clientRepository.save(client);
 
         return ResponseEntity.ok("Le fichier est supprimé avec succès.");
