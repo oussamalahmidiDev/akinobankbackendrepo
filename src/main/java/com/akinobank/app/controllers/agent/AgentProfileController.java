@@ -5,6 +5,7 @@ import com.akinobank.app.models.Client;
 import com.akinobank.app.models.PasswordChangeRequest;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.*;
+import com.akinobank.app.services.AuthService;
 import com.akinobank.app.services.MailService;
 import com.akinobank.app.services.UploadService;
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/agent/api/profile")
@@ -62,12 +64,18 @@ public class AgentProfileController {
     @Autowired
     private MailService mailService;
 
+    @Autowired
+    private AuthService authService;
+
     @GetMapping()
     public Agent getAgent(){
-        long id = 1L;
-        return agentRepository.findById(id)
-                .orElseThrow(()->
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, "L'agent avec id = " + id + " est introuvable."));
+       try{
+           return authService.getCurrentUser().getAgent();
+
+       }catch (NoSuchElementException e){
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "L'agent est introuvable.");
+
+       }
     }
 
     @PostMapping("/avatar/upload")
