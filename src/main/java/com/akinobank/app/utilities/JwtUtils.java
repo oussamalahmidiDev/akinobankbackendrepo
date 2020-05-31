@@ -27,7 +27,7 @@ public class JwtUtils {
     private long TokenValidity = 604800L;
 
 
-    private String CLAIMS_ID = "id";
+    private String CLAIMS_USER = "user";
 
     //retrieve username from jwt token
     public String getUsernameFromToken(String token) {
@@ -64,7 +64,7 @@ public class JwtUtils {
 
     private String doGenerateToken(Map<String, Object> claims, String subject) {
         User user = userRepository.findByEmail(subject);
-        claims.put(CLAIMS_ID ,user.getId());
+        claims.put(CLAIMS_USER ,user);
         return Jwts.
                 builder()
                 .setClaims(claims)

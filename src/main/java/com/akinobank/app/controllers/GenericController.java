@@ -73,6 +73,7 @@ public class GenericController {
 
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);
+        System.out.println(jwtUtils.getAllClaimsFromToken(token));
 
         return ResponseEntity.ok(response);
     }
