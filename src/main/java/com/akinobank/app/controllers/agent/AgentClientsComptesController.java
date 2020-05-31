@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.server.csrf.CsrfWebFilter;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -168,6 +169,35 @@ public class AgentClientsComptesController {
 //            );
 
             return compteRepository.save(compteToModify);
+        }  catch (NoSuchElementException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le compte avec le numero = " + numeroCompte + " est introuvable.");
+        }
+    }
+    @PutMapping(value = "/{id}/comptes/{idComptes}/modifier/status")
+    public Compte modifyClientCompteStatus(@PathVariable(value = "id") Long id ,
+                                           @PathVariable(value = "idComptes") String numeroCompte ,
+                                           @RequestParam(value = "status") String status ) {
+        try {
+//            Compte compteToModify = compteRepository.findById(numeroCompte).get();
+            Client client = clientRepository.findById(id).get();
+            Compte compte = getClientCompteByNum(id,numeroCompte) ;// just for test
+            System.out.println(status);
+
+            switch (status){
+                case "ACTIVER" : compte.setStatut(CompteStatus.ACTIVE);break;
+                case "BLOQUER" : compte.setStatut(CompteStatus.BLOCKED);break;
+                case "SUSPENDRE" : compte.setStatut(CompteStatus.SUSPENDED);break;
+            }
+            compteRepository.save(compte);
+
+
+//            Notification notification = notificationRepository.save(Notification.builder()
+//                    .client(client)
+//                    .contenu("Le compte de nº <b>" + compteToModify.getNumeroCompteHidden() + "</b> à été modifié par votre agent.")
+//                    .build()
+//            );
+
+            return compte;
         }  catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le compte avec le numero = " + numeroCompte + " est introuvable.");
         }

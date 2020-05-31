@@ -46,7 +46,7 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
         httpSecurity.cors().disable().csrf().disable()
 //      Allow certain routes
                 .authorizeRequests().antMatchers("/api/auth", "/api/forgot_password", "/confirm", "/set_password").permitAll().
-                and().authorizeRequests().antMatchers("/api/auth" , "/api/auth/agent").permitAll().
+                and().authorizeRequests().antMatchers("/api/auth" , "/api/auth/agent","/admin/**").permitAll().
                 and().authorizeRequests().antMatchers("/admin/**").permitAll(). // just for now
                 and().authorizeRequests().antMatchers("/agent/**").hasRole(Role.AGENT.name()).
                 and().authorizeRequests().antMatchers("/client/**").hasRole(Role.CLIENT.name()).

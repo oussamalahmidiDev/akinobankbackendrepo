@@ -49,6 +49,9 @@ public class User implements UserDetails { // We use interface UserDetials inste
     private Long codePostale;
 
 
+    private Boolean archived;
+
+
 
     @JsonIgnore
     private String verificationToken;
@@ -86,6 +89,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
     void beforeInsert() {
         System.out.println("SETTING DEFAULT VALUES FOR USER");
         emailConfirmed = false;
+        archived=false;
         verificationToken = VerificationTokenGenerator.generateVerificationToken();
     }
 

@@ -75,8 +75,9 @@ public class AgentClientsController {
 
 
     @GetMapping() //show all clients , works
-    public List<Client> getClients(){
-        return clientRepository.findAll();
+    public List<User> getClients(){
+//        return clientRepository.findAll();
+        return userRepository.findAllByRoleAndArchived(Role.CLIENT,false);
 
 //        return userRepository.findAllByRole(Role.CLIENT);
     }
@@ -126,10 +127,11 @@ public class AgentClientsController {
     @DeleteMapping(value = "/{id}/supprimer") // delete a client , works
     public ResponseEntity<?> deleteClient(@PathVariable(value = "id") Long id){
         try {
-            Client client = clientRepository.findById(id).get();
-            userRepository.delete(client.getUser());
-            clientRepository.delete(client);
-            compteRepository.deleteAll(client.getComptes());
+            Client client = userRepository.findById(id).get().getClient();
+//            userRepository.delete(client.getUser());
+//            clientRepository.delete(client);
+//            compteRepository.deleteAll(client.getComptes());
+            client.getUser().setArchived(true);
 
             return new ResponseEntity<>("Client est supprime avec succes." ,HttpStatus.OK);
         } catch (NoSuchElementException e){
