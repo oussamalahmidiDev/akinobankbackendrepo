@@ -1,6 +1,7 @@
 package com.akinobank.app.controllers;
 
 import com.akinobank.app.enumerations.CompteStatus;
+import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.exceptions.ConfirmationPasswordException;
 import com.akinobank.app.exceptions.InvalidVerificationTokenException;
 import com.akinobank.app.models.Compte;
@@ -62,6 +63,31 @@ public class GenericController {
 
         try {
             authService.authenticate(user.getEmail(), user.getPassword());
+
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "L'email ou mot de passe est incorrect");
+        }
+
+        final UserDetails userDetails = authService.loadUserByUsername(user.getEmail());
+
+        final String token = jwtUtils.generateToken(userDetails);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        System.out.println(jwtUtils.getAllClaimsFromToken(token));
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/api/auth/agent")
+    @ResponseBody
+    public ResponseEntity<?> agentAuthenticate (@RequestBody User user) throws Exception {
+        System.out.println(user.getEmail() +" "+ user.getPassword());
+
+        try {
+            Role role = userRepository.findByEmail(user.getEmail()).getRole();
+            System.out.println(role);
+            authService.agentAuthenticate(user.getEmail(), user.getPassword(),role);
 
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "L'email ou mot de passe est incorrect");

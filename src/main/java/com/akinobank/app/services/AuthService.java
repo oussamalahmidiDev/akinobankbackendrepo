@@ -1,9 +1,11 @@
 package com.akinobank.app.services;
 
+import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.UserRepository;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -13,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 // this class is just for the tests.
 
@@ -42,6 +45,21 @@ public class AuthService implements UserDetailsService {
             throw new Exception("INVALID_CREDENTIALS", e);
         }
         }
+    public void agentAuthenticate(String email, String password , Role role) throws Exception {
+        System.out.println(role);
+        if (role.equals(Role.AGENT)) {
+            try {
+                authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+            } catch (DisabledException e) {
+                throw new Exception("USER_DISABLED", e);
+            } catch (BadCredentialsException e) {
+                throw new Exception("INVALID_CREDENTIALS", e);
+            }
+        }
+        else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+    }
 
 
     public User getCurrentUser() {
