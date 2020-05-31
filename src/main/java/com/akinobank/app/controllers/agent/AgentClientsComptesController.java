@@ -179,7 +179,7 @@ public class AgentClientsComptesController {
                                            @RequestParam(value = "status") String status ) {
         try {
 //            Compte compteToModify = compteRepository.findById(numeroCompte).get();
-            Client client = clientRepository.findById(id).get();
+            Client client = userRepository.findById(id).get().getClient();
             Compte compte = getClientCompteByNum(id,numeroCompte) ;// just for test
             System.out.println(status);
 

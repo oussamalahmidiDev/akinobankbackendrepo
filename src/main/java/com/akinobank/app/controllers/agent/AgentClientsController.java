@@ -87,7 +87,7 @@ public class AgentClientsController {
     @GetMapping(value="/{id}")
     public Client getOneClient(@PathVariable(value = "id")Long id) {
         try{
-            return clientRepository.findById(id).get();
+            return userRepository.findById(id).get().getClient();
         } catch (NoSuchElementException | EntityNotFoundException e){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client avec id = " + id + " est introuvable")  ;
         }
