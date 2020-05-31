@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -58,6 +59,9 @@ public class AgentClientsComptesController {
     @Autowired
     private AgentClientsController agentClientsController;
 
+    @Autowired
+    private PasswordEncoder encoder;
+
 
 
 
@@ -76,9 +80,9 @@ public class AgentClientsComptesController {
         Agent agent = agentProfileController.getAgent();
         Compte compte = new Compte();
         System.out.println(addCompteVerification);
-
+        Boolean isMatch = encoder.matches(addCompteVerification.getAgentPassword(),agent.getUser().getPassword());
         try { //check firstly if client exist
-            if(!agent.getUser().getPassword().equals(addCompteVerification.getAgentPassword())){
+            if(!isMatch){
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Mauvais mot de passe.");
             }
             compte.setIntitule(addCompteVerification.getIntitule());
@@ -125,11 +129,11 @@ public class AgentClientsComptesController {
             Compte compte = compteRepository.findByClient_AgenceAndNumeroCompteContaining(agent.getAgence(), subNumero).get();
             compteRepository.delete(compte);
 
-            Notification notification = notificationRepository.save(Notification.builder()
-                    .client(compte.getClient())
-                    .contenu("Le compte de nº <b>" + compte.getNumeroCompteHidden() + "</b> à été supprimé.")
-                    .build()
-            );
+//            Notification notification = notificationRepository.save(Notification.builder()
+//                    .client(compte.getClient())
+//                    .contenu("Le compte de nº <b>" + compte.getNumeroCompteHidden() + "</b> à été supprimé.")
+//                    .build()
+//            );
 
             return new ResponseEntity<>("Le compte est supprime avec succes." , HttpStatus.OK);
         } catch (NoSuchElementException e) {
@@ -144,6 +148,7 @@ public class AgentClientsComptesController {
                                      @RequestBody Compte compte) {
         try {
 //            Compte compteToModify = compteRepository.findById(numeroCompte).get();
+            Client client = clientRepository.findById(id).get();
             Compte compteToModify = getClientCompteByNum(id,numeroCompte) ;// just for test
             System.out.println(compte.getStatut());
             if (compte.getIntitule() != null)
@@ -156,13 +161,11 @@ public class AgentClientsComptesController {
                 }
 //                compteToModify.setStatut(compte.getStatut());
 
-            //TODO notification need to be fixed
-
-            Notification notification = notificationRepository.save(Notification.builder()
-                    .client(compte.getClient())
-                    .contenu("Le compte de nº <b>" + compte.getNumeroCompteHidden() + "</b> à été modifié par votre agent.")
-                    .build()
-            );
+//            Notification notification = notificationRepository.save(Notification.builder()
+//                    .client(client)
+//                    .contenu("Le compte de nº <b>" + compteToModify.getNumeroCompteHidden() + "</b> à été modifié par votre agent.")
+//                    .build()
+//            );
 
             return compteRepository.save(compteToModify);
         }  catch (NoSuchElementException e) {

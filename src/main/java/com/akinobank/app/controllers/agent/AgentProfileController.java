@@ -17,6 +17,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -67,6 +68,9 @@ public class AgentProfileController {
     @Autowired
     private AuthService authService;
 
+    @Autowired
+    private PasswordEncoder encoder;
+
     @GetMapping()
     public Agent getAgent(){
        try{
@@ -110,15 +114,17 @@ public class AgentProfileController {
     public ResponseEntity changePassword(@RequestBody PasswordChangeRequest passwordChangeRequest){
         System.out.println(passwordChangeRequest);
         Agent currentAgent = getAgent();
+        Boolean isMatch = encoder.matches(passwordChangeRequest.getOldPassword(),currentAgent.getUser().getPassword());
+
         if(!passwordChangeRequest.getNewPassword().equals(passwordChangeRequest.getConfPassword())){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Votre mot de passe ne correspond pas.");
         }
 
-        if(!currentAgent.getUser().getPassword().equals(passwordChangeRequest.getOldPassword())){
+        if(!isMatch){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Mauvais mot de passe.");
         }
 
-        currentAgent.getUser().setPassword(passwordChangeRequest.getNewPassword());
+        currentAgent.getUser().setPassword(encoder.encode(passwordChangeRequest.getNewPassword()));
         agentRepository.save(currentAgent);
 
 
@@ -129,10 +135,16 @@ public class AgentProfileController {
 
     }
     @PostMapping("/modifier/user")
-    public ResponseEntity modifyAgentParam(@RequestBody User user){
+    public User modifyAgentParam(@RequestBody User user){
+        System.out.println(user);
+        User oldUser = getAgent().getUser();
+        user.setPassword(oldUser.getPassword());
+        user.setVerificationToken(oldUser.getVerificationToken());
         user.setAgent(getAgent());
+//        user.setAgent(getAgent());
         userRepository.save(user);
-        return new ResponseEntity(HttpStatus.OK);
+
+        return user;
     }
 
     @GetMapping("/avatar/{filename}")

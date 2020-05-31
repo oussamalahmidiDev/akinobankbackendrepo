@@ -20,6 +20,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -69,6 +70,9 @@ public class AgentClientsController {
     @Autowired
     private AgentProfileController agentProfileController;
 
+    @Autowired
+    private PasswordEncoder encoder;
+
 
     @GetMapping() //show all clients , works
     public List<Client> getClients(){
@@ -104,14 +108,14 @@ public class AgentClientsController {
             user.setRole(Role.CLIENT);
             Agent agent = agentProfileController.getAgent();
 
-            userRepository.save(user); // add user in table
+            userRepository.save(user);
 
             Client client = Client.builder()
                     .agence(agent.getAgence())
                     .user(user)
                     .build();
 
-            clientRepository.save(client); // add client in table
+            clientRepository.save(client);
             mailService.sendVerificationMail(user);
             return user;
         } catch (DataIntegrityViolationException e) {
@@ -143,7 +147,8 @@ public class AgentClientsController {
             Agent agent = agentProfileController.getAgent();
             User user = changeClientDataRequest.getUser();
             User userToModify = clientRepository.findById(changeClientDataRequest.getUser().getId()).get().getUser();
-            if(!agent.getUser().getPassword().equals(changeClientDataRequest.getAgentPassword())){
+            Boolean isMatch = encoder.matches(user.getPassword(),changeClientDataRequest.getAgentPassword());
+            if(!isMatch){
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Mauvais mot de passe.");
             }
             if (user.getEmail() != null)

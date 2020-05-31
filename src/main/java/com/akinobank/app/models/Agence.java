@@ -57,10 +57,10 @@ public class Agence implements Serializable {
     private Collection<Client> clients;
 
 
-    //Just for test
-    public Agence(Ville ville, String libelle, Admin admin) {
-        this.ville = ville;
-        this.libelleAgence=libelle;
-        this.admin=admin;
-    }
+//    //Just for test
+//    public Agence(Ville ville, String libelle, Admin admin) {
+//        this.ville = ville;
+//        this.libelleAgence=libelle;
+//        this.admin=admin;
+//    }
 }
