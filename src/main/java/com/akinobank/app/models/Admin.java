@@ -31,7 +31,7 @@ public class Admin {
 
     @OneToOne // pour la relation : un admin a un compte user pour la auth
     @JoinColumn(name = "id_user")
-    @JsonIgnoreProperties({"admin", "emailConfirmed", "dateUpdate", "dateDeCreation", "id"})
+    @JsonIgnoreProperties({"admin", "emailConfirmed", "dateUpdate", "dateDeCreation", "id" })
     @JsonUnwrapped
     private User user;
 

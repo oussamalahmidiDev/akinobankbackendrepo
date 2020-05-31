@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collection;
@@ -59,6 +60,9 @@ public class AppApplication implements CommandLineRunner     {
     @Autowired
     private RechargeRepository rechargeRepository;
 
+    @Autowired
+    private PasswordEncoder encoder;
+
 
 
     @Autowired
@@ -89,9 +93,9 @@ public class AppApplication implements CommandLineRunner     {
         User user1 = userRepository.save(User.builder()
                 .nom("DAOULAT")
                 .prenom("KHALIL")
-                .password("khalil")
+                .password(encoder.encode("khalil"))
                 .role(Role.AGENT)
-                .email("khalil@gmail.com")
+                .email("daoulat.khalil@gmail.com")
                 .numeroTelephone("+21269857452")
                 .adresse("ENSA RUE N 1 ")
                 .ville("Marrakech")

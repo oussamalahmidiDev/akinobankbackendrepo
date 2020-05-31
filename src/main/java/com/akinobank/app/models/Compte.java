@@ -62,7 +62,7 @@ public class Compte  {
     @ManyToOne
 //    @JoinColumn(name = "id_client") // pour la relation : chaque compte a un seul client
 //    @NotBlank(message = "le client est obligatoire")
-//    @JsonIgnoreProperties({"comptes", "notifications"})
+    @JsonIgnoreProperties({"comptes", "notifications"})
     @JsonIgnore
     private Client client;
 

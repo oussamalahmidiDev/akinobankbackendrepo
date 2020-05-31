@@ -7,28 +7,31 @@ import com.akinobank.app.models.Compte;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.CompteRepository;
 import com.akinobank.app.repositories.UserRepository;
+import com.akinobank.app.services.AuthService;
 import com.akinobank.app.services.MailService;
+import com.akinobank.app.utilities.JwtUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
 
 // controlleur generique qui peut etre utilisé par tt les utilisateurs.
 @Controller
+@CrossOrigin("*")
 public class GenericController {
 
     Logger logger = LoggerFactory.getLogger(GenericController.class);
@@ -41,6 +44,38 @@ public class GenericController {
 
     @Autowired
     private MailService mailService;
+
+    @Autowired
+    private AuthService authService;
+
+
+    @Autowired
+    private PasswordEncoder encoder;
+
+    @Autowired
+    private JwtUtils jwtUtils;
+
+    @PostMapping("/api/auth")
+    @ResponseBody
+    public ResponseEntity<?> authenticate (@RequestBody User user) throws Exception {
+        System.out.println(user.getEmail() +" "+ user.getPassword());
+
+        try {
+            authService.authenticate(user.getEmail(), user.getPassword());
+
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "L'email ou mot de passe est incorrect");
+        }
+
+        final UserDetails userDetails = authService.loadUserByUsername(user.getEmail());
+
+        final String token = jwtUtils.generateToken(userDetails);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+
+        return ResponseEntity.ok(response);
+    }
 
     // page de confirmation d email
     @GetMapping("/confirm")
