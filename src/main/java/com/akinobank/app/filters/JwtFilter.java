@@ -3,6 +3,7 @@ package com.akinobank.app.filters;
 import com.akinobank.app.services.AuthService;
 import com.akinobank.app.utilities.JwtUtils;
 import io.jsonwebtoken.ExpiredJwtException;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Component
+@Log4j2
 public class JwtFilter extends OncePerRequestFilter {
 
     @Autowired
@@ -51,10 +53,11 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
-            UserDetails userDetails = this.authService.loadUserByUsername(username);
+            jwtUtils.setToken(jwtToken);
+            UserDetails userDetails = jwtUtils.getUserFromToken();
 
             if (jwtUtils.validateToken(jwtToken, userDetails)) {
+                log.info("Extracted user from claims : {}", userDetails.toString());
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
 

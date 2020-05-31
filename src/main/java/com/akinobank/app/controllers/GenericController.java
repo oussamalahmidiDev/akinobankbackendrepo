@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.UUID;
 
 
 // controlleur generique qui peut etre utilisé par tt les utilisateurs.
@@ -157,7 +156,7 @@ public class GenericController {
         String password = request.getParameter("password");
         String passwordConfirmation = request.getParameter("password_conf");
         if (!password.equals(passwordConfirmation)) throw new ConfirmationPasswordException();
-        user.setPassword(password);
+        user.setPassword(encoder.encode(password));
 
         userRepository.save(user);
 
@@ -213,10 +212,10 @@ public class GenericController {
     }
 
     @ResponseBody
-    @GetMapping("/verify")
-    public ResponseEntity<String> sendVerification(HttpServletRequest request) {
-        Long id = Long.parseLong(request.getParameter("id"));
-        User user = userRepository.getOne(id);
+    @PostMapping("/verify")
+    public ResponseEntity<String> sendVerification(@RequestBody User credentials) {
+//        Long id = Long.parseLong(request.getParameter("id"));
+        User user = userRepository.findByEmail(credentials.getEmail());
         mailService.sendVerificationMail(user);
         return new ResponseEntity<>(HttpStatus.OK);
     }

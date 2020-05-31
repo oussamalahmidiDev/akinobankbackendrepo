@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.util.Collection;
@@ -19,6 +21,8 @@ import java.util.Collection;
 @Data
 @Builder
 @JsonPropertyOrder({ "user" })
+@SQLDelete(sql = "UPDATE client SET deleted=true WHERE id=?")
+@Where(clause = "deleted = false")
 public class Client {
 
     @Id // la cle prm
@@ -27,6 +31,7 @@ public class Client {
 
 //    @NotNull
 
+    private boolean deleted;
 
     @ManyToOne
     @JoinColumn(name = "id_agent") // pour la relation : chaque client a un seul agent

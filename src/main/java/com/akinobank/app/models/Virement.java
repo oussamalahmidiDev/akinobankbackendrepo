@@ -1,25 +1,18 @@
 package com.akinobank.app.models;
 
-import com.akinobank.app.enumerations.CompteStatus;
 import com.akinobank.app.enumerations.VirementStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.sun.istack.NotNull;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.annotations.ValueGenerationType;
-import org.hibernate.id.UUIDGenerationStrategy;
-import org.hibernate.id.UUIDGenerator;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import javax.validation.constraints.Positive;
-import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Random;
-import java.util.UUID;
 
 @Entity // pour la générer du table User
 // annotation de Lombok : pour générer les getters&setters et les constructeurs par default et avec des args
@@ -28,6 +21,8 @@ import java.util.UUID;
 @Getter
 @Setter
 @Builder
+@SQLDelete(sql = "UPDATE virement SET deleted=true WHERE id_virement=?")
+@Where(clause = "deleted = false")
 public class Virement implements Serializable {
 
     @Id
@@ -36,6 +31,8 @@ public class Virement implements Serializable {
     private Long id ;
 
     private String notes;
+
+    private boolean deleted;
 
 //    @NotNull
     @JsonIgnore

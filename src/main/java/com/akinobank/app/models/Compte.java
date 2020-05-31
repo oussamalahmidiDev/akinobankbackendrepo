@@ -1,19 +1,16 @@
 package com.akinobank.app.models;
 
 import com.akinobank.app.enumerations.CompteStatus;
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.*;
 import org.hibernate.validator.constraints.CreditCardNumber;
-import org.hibernate.validator.constraints.UniqueElements;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.Size;
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Random;
@@ -26,6 +23,8 @@ import java.util.Random;
 @Getter
 @Setter
 @Builder
+@SQLDelete(sql = "UPDATE compte SET deleted=true WHERE id=?")
+@Where(clause = "deleted = false")
 @JsonPropertyOrder({ "numeroCompte" })
 
 public class Compte  {
@@ -34,7 +33,7 @@ public class Compte  {
     @GeneratedValue(generator = "cn-generator")
     @GenericGenerator(name = "cn-generator", strategy = "com.akinobank.app.utilities.CreditCardNumberGenerator")
     // This CC number generated using Luhn Algorithm found in CreditCardNumberGenerator
-    @JsonIgnore
+    // @JsonIgnore
     @CreditCardNumber
     private String numeroCompte;
 
@@ -60,11 +59,13 @@ public class Compte  {
     private String codeSecret;
 
     @ManyToOne
-//    @JoinColumn(name = "id_client") // pour la relation : chaque compte a un seul client
+    @JoinColumn(name = "id_client") // pour la relation : chaque compte a un seul client
 //    @NotBlank(message = "le client est obligatoire")
     @JsonIgnoreProperties({"comptes", "notifications"})
     @JsonIgnore
     private Client client;
+
+    private boolean deleted;
 
 
     @OneToMany(mappedBy = "compte",fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})
@@ -84,7 +85,7 @@ public class Compte  {
         codeSecret = String.valueOf(new Random().nextInt(90000000) + 10000000);
     }
 
-    @JsonProperty("numeroCompte")
+    // @JsonProperty("numeroCompte")
     public String getNumeroCompteHidden() {
         // we will add condition on roles on this getter, for the moment let's hide the field on everyone.
         return new String(new char[8]).replace('\0', '*').concat(numeroCompte.substring(12));

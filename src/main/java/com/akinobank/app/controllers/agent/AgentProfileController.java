@@ -1,7 +1,6 @@
 package com.akinobank.app.controllers.agent;
 
 import com.akinobank.app.models.Agent;
-import com.akinobank.app.models.Client;
 import com.akinobank.app.models.PasswordChangeRequest;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.*;
@@ -28,7 +27,6 @@ import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/agent/api/profile")
@@ -72,14 +70,10 @@ public class AgentProfileController {
     private PasswordEncoder encoder;
 
     @GetMapping()
-    public Agent getAgent(){
-       try{
-           return authService.getCurrentUser().getAgent();
-
-       }catch (NoSuchElementException e){
-           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "L'agent est introuvable.");
-
-       }
+    public Agent getAgent() {
+        return agentRepository.findByUser(authService.getCurrentUser()).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "L'agent est introuvable.")
+        );
     }
 
     @PostMapping("/avatar/upload")
@@ -92,10 +86,10 @@ public class AgentProfileController {
 
         // generate download link
         String imageDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/client/api/")
-                .path("/avatar/")
-                .path(fileName)
-                .toUriString();
+            .path("/client/api/")
+            .path("/avatar/")
+            .path(fileName)
+            .toUriString();
 
         // check if client has already uploaded an image
         if (agent.getUser().getPhoto() != null)
@@ -110,32 +104,32 @@ public class AgentProfileController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
 
     }
+
     @PostMapping("/modifier/password")
-    public ResponseEntity changePassword(@RequestBody PasswordChangeRequest passwordChangeRequest){
+    public ResponseEntity changePassword(@RequestBody PasswordChangeRequest passwordChangeRequest) {
         System.out.println(passwordChangeRequest);
         Agent currentAgent = getAgent();
-        Boolean isMatch = encoder.matches(passwordChangeRequest.getOldPassword(),currentAgent.getUser().getPassword());
+        Boolean isMatch = encoder.matches(passwordChangeRequest.getOldPassword(), currentAgent.getUser().getPassword());
 
-        if(!passwordChangeRequest.getNewPassword().equals(passwordChangeRequest.getConfPassword())){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Votre mot de passe ne correspond pas.");
+        if (!passwordChangeRequest.getNewPassword().equals(passwordChangeRequest.getConfPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Votre mot de passe ne correspond pas.");
         }
 
-        if(!isMatch){
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Mauvais mot de passe.");
+        if (!isMatch) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Mauvais mot de passe.");
         }
 
         currentAgent.getUser().setPassword(encoder.encode(passwordChangeRequest.getNewPassword()));
         agentRepository.save(currentAgent);
 
 
-
-
         return new ResponseEntity(HttpStatus.OK);
 
 
     }
+
     @PostMapping("/modifier/user")
-    public User modifyAgentParam(@RequestBody User user){
+    public User modifyAgentParam(@RequestBody User user) {
         System.out.println(user);
         User oldUser = getAgent().getUser();
         user.setPassword(oldUser.getPassword());
@@ -171,21 +165,19 @@ public class AgentProfileController {
         }
 
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
+            .contentType(MediaType.parseMediaType(contentType))
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+            .body(resource);
     }
-
 
 
     @DeleteMapping("/avatar/delete/{filename}")
-    public ResponseEntity deleteAgentPhoto(@PathVariable("filename") String filename){
+    public ResponseEntity deleteAgentPhoto(@PathVariable("filename") String filename) {
         uploadService.delete(filename);
         getAgent().getUser().setPhoto(null);
-        agentRepository.save(getAgent()) ;
+        agentRepository.save(getAgent());
         return new ResponseEntity(HttpStatus.OK);
     }
-
 
 
 }

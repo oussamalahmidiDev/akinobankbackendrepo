@@ -12,8 +12,6 @@ import com.akinobank.app.services.UploadService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -72,24 +70,26 @@ public class ClientPanelController {
     //    ***************** API Client profile ********************
 
     @GetMapping(value = "/profile") // return Client by id
-    @Cacheable(cacheNames = "clients")
+//    @Cacheable(cacheNames = "clients")
     public Client getClient() {
-        return clientRepository.findClientByUserId(authService.getCurrentUser().getId());
+        return clientRepository.findByUser(authService.getCurrentUser()).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Votre compte est introuvable.")
+        );
     }
 
-    @GetMapping(value = "/profile/cached") // return Client by id
-    @Cacheable(cacheNames = "clients")
-    public Client getClientTest(@PathVariable Long id) throws InterruptedException {
-        Thread.sleep(8000);
-        return clientRepository.findClientByUserId(id);
-    }
+//    @GetMapping(value = "/profile/cached") // return Client by id
+//    @Cacheable(cacheNames = "clients")
+//    public Client getClientTest(@PathVariable Long id) throws InterruptedException {
+//        Thread.sleep(8000);
+//        return clientRepository.findByUser(id);
+//    }
 
 
     //*****************************
     //******* API to modify Client Info *************
 
     @PostMapping(value = "/profile/changer")
-    @CacheEvict(cacheNames = "clients", allEntries = true)
+//    @CacheEvict(cacheNames = "clients", allEntries = true)
     public Demande sendChangeDemande(@RequestBody Demande demande) {
         Client client = getClient();
 
@@ -217,14 +217,14 @@ public class ClientPanelController {
             .build()
         );
 
-        mailService.sendVirementCodeMail(compte.getClient().getUser(), virement);
+        mailService.sendVirementCodeMail(getClient().getUser(), virement);
 
-        Notification notification = Notification.builder()
-            .client(compte.getClient())
-            .contenu("Un <b>nouveau virement</b> à été effectué ! Veuillez verifier votre e-mail pour le confirmer.")
-            .build();
+        // Notification notification = Notification.builder()
+        //     .client(compte.getClient())
+        //     .contenu("Un <b>nouveau virement</b> à été effectué ! Veuillez verifier votre e-mail pour le confirmer.")
+        //     .build();
 
-        notificationRepository.save(notification);
+        // notificationRepository.save(notification);
 
         return new ResponseEntity<>(virement, HttpStatus.CREATED);
     }
@@ -290,8 +290,11 @@ public class ClientPanelController {
         Compte compte = compteRepository.findByNumeroCompteAndClient(request.getNumeroCompte(), getClient()).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le nº de compte est erroné.")
         );
+        if (!compte.getCodeSecret().equals(request.getCodeSecret()))
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
+
         verifyCompteStatus(compte);
-        return new ResponseEntity<>("OK", HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     //**********************
@@ -389,7 +392,7 @@ public class ClientPanelController {
 //    ****** API to upload avatar image *******
 
     @PostMapping("/avatar/upload")
-    @CacheEvict(cacheNames = "clients", allEntries = true)
+//    @CacheEvict(cacheNames = "clients", allEntries = true)
     public ResponseEntity<?> uploadAvatar(@RequestParam("image") MultipartFile image) {
         Client client = getClient();
 
@@ -410,7 +413,7 @@ public class ClientPanelController {
         clientRepository.save(client);
 
         Map<String, String> response = new HashMap<>();
-        response.put("link", imageDownloadUri);
+        response.put("link", fileName);
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
 
@@ -450,7 +453,7 @@ public class ClientPanelController {
     //***************************
 //    ****** API to get avatar image *******
     @DeleteMapping("/avatar/delete")
-    @CacheEvict(cacheNames = "clients", allEntries = true)
+//    @CacheEvict(cacheNames = "clients", allEntries = true)
     public ResponseEntity<String> deleteAvatar() {
         Client client = getClient();
 
@@ -463,6 +466,6 @@ public class ClientPanelController {
         client.getUser().setPhoto(null);
         clientRepository.save(client);
 
-        return ResponseEntity.ok("Le fichier est supprimé avec succès.");
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 }

@@ -3,6 +3,7 @@ package com.akinobank.app.services;
 import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.UserRepository;
+import com.akinobank.app.utilities.JwtUtils;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,7 +11,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -28,6 +28,9 @@ public class AuthService implements UserDetailsService {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtUtils jwtUtils;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -63,12 +66,13 @@ public class AuthService implements UserDetailsService {
 
 
     public User getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof UserDetails) {
-            return userRepository.findByEmail(((UserDetails) principal).getUsername());
-        } else {
-            return null;
-        }
+        return jwtUtils.getUserFromToken();
+//        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        if (principal instanceof UserDetails) {
+//            return userRepository.findByEmail(((UserDetails) principal).getUsername());
+//        } else {
+//            return null;
+//        }
     }
 
 
