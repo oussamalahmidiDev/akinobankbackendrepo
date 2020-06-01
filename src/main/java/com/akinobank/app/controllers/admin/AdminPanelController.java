@@ -21,7 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/admin")
@@ -54,16 +56,25 @@ public class AdminPanelController {
     final String ADMIN_VIEWS_PATH = "views/admin/";
 
 
+    @RequestMapping("/login")
+    public String login(){
+
+        return ADMIN_VIEWS_PATH + "login";
+    }
+    @RequestMapping("/logout")
+    public String logout(HttpServletRequest request){
+//        HttpSession session = request.getSession();
+        return ADMIN_VIEWS_PATH + "login";
+    }
     @GetMapping("")
     public String index(Model model) {
         return ADMIN_VIEWS_PATH + "index";
     }
 
-    @GetMapping("users")
-    public String usersView(Model model) {
-        model.addAttribute("users", userRepository.findAllByRoleIsNotOrderByDateDeCreationDesc(Role.CLIENT));
-        return ADMIN_VIEWS_PATH + "users";
-    }
+//    @GetMapping("users")
+//    public String usersView(Model model) {
+//        return ADMIN_VIEWS_PATH + "users";
+//    }
 
     @GetMapping("users/ajouter")
     public String addUserView(Model model) {

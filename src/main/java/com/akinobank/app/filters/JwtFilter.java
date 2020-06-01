@@ -1,5 +1,7 @@
 package com.akinobank.app.filters;
 
+import com.akinobank.app.models.User;
+import com.akinobank.app.repositories.UserRepository;
 import com.akinobank.app.services.AuthService;
 import com.akinobank.app.utilities.JwtUtils;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -28,15 +30,24 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private String TOKEN_HEADER = "Authorization";
 
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
 
         final String requestTokenHeader = httpServletRequest.getHeader(TOKEN_HEADER);
+//        System.out.println(httpServletRequest.getParameter("username"));
+//        System.out.println(httpServletRequest.getRequestURI());
+//        User user = userRepository.findByEmail(httpServletRequest.getParameter("username"));
+//        System.out.println(user.getRole());
+
 
         String username = null;
         String jwtToken = null;
+
 
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
             jwtToken = requestTokenHeader.substring(7);

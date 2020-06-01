@@ -148,19 +148,13 @@ public class AgentClientsComptesController {
                                      @PathVariable(value = "idComptes") String numeroCompte ,
                                      @RequestBody Compte compte) {
         try {
-//            Compte compteToModify = compteRepository.findById(numeroCompte).get();
-            Client client = clientRepository.findById(id).get();
-            Compte compteToModify = getClientCompteByNum(id,numeroCompte) ;// just for test
-            System.out.println(compte.getStatut());
+            Compte compteToModify = compteRepository.findById(numeroCompte).get();
+//            Client client = clientRepository.findById(id).get();
+//            Compte compteToModify = getClientCompteByNum(id,numeroCompte) ;// just for test
             if (compte.getIntitule() != null)
                 compteToModify.setIntitule(compte.getIntitule());
             if (compte.getSolde() != 0.0)
                 compteToModify.setSolde(compte.getSolde());
-            if (compte.getStatut() != null && compte.getStatut().equals("BLOQUER")){
-                System.out.println(compte.getStatut());
-//                compteToModify.setStatut(CompteStatus.BLOCKED);
-                }
-//                compteToModify.setStatut(compte.getStatut());
 
 //            Notification notification = notificationRepository.save(Notification.builder()
 //                    .client(client)
@@ -178,17 +172,17 @@ public class AgentClientsComptesController {
                                            @PathVariable(value = "idComptes") String numeroCompte ,
                                            @RequestParam(value = "status") String status ) {
         try {
-//            Compte compteToModify = compteRepository.findById(numeroCompte).get();
-            Client client = userRepository.findById(id).get().getClient();
-            Compte compte = getClientCompteByNum(id,numeroCompte) ;// just for test
+            Compte compteToModify = compteRepository.findById(numeroCompte).get();
+//            Client client = userRepository.findById(id).get().getClient();
+//            Compte compte = getClientCompteByNum(id,numeroCompte) ;// just for test
             System.out.println(status);
 
             switch (status){
-                case "ACTIVER" : compte.setStatut(CompteStatus.ACTIVE);break;
-                case "BLOQUER" : compte.setStatut(CompteStatus.BLOCKED);break;
-                case "SUSPENDRE" : compte.setStatut(CompteStatus.SUSPENDED);break;
+                case "ACTIVER" : compteToModify.setStatut(CompteStatus.ACTIVE);break;
+                case "BLOQUER" : compteToModify.setStatut(CompteStatus.BLOCKED);break;
+                case "SUSPENDRE" : compteToModify.setStatut(CompteStatus.SUSPENDED);break;
             }
-            compteRepository.save(compte);
+            compteRepository.save(compteToModify);
 
 
 //            Notification notification = notificationRepository.save(Notification.builder()
@@ -197,7 +191,7 @@ public class AgentClientsComptesController {
 //                    .build()
 //            );
 
-            return compte;
+            return compteToModify;
         }  catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le compte avec le numero = " + numeroCompte + " est introuvable.");
         }

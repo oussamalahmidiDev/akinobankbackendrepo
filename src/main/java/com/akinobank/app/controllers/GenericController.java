@@ -55,6 +55,13 @@ public class GenericController {
     @Autowired
     private JwtUtils jwtUtils;
 
+//    @PostMapping("/connect")
+//    public String connect(HttpServletRequest request, Model model) {
+//        String username = request.getParameter("username");
+//        System.out.println(username);
+//        return "views/admin/login";
+//    }
+
     @PostMapping("/api/auth")
     @ResponseBody
     public ResponseEntity<?> authenticate (@RequestBody User user) throws Exception {
@@ -64,7 +71,7 @@ public class GenericController {
             authService.authenticate(user.getEmail(), user.getPassword());
 
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "L'email ou mot de passe est incorrect");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "L'email ou mot de passe est incorrect.");
         }
 
         final UserDetails userDetails = authService.loadUserByUsername(user.getEmail());

@@ -148,10 +148,17 @@ public class AgentClientsController {
         try {
             Agent agent = agentProfileController.getAgent();
             User user = changeClientDataRequest.getUser();
-            User userToModify = clientRepository.findById(changeClientDataRequest.getUser().getId()).get().getUser();
-            Boolean isMatch = encoder.matches(user.getPassword(),changeClientDataRequest.getAgentPassword());
+            User userToModify = clientRepository.findById(id).get().getUser();
+            Boolean isMatch = encoder.matches(changeClientDataRequest.getAgentPassword(),agent.getUser().getPassword());
             if(!isMatch){
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Mauvais mot de passe.");
+            }
+            user.setVerificationToken(userToModify.getVerificationToken());
+            // renvoyer le code de confirmation pr verifier le nouveau email
+            if (user.getEmail() != null && !user.getEmail().equals(userToModify.getEmail())) {
+                System.out.println("The new email has been saved");
+                userToModify.setEmailConfirmed(false);
+                mailService.sendVerificationMail(user);
             }
             if (user.getEmail() != null)
                 userToModify.setEmail(user.getEmail());
@@ -168,12 +175,6 @@ public class AgentClientsController {
                 userToModify.setAdresse(user.getAdresse());
             }
 
-            // renvoyer le code de confirmation pr verifier le nouveau email
-
-            if (user.getEmail() != null && !user.getEmail().equals(userToModify.getEmail())) {
-                userToModify.setEmailConfirmed(false);
-                mailService.sendVerificationMail(user);
-            }
             return userRepository.save(userToModify);
         }
             catch (NoSuchElementException e){
@@ -193,12 +194,7 @@ public class AgentClientsController {
             if(user.getAdresse() != null){
                 userToModify.setAdresse(user.getAdresse());
             }
-            // renvoyer le code de confirmation pr verifier le nouveau email
 
-            if (user.getEmail() != null && !user.getEmail().equals(userToModify.getEmail())) {
-                userToModify.setEmailConfirmed(false);
-                mailService.sendVerificationMail(user);
-            }
             return userRepository.save(userToModify);
         }
         catch (NoSuchElementException e){
