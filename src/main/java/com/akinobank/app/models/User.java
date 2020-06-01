@@ -50,7 +50,9 @@ public class User implements UserDetails { // We use interface UserDetials inste
 
     private Boolean archived;
 
+    @JsonIgnore
     private String secretKey;
+
     private Boolean _2FaEnabled;
 
 

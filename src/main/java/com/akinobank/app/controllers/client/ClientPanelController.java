@@ -9,6 +9,15 @@ import com.akinobank.app.services.AuthService;
 import com.akinobank.app.services.MailService;
 import com.akinobank.app.services.NotificationService;
 import com.akinobank.app.services.UploadService;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import com.warrenstrange.googleauth.GoogleAuthenticator;
+import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
+import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +34,9 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import reactor.core.publisher.Flux;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.*;
@@ -35,6 +46,7 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping("/client/api")
 @Log4j2
+@RequiredArgsConstructor
 public class ClientPanelController {
 
     Logger logger = LoggerFactory.getLogger(ClientPanelController.class);
@@ -75,6 +87,8 @@ public class ClientPanelController {
     @Autowired
     private PasswordEncoder encoder;
 
+    private final GoogleAuthenticator gAuth;
+
 
     //    ***************** API Client profile ********************
 
@@ -107,19 +121,44 @@ public class ClientPanelController {
         client.getUser().setNom(user.getNom());
         client.getUser().setNumeroTelephone(user.getNumeroTelephone());
         client.getUser().setAdresse(user.getAdresse());
-//        client.getUser().setd(user.getAdresse());
-//        client.getUser().setVille(user.get());
-
-//        client.setPhoto(UUID.randomUUID().toString());
-//        clientRepository.save(client);
-//        logger.info("CURRENT CLIENT ID = {}", client.getId());
-//        Demande demandeFromDB = demandeRepository.findByClient(client);
-//        if (demandeFromDB != null)
-//            demande.setId(demandeFromDB.getId());
-//
-//        demande.setClient(client);
 
         return clientRepository.save(client);
+    }
+
+    @SneakyThrows
+    @GetMapping("/code/generate")
+    public void generate(HttpServletResponse response) {
+
+        String email = getClient().getUser().getEmail();
+        final GoogleAuthenticatorKey key = gAuth.createCredentials(email);
+
+        //I've decided to generate QRCode on backend site
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+
+        response.setContentType("image/png");
+
+        response.setHeader("X-QR-CODE", getClient().getUser().getSecretKey());
+
+        String otpAuthURL = GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL("Akinobank", email, key);
+
+        BitMatrix bitMatrix = qrCodeWriter.encode(otpAuthURL, BarcodeFormat.QR_CODE, 200, 200);
+
+        ServletOutputStream outputStream = response.getOutputStream();
+        MatrixToImageWriter.writeToStream(bitMatrix, "png", outputStream);
+        outputStream.close();
+    }
+
+    @PostMapping("/code/validate")
+    public ResponseEntity<String > validateKey(@RequestBody CodeValidationRequest body) {
+        User currentClientUser = getClient().getUser();
+
+        if (!gAuth.authorizeUser(currentClientUser.getEmail(), body.getCode()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Le code est invalide.");
+
+        currentClientUser.set_2FaEnabled(true);
+        userRepository.save(currentClientUser);
+
+        return ResponseEntity.ok("");
     }
 
     @PostMapping("/change_password")
