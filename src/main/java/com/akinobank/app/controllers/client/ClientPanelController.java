@@ -90,19 +90,27 @@ public class ClientPanelController {
 
     @PostMapping(value = "/profile/changer")
 //    @CacheEvict(cacheNames = "clients", allEntries = true)
-    public Demande sendChangeDemande(@RequestBody Demande demande) {
+    public Client updateProfile(@RequestBody User user) {
         Client client = getClient();
+
+        client.getUser().setEmail(user.getEmail());
+        client.getUser().setPrenom(user.getPrenom());
+        client.getUser().setNom(user.getNom());
+        client.getUser().setNumeroTelephone(user.getNumeroTelephone());
+        client.getUser().setAdresse(user.getAdresse());
+//        client.getUser().setd(user.getAdresse());
+//        client.getUser().setVille(user.get());
 
 //        client.setPhoto(UUID.randomUUID().toString());
 //        clientRepository.save(client);
-        logger.info("CURRENT CLIENT ID = {}", client.getId());
-        Demande demandeFromDB = demandeRepository.findByClient(client);
-        if (demandeFromDB != null)
-            demande.setId(demandeFromDB.getId());
+//        logger.info("CURRENT CLIENT ID = {}", client.getId());
+//        Demande demandeFromDB = demandeRepository.findByClient(client);
+//        if (demandeFromDB != null)
+//            demande.setId(demandeFromDB.getId());
+//
+//        demande.setClient(client);
 
-        demande.setClient(client);
-
-        return demandeRepository.save(demande);
+        return clientRepository.save(client);
     }
 
 //    ***************************************
