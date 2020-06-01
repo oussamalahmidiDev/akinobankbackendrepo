@@ -14,7 +14,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -33,17 +32,17 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-//    @NotNull
+    //    @NotNull
     @Column(unique = true)
     @Email
-    private String email ;
+    private String email;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
-    private boolean emailConfirmed ;
+    private boolean emailConfirmed;
 
-    private String photo ;
+    private String photo;
     private String adresse;
     private String ville;
     private Long codePostale;
@@ -51,6 +50,8 @@ public class User implements UserDetails { // We use interface UserDetials inste
 
     private Boolean archived;
 
+    private String secretKey;
+    private Boolean _2FaEnabled;
 
 
     @JsonIgnore
@@ -58,22 +59,22 @@ public class User implements UserDetails { // We use interface UserDetials inste
 
     private String numeroTelephone;
 
-//    @NotNull
-    private String nom , prenom  ;
+    //    @NotNull
+    private String nom, prenom;
 
-//    @NotNull
+    //    @NotNull
     @Enumerated(EnumType.STRING)
-    private Role role ;
+    private Role role;
 
-    @OneToOne(mappedBy = "user",  cascade={CascadeType.REMOVE})
+    @OneToOne(mappedBy = "user", cascade = {CascadeType.REMOVE})
 //    @JsonIgnore
     private Admin admin;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.EAGER,  cascade={CascadeType.REMOVE})
+    @OneToOne(mappedBy = "user", fetch = FetchType.EAGER, cascade = {CascadeType.REMOVE})
     @JsonIgnoreProperties({"user"})
     private Agent agent;
 
-    @OneToOne(mappedBy = "user",  cascade={CascadeType.REMOVE})
+    @OneToOne(mappedBy = "user", cascade = {CascadeType.REMOVE})
 //    @JsonIgnore
     @JsonIgnoreProperties({"user"})
     private Client client;
@@ -89,7 +90,8 @@ public class User implements UserDetails { // We use interface UserDetials inste
     void beforeInsert() {
         System.out.println("SETTING DEFAULT VALUES FOR USER");
         emailConfirmed = false;
-        archived=false;
+        archived = false;
+        _2FaEnabled = false;
         verificationToken = VerificationTokenGenerator.generateVerificationToken();
     }
 
@@ -138,6 +140,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
     public boolean isEnabled() {
         return true;
     }
+
 
 //    //Just for test
 //    public User(String nom, String prenom, String email, Role role ) {
