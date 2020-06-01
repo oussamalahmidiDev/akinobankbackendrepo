@@ -7,23 +7,20 @@ import com.akinobank.app.models.Agent;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.*;
 import com.akinobank.app.services.MailService;
-import com.mashape.unirest.http.exceptions.UnirestException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import com.akinobank.app.enumerations.Role;
-
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/admin")
@@ -58,10 +55,14 @@ public class AdminPanelController {
 
     @RequestMapping("/login")
     public String login(){
-
+//        Redirect user to hompage if he's already authenticated
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (!(auth instanceof AnonymousAuthenticationToken)) {
+            return "redirect:/admin";
+        }
         return ADMIN_VIEWS_PATH + "login";
     }
-    @RequestMapping("/logout")
+    @PostMapping("/logout")
     public String logout(HttpServletRequest request){
 //        HttpSession session = request.getSession();
         return ADMIN_VIEWS_PATH + "login";
