@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.CreditCardNumber;
 
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 @Data
@@ -20,7 +19,7 @@ public class RechargeRequest {
     float montant;
     String operateur;
 
-    @Pattern(regexp = "^\\+(?:[0-9] ?){6,14}[0-9]$", message = "Le nº de télephone est invalide.")
+//    @Pattern(regexp = "^\\+(?:[0-9] ?){6,14}[0-9]$", message = "Le nº de télephone est invalide.")
     String numeroTelephone;
 
 //    @NotNull(message = "Veuillez entrer le code secret de compte")
