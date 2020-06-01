@@ -9,6 +9,7 @@ import com.akinobank.app.services.AuthService;
 import com.akinobank.app.services.MailService;
 import com.akinobank.app.services.NotificationService;
 import com.akinobank.app.services.UploadService;
+import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -32,12 +34,16 @@ import java.util.stream.Collectors;
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping("/client/api")
+@Log4j2
 public class ClientPanelController {
 
     Logger logger = LoggerFactory.getLogger(ClientPanelController.class);
 
     @Autowired
     private ClientRepository clientRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private CompteRepository compteRepository;
@@ -65,6 +71,9 @@ public class ClientPanelController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private PasswordEncoder encoder;
 
 
     //    ***************** API Client profile ********************
@@ -111,6 +120,20 @@ public class ClientPanelController {
 //        demande.setClient(client);
 
         return clientRepository.save(client);
+    }
+
+    @PostMapping("/change_password")
+    public ResponseEntity<String> changePassword(@RequestBody PasswordChangeRequest request) {
+        User currentClientUser = getClient().getUser();
+        if (!encoder.matches(request.getOldPassword(), currentClientUser.getPassword()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "L'ancien mot de passe est incorrect.");
+        if (!request.getNewPassword().equals(request.getConfPassword()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Les deux mots de passe ne sont pas identiques.");
+
+        currentClientUser.setPassword(encoder.encode(request.getNewPassword()));
+        userRepository.save(currentClientUser);
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 //    ***************************************
