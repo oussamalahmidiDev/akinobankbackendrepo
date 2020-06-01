@@ -71,10 +71,11 @@ public class AdminPanelController {
         return ADMIN_VIEWS_PATH + "index";
     }
 
-//    @GetMapping("users")
-//    public String usersView(Model model) {
-//        return ADMIN_VIEWS_PATH + "users";
-//    }
+    @GetMapping("users")
+    public String usersView(Model model) {
+        model.addAttribute("users",userRepository.findAll());
+        return ADMIN_VIEWS_PATH + "users";
+    }
 
     @GetMapping("users/ajouter")
     public String addUserView(Model model) {
