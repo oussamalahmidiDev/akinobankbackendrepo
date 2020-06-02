@@ -93,26 +93,13 @@ public class ClientPanelController {
     //    ***************** API Client profile ********************
 
     @GetMapping(value = "/profile") // return Client by id
-//    @Cacheable(cacheNames = "clients")
     public Client getClient() {
         return clientRepository.findByUser(authService.getCurrentUser()).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Votre compte est introuvable.")
         );
     }
 
-//    @GetMapping(value = "/profile/cached") // return Client by id
-//    @Cacheable(cacheNames = "clients")
-//    public Client getClientTest(@PathVariable Long id) throws InterruptedException {
-//        Thread.sleep(8000);
-//        return clientRepository.findByUser(id);
-//    }
-
-
-    //*****************************
-    //******* API to modify Client Info *************
-
     @PostMapping(value = "/profile/changer")
-//    @CacheEvict(cacheNames = "clients", allEntries = true)
     public Client updateProfile(@RequestBody User user) {
         Client client = getClient();
 
@@ -136,7 +123,6 @@ public class ClientPanelController {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
 
         response.setContentType("image/png");
-
         response.setHeader("X-QR-CODE", getClient().getUser().getSecretKey());
 
         String otpAuthURL = GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL("Akinobank", email, key);
@@ -370,7 +356,7 @@ public class ClientPanelController {
     //**********************
     //    ****** API  Block Compte *******
     @PutMapping(value = "/comptes/block")
-    public ResponseEntity<String> compteBlock(@RequestBody CompteCredentialsRequest request) {
+    public ResponseEntity<Compte> compteBlock(@RequestBody Compte request) {
         Compte compte = compteRepository.findByNumeroCompteAndClient(request.getNumeroCompte(), getClient()).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le nº de compte est erroné.")
         );
@@ -380,16 +366,18 @@ public class ClientPanelController {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
 
         compte.setStatut(CompteStatus.PENDING_BLOCKED);
+        compte.setRaison(request.getRaison());
+
         compteRepository.save(compte);
 
-        return new ResponseEntity<>("Votre demande de blocage a été envoyée aux agents.", HttpStatus.OK);
+        return new ResponseEntity<>(compte, HttpStatus.OK);
     }
 
     //***************************
 //    ****** API  Suspend Compte *******
 
     @PutMapping(value = "/comptes/suspend")
-    public ResponseEntity<String> compteSuspend(@RequestBody CompteCredentialsRequest request) {
+    public ResponseEntity<Compte> compteSuspend(@RequestBody Compte request) {
         Compte compte = compteRepository.findByNumeroCompteAndClient(request.getNumeroCompte(), getClient()).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le nº de compte est erroné.")
         );
@@ -400,9 +388,11 @@ public class ClientPanelController {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
 
         compte.setStatut(CompteStatus.PENDING_SUSPENDED);
+        compte.setRaison(request.getRaison());
+
         compteRepository.save(compte);
 
-        return new ResponseEntity<>("Votre demande de supsension a été envoyée aux agents.", HttpStatus.OK);
+        return new ResponseEntity<>(compte, HttpStatus.OK);
     }
 
     @DeleteMapping("/virements/{id}/delete")

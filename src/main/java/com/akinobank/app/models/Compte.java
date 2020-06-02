@@ -3,6 +3,7 @@ package com.akinobank.app.models;
 import com.akinobank.app.enumerations.CompteStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.*;
 import org.hibernate.annotations.*;
@@ -55,7 +56,7 @@ public class Compte  {
     private Date dateUpdate;
 
 //    @Size(min = 8 ,max = 8)
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String codeSecret;
 
     @ManyToOne
@@ -66,6 +67,8 @@ public class Compte  {
     private Client client;
 
     private boolean deleted;
+
+    private String raison;
 
 
     @OneToMany(mappedBy = "compte",fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})
