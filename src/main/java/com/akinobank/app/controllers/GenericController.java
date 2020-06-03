@@ -13,15 +13,9 @@ import com.akinobank.app.repositories.UserRepository;
 import com.akinobank.app.services.AuthService;
 import com.akinobank.app.services.MailService;
 import com.akinobank.app.utilities.JwtUtils;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.client.j2se.MatrixToImageWriter;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
-import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
-import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
+import dev.samstevens.totp.code.CodeVerifier;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +29,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -75,6 +68,10 @@ public class GenericController {
 
     private final GoogleAuthenticator gAuth;
 
+
+    @Autowired
+    private CodeVerifier verifier;
+
 //    @PostMapping("/connect")
 //    public String connect(HttpServletRequest request, Model model) {
 //        String username = request.getParameter("username");
@@ -94,11 +91,8 @@ public class GenericController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "L'email ou mot de passe est incorrect.");
         }
 
-//        Map<String, Object> responseBody = new HashMap<>();
-
         TokenResponse responseBody = new TokenResponse();
         User authenticatedUser = userRepository.findByEmail(user.getEmail());
-//        responseBody.put("2fa_enabled", authenticatedUser.get_2FaEnabled());
             responseBody.set_2FaEnabled(authenticatedUser.get_2FaEnabled());
 
         if (authenticatedUser.get_2FaEnabled()) {
@@ -106,7 +100,6 @@ public class GenericController {
         }
 
         final String token = jwtUtils.generateToken(authenticatedUser);
-//        responseBody.put("token", token);
         responseBody.setToken(token);
         responseBody.setExpireAt(jwtUtils.getExpirationDateFromToken(token));
 
@@ -133,7 +126,6 @@ public class GenericController {
         TokenResponse response = new TokenResponse();
 
         final String token = jwtUtils.generateToken(authenticatedUser);
-//        responseBody.put("token", token);
         response.setToken(token);
         response.setExpireAt(jwtUtils.getExpirationDateFromToken(token));
 
@@ -155,42 +147,9 @@ public class GenericController {
 
     }
 
-
-
-
-    @SneakyThrows
-    @GetMapping("/api/generate/{username}")
-    public void generate(@PathVariable String username, HttpServletResponse response) {
-        final GoogleAuthenticatorKey key = gAuth.createCredentials(username);
-
-        //I've decided to generate QRCode on backend site
-        QRCodeWriter qrCodeWriter = new QRCodeWriter();
-
-        response.setContentType("image/png");
-
-        String otpAuthURL = GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL("akinobank", username, key);
-
-        BitMatrix bitMatrix = qrCodeWriter.encode(otpAuthURL, BarcodeFormat.QR_CODE, 200, 200);
-
-        //Simple writing to outputstream
-        ServletOutputStream outputStream = response.getOutputStream();
-        MatrixToImageWriter.writeToStream(bitMatrix, "png", outputStream);
-        outputStream.close();
-    }
-
-    @PostMapping("/validate/key")
-    @ResponseBody
-    public HashMap<String, Boolean> validateKey(@RequestBody CodeValidationRequest body) {
-        HashMap<String, Boolean> response = new HashMap<>();
-//        response.put("valid", true);
-        response.put("valid", gAuth.authorizeUser(body.getEmail(), body.getCode()));
-        return response;
-    }
-
     @PostMapping("/api/auth/code")
     @ResponseBody
     public ResponseEntity<?> validateAuthCode(@RequestBody CodeValidationRequest body,  HttpServletResponse response) {
-//        HashMap<String, String> response = new HashMap<>();
         try {
             authService.authenticate(body.getEmail(), body.getPassword());
         } catch (Exception e) {
@@ -202,7 +161,7 @@ public class GenericController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        if (!gAuth.authorizeUser(body.getEmail(), body.getCode()))
+        if (!verifier.isValidCode(authenticatedUser.getSecretKey(), body.getCode()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Le code est invalide.");
 
 

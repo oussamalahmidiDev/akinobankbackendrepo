@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class CodeValidationRequest {
-    private Integer code;
+    private String code;
     private String email;
     private String password;
 }

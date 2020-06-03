@@ -13,9 +13,9 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
-import com.warrenstrange.googleauth.GoogleAuthenticator;
-import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
-import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
+import dev.samstevens.totp.code.CodeVerifier;
+import dev.samstevens.totp.qr.QrDataFactory;
+import dev.samstevens.totp.secret.SecretGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
@@ -87,7 +87,16 @@ public class ClientPanelController {
     @Autowired
     private PasswordEncoder encoder;
 
-    private final GoogleAuthenticator gAuth;
+
+    @Autowired
+    private SecretGenerator secretGenerator;
+
+    @Autowired
+    private QrDataFactory qrDataFactory;
+
+
+    @Autowired
+    private CodeVerifier verifier;
 
 
     //    ***************** API Client profile ********************
@@ -114,20 +123,24 @@ public class ClientPanelController {
 
     @SneakyThrows
     @GetMapping("/code/generate")
-    public void generate(HttpServletResponse response) {
+    public void generate(HttpServletResponse response, HttpServletRequest request) {
 
         String email = getClient().getUser().getEmail();
-        final GoogleAuthenticatorKey key = gAuth.createCredentials(email);
 
-        //I've decided to generate QRCode on backend site
+        String secret = secretGenerator.generate();
+        log.info("QR secret key generated : {}", secret);
+        String data = qrDataFactory.newBuilder()
+            .label(email)
+            .secret(secret)
+            .issuer("Akinobank")
+            .build().getUri();
+
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = qrCodeWriter.encode(data, BarcodeFormat.QR_CODE, 200, 200);
 
         response.setContentType("image/png");
-        response.setHeader("X-QR-CODE", getClient().getUser().getSecretKey());
+        response.setHeader("X-QR-CODE", secret);
 
-        String otpAuthURL = GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL("Akinobank", email, key);
-
-        BitMatrix bitMatrix = qrCodeWriter.encode(otpAuthURL, BarcodeFormat.QR_CODE, 200, 200);
 
         ServletOutputStream outputStream = response.getOutputStream();
         MatrixToImageWriter.writeToStream(bitMatrix, "png", outputStream);
@@ -135,13 +148,17 @@ public class ClientPanelController {
     }
 
     @PostMapping("/code/validate")
-    public ResponseEntity<String > validateKey(@RequestBody CodeValidationRequest body) {
+    public ResponseEntity<String > validateKey(@RequestBody CodeValidationRequest body, HttpServletRequest request) {
         User currentClientUser = getClient().getUser();
+        final String secretKey = request.getHeader("X-QR-CODE");
+        log.info("QR secret key validation : {}, code : {}", secretKey, body.getCode());
 
-        if (!gAuth.authorizeUser(currentClientUser.getEmail(), body.getCode()))
+        if (!verifier.isValidCode(secretKey, body.getCode()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Le code est invalide.");
 
         currentClientUser.set_2FaEnabled(true);
+        currentClientUser.setSecretKey(secretKey);
+
         userRepository.save(currentClientUser);
 
         return ResponseEntity.ok("");

@@ -163,6 +163,11 @@
             <artifactId>javase</artifactId>
             <version>3.3.0</version>
         </dependency>
+        <dependency>
+            <groupId>dev.samstevens.totp</groupId>
+            <artifactId>totp-spring-boot-starter</artifactId>
+            <version>1.7</version>
+        </dependency>
 
         <!--        <dependency>-->
 <!--            <groupId>org.springdoc</groupId>-->
