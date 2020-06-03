@@ -6,6 +6,7 @@ import com.akinobank.app.exceptions.ConfirmationPasswordException;
 import com.akinobank.app.exceptions.InvalidVerificationTokenException;
 import com.akinobank.app.models.CodeValidationRequest;
 import com.akinobank.app.models.Compte;
+import com.akinobank.app.models.TokenResponse;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.CompteRepository;
 import com.akinobank.app.repositories.UserRepository;
@@ -21,6 +22,7 @@ import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,17 +36,20 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 
 // controlleur generique qui peut etre utilisé par tt les utilisateurs.
 @Controller
-@CrossOrigin("*")
+@CrossOrigin(value = "*", allowCredentials = "true")
 @RequiredArgsConstructor
+@Log4j2
 public class GenericController {
 
     Logger logger = LoggerFactory.getLogger(GenericController.class);
@@ -79,7 +84,7 @@ public class GenericController {
 
     @PostMapping("/api/auth")
     @ResponseBody
-    public ResponseEntity<?> authenticate (@RequestBody User user) throws Exception {
+    public ResponseEntity<?> authenticate (@RequestBody User user, HttpServletResponse response) throws Exception {
         System.out.println(user.getEmail() +" "+ user.getPassword());
 
         try {
@@ -89,20 +94,69 @@ public class GenericController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "L'email ou mot de passe est incorrect.");
         }
 
-        Map<String, Object> response = new HashMap<>();
+//        Map<String, Object> responseBody = new HashMap<>();
 
+        TokenResponse responseBody = new TokenResponse();
         User authenticatedUser = userRepository.findByEmail(user.getEmail());
-        response.put("2fa_enabled", authenticatedUser.get_2FaEnabled());
+//        responseBody.put("2fa_enabled", authenticatedUser.get_2FaEnabled());
+            responseBody.set_2FaEnabled(authenticatedUser.get_2FaEnabled());
 
         if (authenticatedUser.get_2FaEnabled()) {
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(responseBody);
         }
 
         final String token = jwtUtils.generateToken(authenticatedUser);
-        response.put("token", token);
+//        responseBody.put("token", token);
+        responseBody.setToken(token);
+        responseBody.setExpireAt(jwtUtils.getExpirationDateFromToken(token));
+
+
+        String refreshToken = UUID.randomUUID().toString().replace("-", "");
+        authenticatedUser.setRefreshToken(refreshToken);
+        userRepository.save(authenticatedUser);
+
+        Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+        response.addCookie(refreshTokenCookie);
+
+        return ResponseEntity.ok(responseBody);
+    }
+
+    @PostMapping("/api/auth/refresh")
+    public ResponseEntity<?> getNewToken(@CookieValue(value = "refresh_token", defaultValue = "") String refreshToken) {
+        log.info("Received refresh token : {}", refreshToken);
+
+        User authenticatedUser = userRepository.findByRefreshToken(refreshToken).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid refresh token.")
+        );
+
+        TokenResponse response = new TokenResponse();
+
+        final String token = jwtUtils.generateToken(authenticatedUser);
+//        responseBody.put("token", token);
+        response.setToken(token);
+        response.setExpireAt(jwtUtils.getExpirationDateFromToken(token));
 
         return ResponseEntity.ok(response);
+
     }
+
+    @PostMapping("/api/auth/logout")
+    public ResponseEntity<?> handleLogout() {
+        User authenticatedUser = authService.getCurrentUser();
+        authenticatedUser.setRefreshToken(null);
+
+        userRepository.findById(authenticatedUser.getId()).map(user -> {
+            user.setRefreshToken(null);
+            return userRepository.save(user);
+        });
+
+        return ResponseEntity.ok("");
+
+    }
+
+
+
 
     @SneakyThrows
     @GetMapping("/api/generate/{username}")
@@ -135,16 +189,38 @@ public class GenericController {
 
     @PostMapping("/api/auth/code")
     @ResponseBody
-    public ResponseEntity<?> validateAuthCode(@RequestBody CodeValidationRequest body) {
-        HashMap<String, String> response = new HashMap<>();
+    public ResponseEntity<?> validateAuthCode(@RequestBody CodeValidationRequest body,  HttpServletResponse response) {
+//        HashMap<String, String> response = new HashMap<>();
+        try {
+            authService.authenticate(body.getEmail(), body.getPassword());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid credentials.");
+        }
+
+        User authenticatedUser = userRepository.findByEmail(body.getEmail());
+        if (!authenticatedUser.get_2FaEnabled()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
         if (!gAuth.authorizeUser(body.getEmail(), body.getCode()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Le code est invalide.");
 
-        User authenticatedUser = userRepository.findByEmail(body.getEmail());
-        final String token = jwtUtils.generateToken(authenticatedUser);
-        response.put("token", token);
 
-        return ResponseEntity.ok(response);
+        final String token = jwtUtils.generateToken(authenticatedUser);
+        TokenResponse responseBody = new TokenResponse();
+        responseBody.setToken(token);
+        responseBody.setExpireAt(jwtUtils.getExpirationDateFromToken(token));
+
+
+        String refreshToken = UUID.randomUUID().toString().replace("-", "");
+        authenticatedUser.setRefreshToken(refreshToken);
+        userRepository.save(authenticatedUser);
+
+        Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+        response.addCookie(refreshTokenCookie);
+
+        return ResponseEntity.ok(responseBody);
     }
 
     @PostMapping("/api/auth/agent")

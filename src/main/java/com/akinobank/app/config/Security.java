@@ -53,6 +53,7 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
                 and().authorizeRequests().antMatchers("/agent/**").hasRole(Role.AGENT.name()).
                 and().authorizeRequests().antMatchers("/client/**").hasRole(Role.CLIENT.name()).
                 anyRequest().authenticated()
+                .and().exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
 

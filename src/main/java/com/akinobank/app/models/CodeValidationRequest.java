@@ -6,4 +6,5 @@ import lombok.Data;
 public class CodeValidationRequest {
     private Integer code;
     private String email;
+    private String password;
 }

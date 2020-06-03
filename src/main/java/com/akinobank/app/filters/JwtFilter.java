@@ -1,6 +1,5 @@
 package com.akinobank.app.filters;
 
-import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.UserRepository;
 import com.akinobank.app.services.AuthService;
 import com.akinobank.app.utilities.JwtUtils;
@@ -70,7 +69,7 @@ public class JwtFilter extends OncePerRequestFilter {
             if (jwtUtils.validateToken(jwtToken, userDetails)) {
                 log.info("Extracted user from claims : {}", userDetails.toString());
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
+                    userDetails, null, userDetails.getAuthorities());
 
                 usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);

@@ -170,7 +170,7 @@ public class ClientPanelController {
     }
 
     //    ** API to change code secret ***
-    @PostMapping("/comptes/management/changer_code")
+    @PostMapping("/comptes/changer_code")
     public Compte changeCodeSecret(@RequestBody @Valid CodeChangeRequest request) {
         Compte compte = compteRepository.findByNumeroCompteAndClient(request.getNumeroCompte(), getClient()).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le compte est introuvable")

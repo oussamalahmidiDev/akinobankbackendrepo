@@ -55,6 +55,9 @@ public class User implements UserDetails { // We use interface UserDetials inste
 
     private Boolean _2FaEnabled;
 
+    @JsonIgnore
+    private String refreshToken;
+
 
     @JsonIgnore
     private String verificationToken;

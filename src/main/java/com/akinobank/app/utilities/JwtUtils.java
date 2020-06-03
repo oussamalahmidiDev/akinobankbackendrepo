@@ -27,7 +27,7 @@ public class JwtUtils {
     @Autowired
     private UserRepository userRepository;
 
-    private long TokenValidity = 604800L;
+    private long TokenValidity = 120L;
 
     private String token = "";
 
