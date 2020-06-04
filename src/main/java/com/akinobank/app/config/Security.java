@@ -49,6 +49,7 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
         httpSecurity.cors().disable().csrf().disable()
 //      Allow certain routes
                 .authorizeRequests().antMatchers(
+                    "/test",
             "/admin/login","/verify",
             "/api/auth",
             "/api/auth/code",
