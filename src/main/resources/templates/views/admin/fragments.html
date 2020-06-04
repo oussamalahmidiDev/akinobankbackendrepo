@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>Akino Bank - [[${title}]]</title>
-    <link rel="stylesheet" href="/css/bootstrap.min.css?v=p">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
 </head>
 <body>
 <nav class="navbar navbar-expand-lg  navbar-dark bg-dark" th:fragment="navbar">
@@ -24,6 +25,12 @@
             <li class="nav-item">
                 <a class="nav-link" href="/admin/agences" >Agences</a>
             </li>
+
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+            <form  method="post" action="/logout" class="form-inline my-2 my-lg-0">
+                <button class="btn btn-primary my-2 my-sm-0" type="submit">Se deconnecter</button>
+            </form>
         </ul>
 <!--        <form class="form-inline my-2 my-lg-0">-->
 <!--            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">-->
@@ -41,6 +48,9 @@
     <script src="/js/jquery-3.4.1.slim.min.js?v=prod" ></script>
     <script src="/js/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     <script src="/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+<!--    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js" ></script>-->
+<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>-->
+<!--    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>-->
 </div>
 </body>
 </html>

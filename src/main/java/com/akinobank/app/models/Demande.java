@@ -1,11 +1,13 @@
 package com.akinobank.app.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -15,6 +17,8 @@ import java.util.Date;
 @Data
 @Builder
 @Entity
+@SQLDelete(sql = "UPDATE demande SET deleted=true WHERE id=?")
+@Where(clause = "deleted = false")
 public class Demande {
 
     @Id
@@ -27,9 +31,12 @@ public class Demande {
 
     private Boolean acceptee;
 
-    @OneToOne // pour la relation : un admin a un compte user pour la auth
+    private boolean deleted;
+
+    @ManyToOne // pour la relation : un admin a un compte user pour la auth
     @JoinColumn(name = "client_id")
-    @JsonIgnoreProperties({ "comptes", "notifications", "agent", "agence","photo" })
+//    @JsonIgnoreProperties({ "comptes", "notifications", "agent", "agence","photo" })
+    @JsonIgnore
     private Client client;
 
     @UpdateTimestamp

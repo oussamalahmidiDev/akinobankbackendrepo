@@ -1,7 +1,7 @@
 package com.akinobank.app.enumerations;
 
-public enum VirementStatus {
+public enum RechargeStatus {
     UNCOFIRMED,
-        CONFIRMED,
+    CONFIRMED,
     RECEIVED
 }

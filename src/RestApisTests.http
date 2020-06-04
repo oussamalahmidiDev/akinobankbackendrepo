@@ -7,7 +7,7 @@ Content-Type: application/json
 {
     "nom": "Ipsum",
     "prenom": "Lorem",
-    "email": "Lorem@gmailos.com"
+    "email": "Lorem@gmailosa.com"
 }
 ###
 
@@ -15,7 +15,7 @@ GET http://localhost:8080/agent/profile/11
 
 ###
 
-POST http://localhost:8080/agent/clients/31/comptes/ajouter/
+POST http://localhost:8080/agent/api/clients/8/comptes/ajouter/
 Cache-Control: no-cache
 Content-Type: application/json
 
@@ -157,6 +157,17 @@ Content-Type: application/json
     "codeSecret": "25368306",
     "newCodeSecret": "00000000",
     "newCodeSecretConf": "00000000"
+}
+
+###
+
+
+POST http://localhost:8080/sommme
+Content-Type: application/json
+
+{
+    "a": 2,
+    "b": 3
 }
 
 ###

@@ -15,19 +15,19 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class CodeChangeRequest {
 
-    @NotNull(message = "Veuillez entrer le nº de compte")
+//    @NotNull(message = "Veuillez entrer le nº de compte")
     @CreditCardNumber
     String numeroCompte;
 
-    @NotNull(message = "Veuillez entrer le code secret de compte")
+//    @NotNull(message = "Veuillez entrer le code secret de compte")
     String codeSecret;
 
-    @NotNull
+//    @NotNull
 //    @Digits(integer=8, fraction=0, message = "8 chiffres")
     @Pattern(regexp="[\\d]{8}", message = "Le code doit contenir exactement 8 chiffres")
     String newCodeSecret;
 
-    @NotNull
+//    @NotNull
     String newCodeSecretConf;
 
 }

@@ -9,23 +9,34 @@ import com.akinobank.app.services.AuthService;
 import com.akinobank.app.services.MailService;
 import com.akinobank.app.services.NotificationService;
 import com.akinobank.app.services.UploadService;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import dev.samstevens.totp.code.CodeVerifier;
+import dev.samstevens.totp.qr.QrDataFactory;
+import dev.samstevens.totp.secret.SecretGenerator;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import reactor.core.publisher.Flux;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.*;
@@ -34,12 +45,17 @@ import java.util.stream.Collectors;
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping("/client/api")
+@Log4j2
+@RequiredArgsConstructor
 public class ClientPanelController {
 
     Logger logger = LoggerFactory.getLogger(ClientPanelController.class);
 
     @Autowired
     private ClientRepository clientRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private CompteRepository compteRepository;
@@ -68,41 +84,98 @@ public class ClientPanelController {
     @Autowired
     private AuthService authService;
 
+    @Autowired
+    private PasswordEncoder encoder;
+
+
+    @Autowired
+    private SecretGenerator secretGenerator;
+
+    @Autowired
+    private QrDataFactory qrDataFactory;
+
+
+    @Autowired
+    private CodeVerifier verifier;
+
 
     //    ***************** API Client profile ********************
 
     @GetMapping(value = "/profile") // return Client by id
-    @Cacheable(cacheNames = "clients")
     public Client getClient() {
-        return clientRepository.findClientByUserId(authService.getCurrentUser().getId());
+        return clientRepository.findByUser(authService.getCurrentUser()).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Votre compte est introuvable.")
+        );
     }
-
-    @GetMapping(value = "/profile/cached") // return Client by id
-    @Cacheable(cacheNames = "clients")
-    public Client getClientTest(@PathVariable Long id) throws InterruptedException {
-        Thread.sleep(8000);
-        return clientRepository.findClientByUserId(id);
-    }
-
-
-    //*****************************
-    //******* API to modify Client Info *************
 
     @PostMapping(value = "/profile/changer")
-    @CacheEvict(cacheNames = "clients", allEntries = true)
-    public Demande sendChangeDemande(@RequestBody Demande demande) {
+    public Client updateProfile(@RequestBody User user) {
         Client client = getClient();
 
-//        client.setPhoto(UUID.randomUUID().toString());
-//        clientRepository.save(client);
-        logger.info("CURRENT CLIENT ID = {}", client.getId());
-        Demande demandeFromDB = demandeRepository.findByClient(client);
-        if (demandeFromDB != null)
-            demande.setId(demandeFromDB.getId());
+        client.getUser().setEmail(user.getEmail());
+        client.getUser().setPrenom(user.getPrenom());
+        client.getUser().setNom(user.getNom());
+        client.getUser().setNumeroTelephone(user.getNumeroTelephone());
+        client.getUser().setAdresse(user.getAdresse());
 
-        demande.setClient(client);
+        return clientRepository.save(client);
+    }
 
-        return demandeRepository.save(demande);
+    @SneakyThrows
+    @GetMapping("/code/generate")
+    public void generate(HttpServletResponse response, HttpServletRequest request) {
+
+        String email = getClient().getUser().getEmail();
+
+        String secret = secretGenerator.generate();
+        log.info("QR secret key generated : {}", secret);
+        String data = qrDataFactory.newBuilder()
+            .label(email)
+            .secret(secret)
+            .issuer("Akinobank")
+            .build().getUri();
+
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = qrCodeWriter.encode(data, BarcodeFormat.QR_CODE, 200, 200);
+
+        response.setContentType("image/png");
+        response.setHeader("X-QR-CODE", secret);
+
+
+        ServletOutputStream outputStream = response.getOutputStream();
+        MatrixToImageWriter.writeToStream(bitMatrix, "png", outputStream);
+        outputStream.close();
+    }
+
+    @PostMapping("/code/validate")
+    public ResponseEntity<String > validateKey(@RequestBody CodeValidationRequest body, HttpServletRequest request) {
+        User currentClientUser = getClient().getUser();
+        final String secretKey = request.getHeader("X-QR-CODE");
+        log.info("QR secret key validation : {}, code : {}", secretKey, body.getCode());
+
+        if (!verifier.isValidCode(secretKey, body.getCode()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Le code est invalide.");
+
+        currentClientUser.set_2FaEnabled(true);
+        currentClientUser.setSecretKey(secretKey);
+
+        userRepository.save(currentClientUser);
+
+        return ResponseEntity.ok("");
+    }
+
+    @PostMapping("/change_password")
+    public ResponseEntity<String> changePassword(@RequestBody PasswordChangeRequest request) {
+        User currentClientUser = getClient().getUser();
+        if (!encoder.matches(request.getOldPassword(), currentClientUser.getPassword()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "L'ancien mot de passe est incorrect.");
+        if (!request.getNewPassword().equals(request.getConfPassword()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Les deux mots de passe ne sont pas identiques.");
+
+        currentClientUser.setPassword(encoder.encode(request.getNewPassword()));
+        userRepository.save(currentClientUser);
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 //    ***************************************
@@ -114,7 +187,7 @@ public class ClientPanelController {
     }
 
     //    ** API to change code secret ***
-    @PostMapping("/comptes/management/changer_code")
+    @PostMapping("/comptes/changer_code")
     public Compte changeCodeSecret(@RequestBody @Valid CodeChangeRequest request) {
         Compte compte = compteRepository.findByNumeroCompteAndClient(request.getNumeroCompte(), getClient()).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le compte est introuvable")
@@ -217,14 +290,14 @@ public class ClientPanelController {
             .build()
         );
 
-        mailService.sendVirementCodeMail(compte.getClient().getUser(), virement);
+        mailService.sendVirementCodeMail(getClient().getUser(), virement);
 
-        Notification notification = Notification.builder()
-            .client(compte.getClient())
-            .contenu("Un <b>nouveau virement</b> à été effectué ! Veuillez verifier votre e-mail pour le confirmer.")
-            .build();
+        // Notification notification = Notification.builder()
+        //     .client(compte.getClient())
+        //     .contenu("Un <b>nouveau virement</b> à été effectué ! Veuillez verifier votre e-mail pour le confirmer.")
+        //     .build();
 
-        notificationRepository.save(notification);
+        // notificationRepository.save(notification);
 
         return new ResponseEntity<>(virement, HttpStatus.CREATED);
     }
@@ -290,14 +363,17 @@ public class ClientPanelController {
         Compte compte = compteRepository.findByNumeroCompteAndClient(request.getNumeroCompte(), getClient()).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le nº de compte est erroné.")
         );
+        if (!compte.getCodeSecret().equals(request.getCodeSecret()))
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
+
         verifyCompteStatus(compte);
-        return new ResponseEntity<>("OK", HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     //**********************
     //    ****** API  Block Compte *******
     @PutMapping(value = "/comptes/block")
-    public ResponseEntity<String> compteBlock(@RequestBody CompteCredentialsRequest request) {
+    public ResponseEntity<Compte> compteBlock(@RequestBody Compte request) {
         Compte compte = compteRepository.findByNumeroCompteAndClient(request.getNumeroCompte(), getClient()).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le nº de compte est erroné.")
         );
@@ -307,16 +383,18 @@ public class ClientPanelController {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
 
         compte.setStatut(CompteStatus.PENDING_BLOCKED);
+        compte.setRaison(request.getRaison());
+
         compteRepository.save(compte);
 
-        return new ResponseEntity<>("Votre demande de blocage a été envoyée aux agents.", HttpStatus.OK);
+        return new ResponseEntity<>(compte, HttpStatus.OK);
     }
 
     //***************************
 //    ****** API  Suspend Compte *******
 
     @PutMapping(value = "/comptes/suspend")
-    public ResponseEntity<String> compteSuspend(@RequestBody CompteCredentialsRequest request) {
+    public ResponseEntity<Compte> compteSuspend(@RequestBody Compte request) {
         Compte compte = compteRepository.findByNumeroCompteAndClient(request.getNumeroCompte(), getClient()).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le nº de compte est erroné.")
         );
@@ -327,9 +405,11 @@ public class ClientPanelController {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
 
         compte.setStatut(CompteStatus.PENDING_SUSPENDED);
+        compte.setRaison(request.getRaison());
+
         compteRepository.save(compte);
 
-        return new ResponseEntity<>("Votre demande de supsension a été envoyée aux agents.", HttpStatus.OK);
+        return new ResponseEntity<>(compte, HttpStatus.OK);
     }
 
     @DeleteMapping("/virements/{id}/delete")
@@ -389,7 +469,7 @@ public class ClientPanelController {
 //    ****** API to upload avatar image *******
 
     @PostMapping("/avatar/upload")
-    @CacheEvict(cacheNames = "clients", allEntries = true)
+//    @CacheEvict(cacheNames = "clients", allEntries = true)
     public ResponseEntity<?> uploadAvatar(@RequestParam("image") MultipartFile image) {
         Client client = getClient();
 
@@ -403,14 +483,14 @@ public class ClientPanelController {
             .toUriString();
 
         // check if client has already uploaded an image
-        if (client.getPhoto() != null)
-            uploadService.delete(client.getPhoto());
+        if (client.getUser().getPhoto() != null)
+            uploadService.delete(client.getUser().getPhoto());
 
-        client.setPhoto(fileName);
+        client.getUser().setPhoto(fileName);
         clientRepository.save(client);
 
         Map<String, String> response = new HashMap<>();
-        response.put("link", imageDownloadUri);
+        response.put("link", fileName);
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
 
@@ -421,11 +501,12 @@ public class ClientPanelController {
     @GetMapping("/avatar/{filename}")
     public ResponseEntity<Resource> getAvatar(HttpServletRequest request, @PathVariable("filename") String filename) {
         Client client = getClient();
+//        System.out.println(filename);
 
-        if (client.getPhoto() == null)
+        if (client.getUser().getPhoto() == null)
             throw new ResponseStatusException(HttpStatus.OK, "Pas de photo définie.");
 
-        Resource resource = uploadService.get(client.getPhoto());
+        Resource resource = uploadService.get(client.getUser().getPhoto());
 
         // setting content-type header
         String contentType = null;
@@ -449,19 +530,19 @@ public class ClientPanelController {
     //***************************
 //    ****** API to get avatar image *******
     @DeleteMapping("/avatar/delete")
-    @CacheEvict(cacheNames = "clients", allEntries = true)
+//    @CacheEvict(cacheNames = "clients", allEntries = true)
     public ResponseEntity<String> deleteAvatar() {
         Client client = getClient();
 
         // check if client has already uploaded an image
-        if (client.getPhoto() != null)
-            uploadService.delete(client.getPhoto());
+        if (client.getUser().getPhoto() != null)
+            uploadService.delete(client.getUser().getPhoto());
         else
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
-        client.setPhoto(null);
+        client.getUser().setPhoto(null);
         clientRepository.save(client);
 
-        return ResponseEntity.ok("Le fichier est supprimé avec succès.");
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 }

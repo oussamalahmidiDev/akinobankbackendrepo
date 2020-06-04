@@ -1,34 +1,48 @@
 package com.akinobank.app.controllers;
 
 import com.akinobank.app.enumerations.CompteStatus;
+import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.exceptions.ConfirmationPasswordException;
 import com.akinobank.app.exceptions.InvalidVerificationTokenException;
+import com.akinobank.app.models.CodeValidationRequest;
 import com.akinobank.app.models.Compte;
+import com.akinobank.app.models.TokenResponse;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.CompteRepository;
 import com.akinobank.app.repositories.UserRepository;
+import com.akinobank.app.services.AuthService;
 import com.akinobank.app.services.MailService;
+import com.akinobank.app.utilities.JwtUtils;
+import com.warrenstrange.googleauth.GoogleAuthenticator;
+import dev.samstevens.totp.code.CodeVerifier;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
 
 // controlleur generique qui peut etre utilisé par tt les utilisateurs.
 @Controller
+@CrossOrigin(value = "*", allowCredentials = "true")
+@RequiredArgsConstructor
+@Log4j2
 public class GenericController {
 
     Logger logger = LoggerFactory.getLogger(GenericController.class);
@@ -41,6 +55,157 @@ public class GenericController {
 
     @Autowired
     private MailService mailService;
+
+    @Autowired
+    private AuthService authService;
+
+
+    @Autowired
+    private PasswordEncoder encoder;
+
+    @Autowired
+    private JwtUtils jwtUtils;
+
+    private final GoogleAuthenticator gAuth;
+
+
+    @Autowired
+    private CodeVerifier verifier;
+
+//    @PostMapping("/connect")
+//    public String connect(HttpServletRequest request, Model model) {
+//        String username = request.getParameter("username");
+//        System.out.println(username);
+//        return "views/admin/login";
+//    }
+
+    @PostMapping("/api/auth")
+    @ResponseBody
+    public ResponseEntity<?> authenticate (@RequestBody User user, HttpServletResponse response) throws Exception {
+        System.out.println(user.getEmail() +" "+ user.getPassword());
+
+        try {
+            authService.authenticate(user.getEmail(), user.getPassword());
+
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "L'email ou mot de passe est incorrect.");
+        }
+
+        TokenResponse responseBody = new TokenResponse();
+        User authenticatedUser = userRepository.findByEmail(user.getEmail());
+            responseBody.set_2FaEnabled(authenticatedUser.get_2FaEnabled());
+
+        if (authenticatedUser.get_2FaEnabled()) {
+            return ResponseEntity.ok(responseBody);
+        }
+
+        final String token = jwtUtils.generateToken(authenticatedUser);
+        responseBody.setToken(token);
+        responseBody.setExpireAt(jwtUtils.getExpirationDateFromToken(token));
+
+
+        String refreshToken = UUID.randomUUID().toString().replace("-", "");
+        authenticatedUser.setRefreshToken(refreshToken);
+        userRepository.save(authenticatedUser);
+
+        Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+        response.addCookie(refreshTokenCookie);
+
+        return ResponseEntity.ok(responseBody);
+    }
+
+    @PostMapping("/api/auth/refresh")
+    public ResponseEntity<?> getNewToken(@CookieValue(value = "refresh_token", defaultValue = "") String refreshToken) {
+        log.info("Received refresh token : {}", refreshToken);
+
+        User authenticatedUser = userRepository.findByRefreshToken(refreshToken).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid refresh token.")
+        );
+
+        TokenResponse response = new TokenResponse();
+
+        final String token = jwtUtils.generateToken(authenticatedUser);
+        response.setToken(token);
+        response.setExpireAt(jwtUtils.getExpirationDateFromToken(token));
+
+        return ResponseEntity.ok(response);
+
+    }
+
+    @PostMapping("/api/auth/logout")
+    public ResponseEntity<?> handleLogout() {
+        User authenticatedUser = authService.getCurrentUser();
+        authenticatedUser.setRefreshToken(null);
+
+        userRepository.findById(authenticatedUser.getId()).map(user -> {
+            user.setRefreshToken(null);
+            return userRepository.save(user);
+        });
+
+        return ResponseEntity.ok("");
+
+    }
+
+    @PostMapping("/api/auth/code")
+    @ResponseBody
+    public ResponseEntity<?> validateAuthCode(@RequestBody CodeValidationRequest body,  HttpServletResponse response) {
+        try {
+            authService.authenticate(body.getEmail(), body.getPassword());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid credentials.");
+        }
+
+        User authenticatedUser = userRepository.findByEmail(body.getEmail());
+        if (!authenticatedUser.get_2FaEnabled()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
+        if (!verifier.isValidCode(authenticatedUser.getSecretKey(), body.getCode()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Le code est invalide.");
+
+
+        final String token = jwtUtils.generateToken(authenticatedUser);
+        TokenResponse responseBody = new TokenResponse();
+        responseBody.setToken(token);
+        responseBody.setExpireAt(jwtUtils.getExpirationDateFromToken(token));
+
+
+        String refreshToken = UUID.randomUUID().toString().replace("-", "");
+        authenticatedUser.setRefreshToken(refreshToken);
+        userRepository.save(authenticatedUser);
+
+        Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+        response.addCookie(refreshTokenCookie);
+
+        return ResponseEntity.ok(responseBody);
+    }
+
+    @PostMapping("/api/auth/agent")
+    @ResponseBody
+    public ResponseEntity<?> agentAuthenticate (@RequestBody User user) throws Exception {
+        System.out.println(user.getEmail() +" "+ user.getPassword());
+
+        try {
+            Role role = userRepository.findByEmail(user.getEmail()).getRole();
+            System.out.println(role);
+            authService.agentAuthenticate(user.getEmail(), user.getPassword(),role);
+
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "L'email ou mot de passe est incorrect");
+        }
+
+        final UserDetails userDetails = authService.loadUserByUsername(user.getEmail());
+
+        final String token = jwtUtils.generateToken(userDetails);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        System.out.println(jwtUtils.getAllClaimsFromToken(token));
+
+        return ResponseEntity.ok(response);
+    }
 
     // page de confirmation d email
     @GetMapping("/confirm")
@@ -95,7 +260,7 @@ public class GenericController {
         String password = request.getParameter("password");
         String passwordConfirmation = request.getParameter("password_conf");
         if (!password.equals(passwordConfirmation)) throw new ConfirmationPasswordException();
-        user.setPassword(password);
+        user.setPassword(encoder.encode(password));
 
         userRepository.save(user);
 
@@ -151,10 +316,10 @@ public class GenericController {
     }
 
     @ResponseBody
-    @GetMapping("/verify")
-    public ResponseEntity<String> sendVerification(HttpServletRequest request) {
-        Long id = Long.parseLong(request.getParameter("id"));
-        User user = userRepository.getOne(id);
+    @PostMapping("/verify")
+    public ResponseEntity<String> sendVerification(@RequestBody User credentials) {
+//        Long id = Long.parseLong(request.getParameter("id"));
+        User user = userRepository.findByEmail(credentials.getEmail());
         mailService.sendVerificationMail(user);
         return new ResponseEntity<>(HttpStatus.OK);
     }

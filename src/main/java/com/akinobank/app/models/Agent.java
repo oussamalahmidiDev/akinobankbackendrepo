@@ -26,14 +26,14 @@ public class Agent  {
 
     @ManyToOne
     @JoinColumn(name = "id_admin") // pour la relation : chaque agent a un seul admin
-    @NotNull
+//    @NotNull
 //    @JsonIgnore
     @JsonIgnoreProperties({"agents", "agences"})
     private Admin admin;
 
     @ManyToOne
     @JoinColumn(name = "id_agence") // pour la relation : un agent affecter a une seule agence
-    @NotNull
+//    @NotNull
     @JsonIgnoreProperties({"admin", "agents", "clients"})
 //    @JsonIgnore
     private Agence agence;
@@ -52,10 +52,10 @@ public class Agent  {
 
     //Just for test
 
-    public Agent(User user ,Admin admin , Agence agence) {
-        this.user=user;
-        this.admin=admin;
-        this.agence=agence;
-    }
+//    public Agent(User user ,Admin admin , Agence agence) {
+//        this.user=user;
+//        this.admin=admin;
+//        this.agence=agence;
+//    }
 
 }

@@ -13,11 +13,11 @@ import javax.validation.constraints.Pattern;
 @AllArgsConstructor
 public class CompteCredentialsRequest {
 
-    @NotNull(message = "Veuillez entrer le nº de compte")
+//    @NotNull(message = "Veuillez entrer le nº de compte")
     @CreditCardNumber
     String numeroCompte;
 
-    @NotNull(message = "Veuillez entrer le code secret de compte")
+//    @NotNull(message = "Veuillez entrer le code secret de compte")
     @Pattern(regexp="[\\d]{8}", message = "Le code doit contenir exactement 8 chiffres")
     String codeSecret;
 }

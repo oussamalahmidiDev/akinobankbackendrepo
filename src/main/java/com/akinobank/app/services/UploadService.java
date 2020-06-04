@@ -53,6 +53,7 @@ public class UploadService {
 
         // normaliser le nom de fichier avec un nom standard (timestamp)
         String fileName = StringUtils.cleanPath(System.currentTimeMillis() + "." + FilenameUtils.getExtension(file));
+        System.out.println(fileName);
 
         logger.info("New file name : {}, file size = {}", fileName, file.getSize());
 
@@ -63,6 +64,7 @@ public class UploadService {
 
             // enregistrement de fichier (remplacer le fichier s'il existe deja)
             Path target = fileStorageLocation.resolve(fileName);
+            System.out.println(target);
             Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
 
             return fileName;

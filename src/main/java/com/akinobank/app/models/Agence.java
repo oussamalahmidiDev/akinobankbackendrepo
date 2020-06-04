@@ -4,13 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Date;
 
@@ -22,6 +21,8 @@ import java.util.Date;
 @Setter
 @Builder
 @ToString
+@SQLDelete(sql = "UPDATE agence SET deleted=true WHERE id=?")
+@Where(clause = "deleted = false")
 public class Agence implements Serializable {
 
     @Id // la cle prm
@@ -34,12 +35,15 @@ public class Agence implements Serializable {
     @UpdateTimestamp
     private Date dateUpdate;
 
-    @NotNull
+    private boolean deleted;
+
+//    @NotNull
     private String  libelleAgence; // libelleAgenece : nom agence
 
     @ManyToOne
     @JsonIgnoreProperties({"agences"})
     private Ville ville;
+
 
     @ManyToOne
     @JoinColumn(name = "id_admin", nullable = false) // pour la relation : chaque agence a un seul admin
@@ -56,10 +60,10 @@ public class Agence implements Serializable {
     private Collection<Client> clients;
 
 
-    //Just for test
-    public Agence(Ville ville, String libelle, Admin admin) {
-        this.ville = ville;
-        this.libelleAgence=libelle;
-        this.admin=admin;
-    }
+//    //Just for test
+//    public Agence(Ville ville, String libelle, Admin admin) {
+//        this.ville = ville;
+//        this.libelleAgence=libelle;
+//        this.admin=admin;
+//    }
 }

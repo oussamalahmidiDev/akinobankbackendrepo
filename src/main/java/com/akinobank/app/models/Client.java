@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.util.Collection;
@@ -19,16 +21,17 @@ import java.util.Collection;
 @Data
 @Builder
 @JsonPropertyOrder({ "user" })
+@SQLDelete(sql = "UPDATE client SET deleted=true WHERE id=?")
+@Where(clause = "deleted = false")
 public class Client {
 
     @Id // la cle prm
-    @GeneratedValue(strategy = GenerationType.IDENTITY)//generation auto
+    @GeneratedValue(strategy = GenerationType.IDENTITY )//generation auto
     private Long id;
-
-    private String photo ;
 
 //    @NotNull
 
+    private boolean deleted;
 
     @ManyToOne
     @JoinColumn(name = "id_agent") // pour la relation : chaque client a un seul agent
@@ -51,21 +54,21 @@ public class Client {
     @JsonIgnore
     private Collection<Notification> notifications;
 
-    @OneToOne(mappedBy = "client", fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})
+    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})
     @JsonIgnoreProperties("client")
-    private Demande demande;
+    private Collection<Demande> demandes;
 
     @OneToOne // pour la relation : un admin a un compte user pour la auth
     @JoinColumn(name = "id_user")
-    @JsonIgnoreProperties({"id","client", "authorities", "username"})
+    @JsonIgnoreProperties({"id","client", "authorities", "username" , "admin"})
     @JsonUnwrapped
     private User user;
 
-    //Just for test
-    public Client(User user,Agent agent,Agence agence) {
-        this.user=user;
-        this.agent=agent;
-        this.agence=agence;
-    }
+//    //Just for test
+//    public Client(User user,Agent agent,Agence agence) {
+//        this.user=user;
+//        this.agent=agent;
+//        this.agence=agence;
+//    }
 
 }
