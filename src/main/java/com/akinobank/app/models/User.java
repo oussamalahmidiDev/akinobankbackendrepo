@@ -145,15 +145,4 @@ public class User implements UserDetails { // We use interface UserDetials inste
     public boolean isEnabled() {
         return true;
     }
-
-
-//    //Just for test
-//    public User(String nom, String prenom, String email, Role role ) {
-//        this.nom=nom;
-//        this.prenom=prenom;
-//        this.email=email;
-//        this.role=role;
-//
-//    }
-
 }

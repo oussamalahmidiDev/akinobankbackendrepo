@@ -16,7 +16,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
@@ -43,74 +42,30 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.formLogin().loginPage("/admin/login").defaultSuccessUrl("/admin", true);
+        httpSecurity.formLogin().loginPage("/admin/login").defaultSuccessUrl("/admin", true)
+            .and().logout().logoutUrl("/admin/logout");
 
 //      Disable CSRF
         httpSecurity.cors().disable().csrf().disable()
 //      Allow certain routes
-                .authorizeRequests().antMatchers(
-                    "/test",
-            "/admin/login","/verify",
-            "/api/auth",
+            .authorizeRequests().antMatchers(
+            "/test",
+            "/admin/login", "/verify",
+            "/api/auth/",
             "/api/auth/code",
             "/api/auth/refresh",
             "/api/auth/agent",
             "/api/forgot_password",
-            "/confirm", "/set_password","/js/**","/css/**").permitAll().
-                and().authorizeRequests().antMatchers("/admin/**").hasRole(Role.ADMIN.name()). // just for now
-                and().authorizeRequests().antMatchers("/agent/**").hasRole(Role.AGENT.name()).
-                and().authorizeRequests().antMatchers("/client/**").hasRole(Role.CLIENT.name()).
-                anyRequest().authenticated()
-                .and().exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                .and().sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
+            "/confirm", "/set_password", "/js/**", "/css/**").permitAll().
+            and().authorizeRequests().antMatchers("/admin/**").hasRole(Role.ADMIN.name()). // just for now
+            and().authorizeRequests().antMatchers("/agent/**").hasRole(Role.AGENT.name()).
+            and().authorizeRequests().antMatchers("/client/**").hasRole(Role.CLIENT.name()).
+            anyRequest().authenticated()
+            .and().exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
+            .and().sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
 
         httpSecurity.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
     }
-
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-            .allowCredentials(true)
-            .allowedHeaders("*")
-            .allowedMethods("GET, POST, PATCH, PUT, DELETE, OPTIONS")
-            .allowedOrigins("*");
-    }
-
-//    @Override
-//    protected void configure(HttpSecurity http) throws Exception {
-//        http.formLogin().loginPage("/admin/login");
-//        http.authorizeRequests().antMatchers("/admin/login","/verify", "/api/auth", "/api/auth/agent", "/api/forgot_password", "/confirm", "/set_password","/js/**","/css/**").permitAll()
-//                .and().authorizeRequests().antMatchers("/admin/**").hasRole(Role.ADMIN.name());
-////                .and().authorizeRequests().antMatchers("/agent/**").hasRole(Role.AGENT.name())
-////                .and().authorizeRequests().antMatchers("/client/**").hasRole(Role.CLIENT.name())
-////                .anyRequest().authenticated()
-////                .and().exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and().sessionManagement()
-////                .sessionCreationPolicy(SessionCreationPolicy.NEVER);
-//
-//        http.authorizeRequests().antMatchers("/api/auth", "/api/auth/agent").permitAll()
-//                .and().authorizeRequests().antMatchers("/agent/**").hasRole(Role.AGENT.name())
-//                .and().authorizeRequests().antMatchers("/client/**").hasRole(Role.CLIENT.name())
-//                .anyRequest().authenticated()
-//                .and().exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and().sessionManagement()
-//                .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-////
-////                http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-//
-//
-//
-//    }
-
-  }
-
-//    @Bean
-//    public FilterRegistrationBean xssPreventFilter() {
-//        FilterRegistrationBean registrationBean = new FilterRegistrationBean();
-//
-//        registrationBean.setFilter(new XSSFilter());
-//        registrationBean.addUrlPatterns("/*");
-//
-//        return registrationBean;
-//    }
-
+}

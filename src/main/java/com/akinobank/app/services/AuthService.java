@@ -5,6 +5,7 @@ import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.UserRepository;
 import com.akinobank.app.utilities.JwtUtils;
 import lombok.Data;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @Data
+@Log4j2
 public class AuthService implements UserDetailsService {
 
     @Autowired
@@ -67,12 +69,6 @@ public class AuthService implements UserDetailsService {
 
     public User getCurrentUser() {
         return jwtUtils.getUserFromToken();
-//        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        if (principal instanceof UserDetails) {
-//            return userRepository.findByEmail(((UserDetails) principal).getUsername());
-//        } else {
-//            return null;
-//        }
     }
 
 

@@ -13,7 +13,6 @@ import com.akinobank.app.repositories.UserRepository;
 import com.akinobank.app.services.AuthService;
 import com.akinobank.app.services.MailService;
 import com.akinobank.app.utilities.JwtUtils;
-import com.warrenstrange.googleauth.GoogleAuthenticator;
 import dev.samstevens.totp.code.CodeVerifier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -22,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -40,7 +38,6 @@ import java.util.UUID;
 
 // controlleur generique qui peut etre utilisé par tt les utilisateurs.
 @Controller
-@CrossOrigin(value = "*", allowCredentials = "true")
 @RequiredArgsConstructor
 @Log4j2
 public class GenericController {
@@ -66,23 +63,13 @@ public class GenericController {
     @Autowired
     private JwtUtils jwtUtils;
 
-    private final GoogleAuthenticator gAuth;
-
-
     @Autowired
     private CodeVerifier verifier;
 
-//    @PostMapping("/connect")
-//    public String connect(HttpServletRequest request, Model model) {
-//        String username = request.getParameter("username");
-//        System.out.println(username);
-//        return "views/admin/login";
-//    }
-
     @PostMapping("/api/auth")
     @ResponseBody
-    public ResponseEntity<?> authenticate (@RequestBody User user, HttpServletResponse response) throws Exception {
-        System.out.println(user.getEmail() +" "+ user.getPassword());
+    public ResponseEntity<?> authenticate(@RequestBody User user, HttpServletResponse response, HttpServletRequest request) throws Exception {
+        System.out.println(user.getEmail() + " " + user.getPassword());
 
         try {
             authService.authenticate(user.getEmail(), user.getPassword());
@@ -93,7 +80,7 @@ public class GenericController {
 
         TokenResponse responseBody = new TokenResponse();
         User authenticatedUser = userRepository.findByEmail(user.getEmail());
-            responseBody.set_2FaEnabled(authenticatedUser.get_2FaEnabled());
+        responseBody.set_2FaEnabled(authenticatedUser.get_2FaEnabled());
 
         if (authenticatedUser.get_2FaEnabled()) {
             return ResponseEntity.ok(responseBody);
@@ -110,9 +97,10 @@ public class GenericController {
 
         Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
         refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setPath("/");
         response.addCookie(refreshTokenCookie);
 
-        return ResponseEntity.ok(responseBody);
+        return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
 
     @PostMapping("/api/auth/refresh")
@@ -130,7 +118,6 @@ public class GenericController {
         response.setExpireAt(jwtUtils.getExpirationDateFromToken(token));
 
         return ResponseEntity.ok(response);
-
     }
 
     @PostMapping("/api/auth/logout")
@@ -149,7 +136,7 @@ public class GenericController {
 
     @PostMapping("/api/auth/code")
     @ResponseBody
-    public ResponseEntity<?> validateAuthCode(@RequestBody CodeValidationRequest body,  HttpServletResponse response) {
+    public ResponseEntity<?> validateAuthCode(@RequestBody CodeValidationRequest body, HttpServletRequest request, HttpServletResponse response) {
         try {
             authService.authenticate(body.getEmail(), body.getPassword());
         } catch (Exception e) {
@@ -177,6 +164,7 @@ public class GenericController {
 
         Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
         refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setPath("/");
         response.addCookie(refreshTokenCookie);
 
         return ResponseEntity.ok(responseBody);
@@ -184,25 +172,24 @@ public class GenericController {
 
     @PostMapping("/api/auth/agent")
     @ResponseBody
-    public ResponseEntity<?> agentAuthenticate (@RequestBody User user) throws Exception {
-        System.out.println(user.getEmail() +" "+ user.getPassword());
+    public ResponseEntity<?> agentAuthenticate(@RequestBody User user) throws Exception {
+        System.out.println(user.getEmail() + " " + user.getPassword());
 
+        User authenticatedUser = userRepository.findByEmail(user.getEmail());
         try {
-            Role role = userRepository.findByEmail(user.getEmail()).getRole();
+            Role role = authenticatedUser.getRole();
             System.out.println(role);
-            authService.agentAuthenticate(user.getEmail(), user.getPassword(),role);
+            authService.agentAuthenticate(user.getEmail(), user.getPassword(), role);
 
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "L'email ou mot de passe est incorrect");
         }
 
-        final UserDetails userDetails = authService.loadUserByUsername(user.getEmail());
-
-        final String token = jwtUtils.generateToken(userDetails);
+        final String token = jwtUtils.generateToken(authenticatedUser);
 
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);
-        System.out.println(jwtUtils.getAllClaimsFromToken(token));
+//        System.out.println(jwtUtils.getAllClaimsFromToken(token));
 
         return ResponseEntity.ok(response);
     }
@@ -224,8 +211,7 @@ public class GenericController {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
                 return "redirect:/compte_details?ref=email&token=" + token + "&ccn=" + ccn;
-            }
-            else if (action.equals("confirm")) {
+            } else if (action.equals("confirm")) {
                 if (userToVerify.isEmailConfirmed() && userToVerify.getPassword() != null)
                     return "redirect:/";
 
@@ -252,6 +238,7 @@ public class GenericController {
         model.addAttribute("user", user);
         return "views/password.set";
     }
+
     @PostMapping("/set_password")
     public String setPassword(HttpServletRequest request) {
         String token = request.getParameter("token");
@@ -293,7 +280,7 @@ public class GenericController {
         if (user == null) throw new InvalidVerificationTokenException();
 
         try {
-            Compte compte =  compteRepository.findById(numeroCompte).get();
+            Compte compte = compteRepository.findById(numeroCompte).get();
             if (compte.getStatut().name().equals(CompteStatus.PENDING_ACTIVE.name())) {
                 compte.setStatut(CompteStatus.ACTIVE);
                 compteRepository.save(compte);
@@ -323,7 +310,6 @@ public class GenericController {
         mailService.sendVerificationMail(user);
         return new ResponseEntity<>(HttpStatus.OK);
     }
-
 
 
 }

@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/admin")
@@ -64,7 +65,8 @@ public class AdminPanelController {
     }
     @PostMapping("/logout")
     public String logout(HttpServletRequest request){
-//        HttpSession session = request.getSession();
+        HttpSession session = request.getSession();
+        session.invalidate();
         return ADMIN_VIEWS_PATH + "login";
     }
     @GetMapping("")
