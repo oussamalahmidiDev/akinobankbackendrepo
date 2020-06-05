@@ -1,13 +1,18 @@
 {
-  "properties": [
-    {
-      "name": "mail.from",
-      "type": "java.lang.String",
-      "description": "Description for mail.from."
-    },
-    {
-      "name": "security.jwt.secret",
-      "type": "java.lang.String",
-      "description": "Description for security.jwt.secret."
-    }
+    "properties": [
+        {
+            "name": "mail.from",
+            "type": "java.lang.String",
+            "description": "Description for mail.from."
+        },
+        {
+            "name": "security.jwt.secret",
+            "type": "java.lang.String",
+            "description": "JWT Secret ket value."
+        },
+        {
+            "name": "geo.database.location",
+            "type": "java.lang.String",
+            "description": "Geolocation city database file location."
+        }
   ] }

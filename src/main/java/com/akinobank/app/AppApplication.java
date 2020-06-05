@@ -7,7 +7,8 @@ import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.enumerations.VirementStatus;
 import com.akinobank.app.models.*;
 import com.akinobank.app.repositories.*;
-import com.akinobank.app.services.AuthService;
+import com.akinobank.app.utilities.SessionsUtils;
+import com.maxmind.geoip2.model.CityResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,14 +20,15 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Date;
 
 
 @SpringBootApplication
-@EnableConfigurationProperties({ Storage.class })
+@EnableConfigurationProperties({Storage.class})
 @Controller
-public class AppApplication implements CommandLineRunner     {
+public class AppApplication implements CommandLineRunner {
 
     Logger logger = LoggerFactory.getLogger(AppApplication.class);
     @Autowired
@@ -62,15 +64,15 @@ public class AppApplication implements CommandLineRunner     {
     @Autowired
     private PasswordEncoder encoder;
 
-
+    @Autowired
+    private SessionRepository sessionRepository;
 
     @Autowired
-    private AuthService authService;
+    private SessionsUtils sessionsUtils;
 
 
 
-
-    public static void main(String[] args)  {
+    public static void main(String[] args) {
 
         ApplicationContext ctx = SpringApplication.run(AppApplication.class, args);
     }
@@ -145,7 +147,6 @@ public class AppApplication implements CommandLineRunner     {
         Agent agent = agentRepository.save(Agent.builder().user(user1).agence(agence).build());
 
 
-
         Client client = clientRepository.save(Client.builder().user(user2).agence(agence).build());
         Client client2 = clientRepository.save(Client.builder().user(user3).agence(agence).build());
         Client client3 = clientRepository.save(Client.builder().user(user4).agence(agence).build());
@@ -216,5 +217,20 @@ public class AppApplication implements CommandLineRunner     {
     //    //Just for test
     @Override
     public void run(String... args) {
+    }
+
+    @GetMapping("/session")
+    @ResponseBody
+    public Session getSession() {
+        CityResponse cityResponse = sessionsUtils.getCityResponse();
+
+        Session session = Session.builder()
+            .browser(sessionsUtils.getUserAgent().getBrowser().getName())
+            .ip(sessionsUtils.getIpAdress())
+            .ville(cityResponse != null? cityResponse.getCity().getName() : null)
+            .pays(cityResponse != null? cityResponse.getCountry().getName() : null)
+            .operatingSystem(sessionsUtils.getUserAgent().getOperatingSystem().getName())
+            .build();
+        return sessionRepository.save(session);
     }
 }
