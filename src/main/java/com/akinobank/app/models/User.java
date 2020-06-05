@@ -90,6 +90,9 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @UpdateTimestamp
     private Date dateUpdate;
 
+    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})
+    private List<Session> sessions;
+
     // triggered at begining of transaction : generate default values for User
     @PrePersist
     void beforeInsert() {
