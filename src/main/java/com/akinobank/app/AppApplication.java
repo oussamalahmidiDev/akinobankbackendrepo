@@ -8,7 +8,6 @@ import com.akinobank.app.enumerations.VirementStatus;
 import com.akinobank.app.models.*;
 import com.akinobank.app.repositories.*;
 import com.akinobank.app.utilities.SessionsUtils;
-import com.maxmind.geoip2.model.CityResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +19,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Date;
 
@@ -217,20 +215,5 @@ public class AppApplication implements CommandLineRunner {
     //    //Just for test
     @Override
     public void run(String... args) {
-    }
-
-    @GetMapping("/session")
-    @ResponseBody
-    public Session getSession() {
-        CityResponse cityResponse = sessionsUtils.getCityResponse();
-
-        Session session = Session.builder()
-            .browser(sessionsUtils.getUserAgent().getBrowser().getName())
-            .ip(sessionsUtils.getIpAdress())
-            .ville(cityResponse != null? cityResponse.getCity().getName() : null)
-            .pays(cityResponse != null? cityResponse.getCountry().getName() : null)
-            .operatingSystem(sessionsUtils.getUserAgent().getOperatingSystem().getName())
-            .build();
-        return sessionRepository.save(session);
     }
 }

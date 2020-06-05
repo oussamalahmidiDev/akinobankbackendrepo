@@ -63,3 +63,14 @@ server.compression.mime-types=application/json,application/xml,text/html,text/xm
 # Mailgun settings
 mailgun.domain = sandbox94174dabe35f4036913a55661ad86045.mailgun.org
 mailgun.apikey = b2e8a94d913582cdd80ea176ec427f6f-915161b7-ea0ae542
+
+security.jwt.secret = <long secret key here>
+
+# TOTP Settings
+totp.secret.length=32
+totp.code.length=6
+totp.time.period=30
+
+server.servlet.session.cookie.path = /admin
+
+geo.database.location = ./src/main/resources/citydb.mmdb

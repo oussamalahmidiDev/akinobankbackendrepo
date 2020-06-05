@@ -1,5 +1,6 @@
 package com.akinobank.app.models;
 
+import com.akinobank.app.utilities.VerificationTokenGenerator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,9 +34,15 @@ public class Session {
     private String ville;
     private String pays;
 
+    private Boolean authorized;
+
+    @JsonIgnore
+    private String refreshToken;
+
     @PrePersist
     void beforeInsert() {
         id = UUID.randomUUID().toString().replace("-","");
+        refreshToken = VerificationTokenGenerator.generateVerificationToken(); // this is temporary.
     }
 
     @ManyToOne

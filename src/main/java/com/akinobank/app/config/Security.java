@@ -51,6 +51,7 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
             .authorizeRequests().antMatchers(
             "/test", "/session",
             "/admin/login", "/verify",
+            "/api/auth",
             "/api/auth/",
             "/api/auth/code",
             "/api/auth/refresh",
