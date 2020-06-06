@@ -43,6 +43,7 @@ public class Session {
     void beforeInsert() {
         id = UUID.randomUUID().toString().replace("-","");
         refreshToken = VerificationTokenGenerator.generateVerificationToken(); // this is temporary.
+        authorized = false;
     }
 
     @ManyToOne
