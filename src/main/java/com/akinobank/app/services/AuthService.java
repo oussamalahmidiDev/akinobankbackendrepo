@@ -41,16 +41,22 @@ public class AuthService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), user.getAuthorities());
     }
 
-    public void authenticate(String email, String password) throws Exception {
+    public User authenticate(String email, String password) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+            User authenticatedUser =  userRepository.findByEmail(email);
+            if (!authenticatedUser.get_2FaEnabled())
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Vous devez activer la verification en deux étapes. " +
+                    "Suivez le lien que vous avez reçu lorsque vous avez été inscrit.");
+            return authenticatedUser;
         } catch (DisabledException e) {
-            throw new Exception("USER_DISABLED", e);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Votre compte est desactivé");
         } catch (BadCredentialsException e) {
-            throw new Exception("INVALID_CREDENTIALS", e);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "L'email ou mot de passe est incorrect.");
         }
-        }
-    public void agentAuthenticate(String email, String password , Role role) throws Exception {
+    }
+
+    public void agentAuthenticate(String email, String password, Role role) throws Exception {
         System.out.println(role);
         if (role.equals(Role.AGENT)) {
             try {
@@ -60,8 +66,7 @@ public class AuthService implements UserDetailsService {
             } catch (BadCredentialsException e) {
                 throw new Exception("INVALID_CREDENTIALS", e);
             }
-        }
-        else {
+        } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }

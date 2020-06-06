@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="views/admin/fragments :: head(title = 'Configuration de verification à deux étapes')"></head>
+<body>
+<div th:replace="views/admin/fragments ::
+    header(title = 'Bienvenue ' + ${user.nom},
+    description = 'Activer verification à deux étapes afin de sécuriser votre compte.')">
+</div>
+<!--Main section-->
+<div class="container">
+    <img th:src="${ uri }" alt="">
+    <h4 th:text="${ secretkey }"></h4>
+    <form action="">
+        <input class="form-control" type="text" id="code">
+        <input class="form-control" type="hidden" th:value="${ user.verificationToken }" id="token">
+        <button class="btn btn-primary" id="submit">Verifier</button>
+    </form>
+</div>
+<!---->
+<div th:replace="views/admin/fragments :: scripts"></div>
+<script>
+    $(document).ready(() => {
+        // $("#compte-details").hide();
+        $('#submit').click((e) => {
+            e.preventDefault();
+            $.ajax({
+                url: "/2fa_setup?token=" + $("#token").val(),
+                method: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    code: $("#code").val(),
+                }),
+                contentType: "application/json",
+                success: function(response) {
+                    console.log(response);
+                    alert(response.message);
+                },
+                error: response => alert(response.responseJSON.message)
+            });
+        })
+
+    })
+
+</script>
+
+</body>
+</html>
