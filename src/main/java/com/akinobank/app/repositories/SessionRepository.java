@@ -13,4 +13,6 @@ public interface SessionRepository extends JpaRepository<Session, String> {
     Optional<Session> findByIdAndUser(String id, User user);
 
     List<Session> findAllByUser(User user);
+
+    Boolean existsByIdAndUser(String id, User user);
 }

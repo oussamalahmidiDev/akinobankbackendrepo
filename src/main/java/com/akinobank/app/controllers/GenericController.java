@@ -4,6 +4,7 @@ import com.akinobank.app.enumerations.CompteStatus;
 import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.exceptions.ConfirmationPasswordException;
 import com.akinobank.app.exceptions.InvalidVerificationTokenException;
+import com.akinobank.app.models.CodeValidationRequest;
 import com.akinobank.app.models.Compte;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.CompteRepository;
@@ -11,6 +12,13 @@ import com.akinobank.app.repositories.UserRepository;
 import com.akinobank.app.services.AuthService;
 import com.akinobank.app.services.MailService;
 import com.akinobank.app.utilities.JwtUtils;
+import com.akinobank.app.utilities.VerificationTokenGenerator;
+import dev.samstevens.totp.code.CodeVerifier;
+import dev.samstevens.totp.exceptions.QrGenerationException;
+import dev.samstevens.totp.qr.QrData;
+import dev.samstevens.totp.qr.QrDataFactory;
+import dev.samstevens.totp.qr.QrGenerator;
+import dev.samstevens.totp.secret.SecretGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
@@ -21,16 +29,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+
+import static dev.samstevens.totp.util.Utils.getDataUriForImage;
 
 
 // controlleur generique qui peut etre utilisé par tt les utilisateurs.
@@ -59,6 +67,24 @@ public class GenericController {
 
     @Autowired
     private JwtUtils jwtUtils;
+
+    @Autowired
+    private SecretGenerator secretGenerator;
+
+    @Autowired
+    private QrDataFactory qrDataFactory;
+
+    @Autowired
+    private CodeVerifier verifier;
+
+    @Autowired
+    private QrGenerator qrGenerator;
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.OK)
+    public void index() {
+        logger.info("PIING POOONG");
+    }
 
     @PostMapping("/api/auth/agent")
     @ResponseBody
@@ -102,12 +128,18 @@ public class GenericController {
 
                 return "redirect:/compte_details?ref=email&token=" + token + "&ccn=" + ccn;
             } else if (action.equals("confirm")) {
-                if (userToVerify.isEmailConfirmed() && userToVerify.getPassword() != null)
+                if (userToVerify.isEmailConfirmed()
+                    && userToVerify.getPassword() != null
+                    && userToVerify.get_2FaEnabled()
+                )
                     return "redirect:/";
 
                 userToVerify.setEmailConfirmed(true);
                 userRepository.save(userToVerify);
-                if (userToVerify.getPassword() != null)
+                if (!userToVerify.get_2FaEnabled() && userToVerify.getPassword() != null)
+                    return "redirect:/2fa_setup?token=" + token;
+
+                if (userToVerify.getPassword() != null )
                     return "redirect:/";
                 return "redirect:/set_password?token=" + token;
             } else {
@@ -141,8 +173,74 @@ public class GenericController {
 
         userRepository.save(user);
 
+        if (!user.get_2FaEnabled())
+            return "redirect:/2fa_setup?token=" + token;
+
         return "redirect:/";
     }
+
+    @GetMapping("/2fa_setup")
+    public String setup2FA(HttpServletRequest request, HttpServletResponse response, Model model) throws QrGenerationException {
+        String token = request.getParameter("token");
+        User user = userRepository.findOneByVerificationToken(token);
+        if (user == null) throw new InvalidVerificationTokenException();
+
+        if (user.get_2FaEnabled())
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "2fa a été déja activée.");
+
+        String email = user.getEmail();
+
+        String secret = secretGenerator.generate();
+        user.setSecretKey(secret);
+        userRepository.save(user);
+
+        log.info("QR secret key generated : {}", secret);
+        QrData data = qrDataFactory.newBuilder()
+            .label(email)
+            .secret(secret)
+            .issuer("Akinobank")
+            .build();
+        String qrCodeImage = getDataUriForImage(
+            qrGenerator.generate(data),
+            qrGenerator.getImageMimeType()
+        );
+        log.info("QR URI : {}", qrCodeImage);
+
+        model.addAttribute("user", user);
+        model.addAttribute("uri", qrCodeImage);
+        model.addAttribute("secretkey", secret);
+
+        return "views/2fa.set";
+    }
+
+    @PostMapping("/2fa_setup")
+    @ResponseBody
+    public HashMap<String, String> handleQRCode(HttpServletRequest request, @RequestBody CodeValidationRequest body) {
+        String token = request.getParameter("token");
+        User user = userRepository.findOneByVerificationToken(token);
+        if (user == null) throw new InvalidVerificationTokenException();
+
+        if (user.get_2FaEnabled())
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "2fa a été déja activée.");
+
+        String secretKey = user.getSecretKey();
+
+        logger.info("Received code : {}", user.getSecretKey());
+
+        if (!verifier.isValidCode(secretKey, body.getCode()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Le code est invalide.");
+
+        user.set_2FaEnabled(true);
+        user.setVerificationToken(VerificationTokenGenerator.generateVerificationToken());
+        userRepository.save(user);
+
+        HashMap res = new HashMap<String, String>();
+        res.put("message", "La verification à deux étapes a été activé avec succés");
+
+        return res;
+    }
+
+
 
     @GetMapping("/compte_details")
     public String getCompteDetailsView(HttpServletRequest request, Model model) {

@@ -7,9 +7,8 @@ import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.SessionRepository;
 import com.akinobank.app.repositories.UserRepository;
 import com.akinobank.app.services.AuthService;
+import com.akinobank.app.services.SessionService;
 import com.akinobank.app.utilities.JwtUtils;
-import com.akinobank.app.utilities.SessionsUtils;
-import com.maxmind.geoip2.model.CityResponse;
 import dev.samstevens.totp.code.CodeVerifier;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +17,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
-import java.util.UUID;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -46,56 +45,38 @@ public class AuthController {
     private SessionRepository sessionRepository;
 
     @Autowired
-    private SessionsUtils sessionsUtils;
+    private SessionService sessionService;
 
     @PostMapping("")
-    public ResponseEntity<?> authenticate(@RequestBody User user, HttpServletResponse response, HttpServletRequest request) throws Exception {
-        System.out.println(user.getEmail() + " " + user.getPassword());
-
-        //      Step 1: Verify credentials
-        try {
-            authService.authenticate(user.getEmail(), user.getPassword());
-
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "L'email ou mot de passe est incorrect.");
-        }
-
+    public ResponseEntity<?> authenticate(@CookieValue(value = "session_id", defaultValue = "")  String sessionId, @RequestBody User user, HttpServletResponse response, HttpServletRequest request) throws Exception {
+        User authenticatedUser = authService.authenticate(user.getEmail(), user.getPassword());
         TokenResponse responseBody = new TokenResponse();
 
-        //        Step 2: Check if user has 2fa enabled
-        User authenticatedUser = userRepository.findByEmail(user.getEmail());
-        responseBody.set_2FaEnabled(authenticatedUser.get_2FaEnabled());
-        if (authenticatedUser.get_2FaEnabled()) {
-            return ResponseEntity.ok(responseBody);
+        Optional<Session> session = sessionRepository.findByIdAndUser(sessionId, authenticatedUser);
+        log.info("Session exists : {} of id : {}", sessionRepository.existsByIdAndUser(sessionId, authenticatedUser), sessionId);
+
+        try {
+//            if (!session.get().getUser().equals(authenticatedUser))
+//                session = Optional.empty();
+
+            if (!session.get().getAuthorized()) {
+                responseBody.set_2FaEnabled(!session.get().getAuthorized());
+                return ResponseEntity.status(HttpStatus.OK).body(responseBody);
+            }
+        } catch (NoSuchElementException | NullPointerException e) {
+            log.info("Detected a new session");
+            responseBody.set_2FaEnabled(true);
+            return ResponseEntity.status(HttpStatus.OK).body(responseBody);
         }
 
-        //        Step 3: Generate a jwt token [case 2fa is not enabled]
+        //        Step 3: Generate a jwt token [case 2fa is not enabled on this session]
         final String token = jwtUtils.generateToken(authenticatedUser);
         responseBody.setToken(token);
-        responseBody.setExpireAt(jwtUtils.getExpirationDateFromToken(token));
 
-        //        Step 4: Register a session in DB for the authenticated user
-        CityResponse cityResponse = sessionsUtils.getCityResponse();
-        Session session = Session.builder()
-            .browser(sessionsUtils.getUserAgent().getBrowser().getName())
-            .ip(sessionsUtils.getIpAdress())
-            .ville(cityResponse != null? cityResponse.getCity().getName() : null)
-            .pays(cityResponse != null? cityResponse.getCountry().getName() : null)
-            .operatingSystem(sessionsUtils.getUserAgent().getOperatingSystem().getName())
-            .user(authenticatedUser)
-            .authorized(authenticatedUser.getSessions().isEmpty())
-            .build();
-        sessionRepository.save(session);
 
-//        Step 5: Send refresh token and session id cookies in response.
-        Cookie refreshTokenCookie = new Cookie("refresh_token", session.getRefreshToken());
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/");
-        response.addCookie(refreshTokenCookie);
-
-        Cookie sessionIDCookie = new Cookie("session_id", session.getId());
-        sessionIDCookie.setPath("/");
-        response.addCookie(sessionIDCookie);
+//      Step 4: Generate session data and send it in a cookie
+        response.addCookie(sessionService.buildCookie("refresh_token", sessionService.generateSession(authenticatedUser, session, sessionId).getRefreshToken(), "/", true));
+        response.addCookie(sessionService.buildCookie("session_id", session.get().getId(), "/", false));
 
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
@@ -107,11 +88,6 @@ public class AuthController {
         Session session = sessionRepository.findByRefreshToken(refreshToken).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid refresh token.")
         );
-
-//        AAAAAAAW ... jit mseht lcookies sdeqt mbloque rassi bera HHHHHHH
-//        if (!session.getAuthorized())
-//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Session is not yet authorized.");
-
 
         User authenticatedUser = session.getUser();
 
@@ -125,50 +101,37 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> handleLogout(@CookieValue(value = "refresh_token", defaultValue = "") String refreshToken) {
+    @ResponseStatus(HttpStatus.OK)
+    public void handleLogout(@CookieValue(value = "refresh_token", defaultValue = "") String refreshToken) {
 
         Session session = sessionRepository.findByRefreshToken(refreshToken).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid refresh token.")
         );
-        sessionRepository.delete(session);
+        session.setRefreshToken(null);
+        sessionRepository.save(session);
 
-        return ResponseEntity.ok("");
+//        return ResponseEntity.ok("");
     }
 
     @PostMapping("/code")
-    public ResponseEntity<?> validateAuthCode(@RequestBody CodeValidationRequest body, HttpServletRequest request, HttpServletResponse response) {
-        //      Step 1: Verify credentials
-        try {
-            authService.authenticate(body.getEmail(), body.getPassword());
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid credentials.");
-        }
+    public ResponseEntity<?> validateAuthCode(@CookieValue(value = "session_id", defaultValue = "")  String sessionId, @RequestBody CodeValidationRequest body, HttpServletRequest request, HttpServletResponse response) {
+        //      Step 1: Verify credentials again
+        User authenticatedUser = authService.authenticate(body.getEmail(), body.getPassword());
 
-        //      Step 2: Check if user has truely activaed 2fa
-        User authenticatedUser = userRepository.findByEmail(body.getEmail());
-        if (!authenticatedUser.get_2FaEnabled()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
-
-        //      Step 3: Validate 2fa code
+        //      Step 2: Validate 2fa code
         if (!verifier.isValidCode(authenticatedUser.getSecretKey(), body.getCode()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Le code est invalide.");
 
-        //      Step 4: Generate a jwt token
+        Session session =  sessionService.generateSession(authenticatedUser, sessionRepository.findByIdAndUser(sessionId, authenticatedUser), sessionId) ;
+
+        //      Step 3: Generate a jwt token
         final String token = jwtUtils.generateToken(authenticatedUser);
         TokenResponse responseBody = new TokenResponse();
         responseBody.setToken(token);
-        responseBody.setExpireAt(jwtUtils.getExpirationDateFromToken(token));
 
-        //      Step 5: Generate a refresh token and send it in a cookie
-        String refreshToken = UUID.randomUUID().toString().replace("-", "");
-        authenticatedUser.setRefreshToken(refreshToken);
-        userRepository.save(authenticatedUser);
-
-        Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/");
-        response.addCookie(refreshTokenCookie);
+        //      Step 4: Generate session data and send it in a cookie
+        response.addCookie(sessionService.buildCookie("refresh_token", session.getRefreshToken(), "/", true));
+        response.addCookie(sessionService.buildCookie("session_id", session.getId(), "/", false));
 
         return ResponseEntity.ok(responseBody);
     }
