@@ -90,9 +90,6 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @UpdateTimestamp
     private Date dateUpdate;
 
-    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})
-    private List<Session> sessions;
-
     // triggered at begining of transaction : generate default values for User
     @PrePersist
     void beforeInsert() {
@@ -107,7 +104,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
 
-        List<GrantedAuthority> list = new ArrayList<GrantedAuthority>();
+        List<GrantedAuthority> list = new ArrayList<>();
         list.add(new SimpleGrantedAuthority("ROLE_" + role)); // ROLE_  : just a prefix , Spring build a prefix for every role its just a syntx ,for exemple if your role is USER then your authority(role) is ROLE_USER
 
         return list;

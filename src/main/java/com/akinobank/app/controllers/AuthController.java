@@ -4,7 +4,7 @@ import com.akinobank.app.models.CodeValidationRequest;
 import com.akinobank.app.models.Session;
 import com.akinobank.app.models.TokenResponse;
 import com.akinobank.app.models.User;
-import com.akinobank.app.repositories.SessionRepository;
+import com.akinobank.app.repositories.SessionRedisRepository;
 import com.akinobank.app.repositories.UserRepository;
 import com.akinobank.app.services.AuthService;
 import com.akinobank.app.services.SessionService;
@@ -19,9 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -42,25 +40,22 @@ public class AuthController {
     private CodeVerifier verifier;
 
     @Autowired
-    private SessionRepository sessionRepository;
+    private SessionRedisRepository sessionRedisRepository;
 
     @Autowired
     private SessionService sessionService;
 
     @PostMapping("")
-    public ResponseEntity<?> authenticate(@CookieValue(value = "session_id", defaultValue = "")  String sessionId, @RequestBody User user, HttpServletResponse response, HttpServletRequest request) throws Exception {
+    public ResponseEntity<?> authenticate(@CookieValue(value = "session_id", defaultValue = "")  String sessionId, @RequestBody User user, HttpServletResponse response) {
         User authenticatedUser = authService.authenticate(user.getEmail(), user.getPassword());
         TokenResponse responseBody = new TokenResponse();
 
-        Optional<Session> session = sessionRepository.findByIdAndUser(sessionId, authenticatedUser);
-        log.info("Session exists : {} of id : {}", sessionRepository.existsByIdAndUser(sessionId, authenticatedUser), sessionId);
+        Session session = sessionRedisRepository.findByIdAndUserId(sessionId, authenticatedUser.getId());
+        log.info("Session exists : {} of id : {}", session != null, sessionId);
 
         try {
-//            if (!session.get().getUser().equals(authenticatedUser))
-//                session = Optional.empty();
-
-            if (!session.get().getAuthorized()) {
-                responseBody.set_2FaEnabled(!session.get().getAuthorized());
+            if (!session.getAuthorized()) {
+                responseBody.set_2FaEnabled(!session.getAuthorized());
                 return ResponseEntity.status(HttpStatus.OK).body(responseBody);
             }
         } catch (NoSuchElementException | NullPointerException e) {
@@ -76,20 +71,24 @@ public class AuthController {
 
 //      Step 4: Generate session data and send it in a cookie
         response.addCookie(sessionService.buildCookie("refresh_token", sessionService.generateSession(authenticatedUser, session, sessionId).getRefreshToken(), "/", true));
-        response.addCookie(sessionService.buildCookie("session_id", session.get().getId(), "/", false));
+
+        response.addCookie(sessionService.buildCookie("session_id", session.getId(), "/", false));
 
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> getNewToken(@CookieValue(value = "refresh_token", defaultValue = "") String refreshToken) {
+    public ResponseEntity<?> getNewToken(@CookieValue(value = "session_id", defaultValue = "")  String sessionId, @CookieValue(value = "refresh_token", defaultValue = "") String refreshToken) {
         log.info("Received refresh token : {}", refreshToken);
 
-        Session session = sessionRepository.findByRefreshToken(refreshToken).orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid refresh token.")
+        Session session = sessionRedisRepository.findById(sessionId).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid session ID.")
         );
 
-        User authenticatedUser = session.getUser();
+        if (!session.getRefreshToken().equals(refreshToken))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid refresh token.");
+
+        User authenticatedUser = userRepository.getOne(session.getUserId());
 
         TokenResponse response = new TokenResponse();
 
@@ -102,15 +101,15 @@ public class AuthController {
 
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.OK)
-    public void handleLogout(@CookieValue(value = "refresh_token", defaultValue = "") String refreshToken) {
+    public void handleLogout(@CookieValue(value = "session_id", defaultValue = "")  String sessionId) {
 
-        Session session = sessionRepository.findByRefreshToken(refreshToken).orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid refresh token.")
+        Session session = sessionRedisRepository.findById(sessionId).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid session ID.")
         );
-        session.setRefreshToken(null);
-        sessionRepository.save(session);
 
-//        return ResponseEntity.ok("");
+        session.setRefreshToken(null);
+        sessionRedisRepository.save(session);
+
     }
 
     @PostMapping("/code")
@@ -122,7 +121,7 @@ public class AuthController {
         if (!verifier.isValidCode(authenticatedUser.getSecretKey(), body.getCode()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Le code est invalide.");
 
-        Session session =  sessionService.generateSession(authenticatedUser, sessionRepository.findByIdAndUser(sessionId, authenticatedUser), sessionId) ;
+        Session session =  sessionService.generateSession(authenticatedUser, sessionRedisRepository.findByIdAndUserId(sessionId, authenticatedUser.getId()), sessionId) ;
 
         //      Step 3: Generate a jwt token
         final String token = jwtUtils.generateToken(authenticatedUser);
@@ -137,15 +136,17 @@ public class AuthController {
     }
 
     @GetMapping("/sessions")
-    public List<Session> getSessions() {
-        return sessionRepository.findAllByUser(authService.getCurrentUser());
+    public Iterable<Session> getSessions() {
+        return sessionRedisRepository.findAllByUserId(authService.getCurrentUser().getId());
     }
 
     @GetMapping("/sessions/{id}")
     public Session getSessionById (@PathVariable String id) {
-        return sessionRepository.findByIdAndUser(id, authService.getCurrentUser()).orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
-        );
+        Session session = sessionRedisRepository.findByIdAndUserId(id, authService.getCurrentUser().getId());
+        if (session == null)
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found.");
+
+        return sessionRedisRepository.findByIdAndUserId(id, authService.getCurrentUser().getId());
     }
 
     @PutMapping("/sessions/{id}/{action}")
@@ -155,20 +156,20 @@ public class AuthController {
 
         if (action.equals("authorize")) {
             session.setAuthorized(true);
-            sessionRepository.save(session);
+            sessionRedisRepository.save(session);
         }
         else if (action.equals("block")) {
             deleteSession(id);
         }
         else
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Action is undefined");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Action {" + action + "} is undefined");
 
         return session;
     }
 
     @DeleteMapping("/sessions/{id}/delete")
     public ResponseEntity deleteSession (@PathVariable String id) {
-        sessionRepository.delete(getSessionById(id));
+        sessionRedisRepository.delete(getSessionById(id));
         return ResponseEntity.ok("");
     }
 

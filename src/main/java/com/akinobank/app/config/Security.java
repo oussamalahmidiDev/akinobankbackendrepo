@@ -5,6 +5,7 @@ package com.akinobank.app.config;
 import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.filters.JwtFilter;
 import com.akinobank.app.utilities.JsonHTMLEscape;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,7 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
         SimpleModule module = new SimpleModule();
         module.addDeserializer(String.class, new JsonHTMLEscape());
         ObjectMapper objectMapper = Jackson2ObjectMapperBuilder.json().build();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.registerModule(module);
         return new MappingJackson2HttpMessageConverter(objectMapper);
     }
@@ -68,7 +70,7 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
             .and()
 //      Allow certain routes
             .authorizeRequests().antMatchers(
-                "/", "/xss",
+                "/",
             "/test", "/session",
             "/admin/login", "/verify","/2fa_setup",
             "/api/auth",
@@ -77,6 +79,7 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
             "/api/auth/refresh",
             "/api/auth/agent",
             "/api/forgot_password",
+            "/compte_details",
             "/confirm", "/set_password", "/js/**", "/css/**").permitAll().
             and().authorizeRequests().antMatchers("/admin/**").hasRole(Role.ADMIN.name()). // just for now
             and().authorizeRequests().antMatchers("/agent/**").hasRole(Role.AGENT.name()).

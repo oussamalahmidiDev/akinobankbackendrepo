@@ -5,21 +5,25 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.index.Indexed;
 
-import javax.persistence.*;
+import javax.persistence.Id;
+import javax.persistence.PrePersist;
 import java.util.Date;
 import java.util.UUID;
 
 @Data
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
-@Entity
+@Log4j2
+@RedisHash("Sessions")
 public class Session {
 
     @Id
+    @Indexed
     private String id;
 
     @CreationTimestamp
@@ -39,6 +43,9 @@ public class Session {
     @JsonIgnore
     private String refreshToken;
 
+    @Indexed
+    private Long userId;
+
     @PrePersist
     void beforeInsert() {
         id = UUID.randomUUID().toString().replace("-","");
@@ -46,8 +53,11 @@ public class Session {
         authorized = false;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    @JsonIgnore
-    private User user;
+    public Session init () {
+        setId(UUID.randomUUID().toString().replace("-",""));
+        setRefreshToken(VerificationTokenGenerator.generateVerificationToken());  // this is temporary.
+        setAuthorized(false);
+        setTimestamp(new Date());
+        return this;
+    }
 }

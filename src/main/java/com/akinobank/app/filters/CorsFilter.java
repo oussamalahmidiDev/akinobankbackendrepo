@@ -10,11 +10,18 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Log4j2
 public class CorsFilter implements Filter {
+
+//    Add allowed origins here.
+    private final String[] ALLOWED_ORIGINS = {
+        "http://localhost:4200",
+        "https://akinobankclientapp.herokuapp.com"
+    };
 
     public CorsFilter() {
     }
@@ -26,21 +33,18 @@ public class CorsFilter implements Filter {
 
         Cookie[] cookies = request.getCookies();
 
-        if (request.getRequestURI().contains("api")) {
-            log.info("A stateless request : {}", request.getRequestURI());
-        }
-
-
-
-        if (cookies == null)
-            log.info("No cookies.");
-        else if (cookies.length > 0)
-            for (Cookie cookie:cookies) {
-                log.info("Refresh token cookie value : {}:{}", cookie.getName(), cookie.getValue());
-            }
+//
+//        if (cookies == null)
+//            log.info("No cookies.");
+//        else if (cookies.length > 0)
+//            for (Cookie cookie:cookies) {
+//                log.info("Refresh token cookie value : {}:{}", cookie.getName(), cookie.getValue());
+//            }
 
         log.info("Request origin : {}", request.getHeader("Origin"));
-        response.setHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
+        if (Arrays.asList(ALLOWED_ORIGINS).contains(request.getHeader("Origin")))
+            response.setHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
+
         response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE, PUT");
         response.setHeader("Access-Control-Max-Age", "12000");
         response.setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-QR-CODE, X-XSRF-TOKEN");

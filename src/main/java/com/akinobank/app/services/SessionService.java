@@ -2,7 +2,7 @@ package com.akinobank.app.services;
 
 import com.akinobank.app.models.Session;
 import com.akinobank.app.models.User;
-import com.akinobank.app.repositories.SessionRepository;
+import com.akinobank.app.repositories.SessionRedisRepository;
 import com.akinobank.app.utilities.SessionsUtils;
 import com.akinobank.app.utilities.VerificationTokenGenerator;
 import com.maxmind.geoip2.model.CityResponse;
@@ -11,19 +11,18 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.Cookie;
 import java.util.Date;
-import java.util.Optional;
 
 @Service
 public class SessionService {
 
     @Autowired
-    private SessionRepository sessionRepository;
+    private SessionRedisRepository sessionRedisRepository;
 
     @Autowired
     private SessionsUtils sessionsUtils;
 
 
-    public Session generateSession(User user, Optional<Session> oldSession, String sessionId) {
+    public Session generateSession(User user, Session oldSession, String sessionId) {
         CityResponse cityResponse = sessionsUtils.getCityResponse();
         Session newSession = Session.builder()
             .browser(sessionsUtils.getUserAgent().getBrowser().getName())
@@ -31,15 +30,16 @@ public class SessionService {
             .ville(cityResponse != null? cityResponse.getCity().getName() : null)
             .pays(cityResponse != null? cityResponse.getCountry().getName() : null)
             .operatingSystem(sessionsUtils.getUserAgent().getOperatingSystem().getName())
-            .user(user)
-            .build();
-        if (sessionRepository.existsByIdAndUser(sessionId, user)) {
+            .userId(user.getId())
+            .build()
+            .init();
+        if (sessionRedisRepository.findByIdAndUserId(sessionId, user.getId()) != null) {
             newSession.setId(sessionId);
-            newSession.setAuthorized(oldSession.get().getAuthorized());
+            newSession.setAuthorized(oldSession.getAuthorized());
             newSession.setTimestamp(new Date());
             newSession.setRefreshToken(VerificationTokenGenerator.generateVerificationToken());
         }
-        return sessionRepository.save(newSession);
+        return sessionRedisRepository.save(newSession);
     }
 
     public Cookie buildCookie(String name, String value, String path, Boolean httpOnly) {

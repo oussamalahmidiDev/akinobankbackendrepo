@@ -74,3 +74,8 @@ totp.time.period=30
 server.servlet.session.cookie.path = /admin
 
 geo.database.location = ./src/main/resources/citydb.mmdb
+
+# Redis configuration
+spring.redis.database = 0
+spring.redis.host = localhost
+spring.redis.port = 6379
