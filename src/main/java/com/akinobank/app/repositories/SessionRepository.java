@@ -7,12 +7,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface SessionRepository extends JpaRepository<Session, String> {
-    Optional<Session> findByRefreshToken(String token);
-
-    Optional<Session> findByIdAndUser(String id, User user);
-
-    List<Session> findAllByUser(User user);
-
-    Boolean existsByIdAndUser(String id, User user);
-}
+//public interface SessionRepository extends JpaRepository<Session, String> {
+//    Optional<Session> findByRefreshToken(String token);
+//
+//    Optional<Session> findByIdAndUser(String id, User user);
+//
+//    List<Session> findAllByUser(User user);
+//
+//    Boolean existsByIdAndUser(String id, User user);
+//}

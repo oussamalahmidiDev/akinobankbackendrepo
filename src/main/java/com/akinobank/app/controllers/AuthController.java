@@ -1,5 +1,6 @@
 package com.akinobank.app.controllers;
 
+import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.models.CodeValidationRequest;
 import com.akinobank.app.models.Session;
 import com.akinobank.app.models.TokenResponse;
@@ -46,43 +47,51 @@ public class AuthController {
     private SessionService sessionService;
 
     @PostMapping("")
-    public ResponseEntity<?> authenticate(@CookieValue(value = "session_id", defaultValue = "")  String sessionId, @RequestBody User user, HttpServletResponse response) {
+    public ResponseEntity<?> authenticate(@CookieValue(value = "session_id", defaultValue = "") String sessionId, @RequestBody User user, HttpServletResponse response) {
         User authenticatedUser = authService.authenticate(user.getEmail(), user.getPassword());
         TokenResponse responseBody = new TokenResponse();
 
         Session session = sessionRedisRepository.findByIdAndUserId(sessionId, authenticatedUser.getId());
         log.info("Session exists : {} of id : {}", session != null, sessionId);
 
-        try {
-            if (!session.getAuthorized()) {
-                responseBody.set_2FaEnabled(!session.getAuthorized());
+        if (authenticatedUser.getRole().equals(Role.CLIENT)) {
+            try {
+                if (!session.getAuthorized()) {
+                    responseBody.set_2FaEnabled(!session.getAuthorized());
+                    return ResponseEntity.status(HttpStatus.OK).body(responseBody);
+                }
+            } catch (NoSuchElementException | NullPointerException e) {
+                log.info("Detected a new session");
+                responseBody.set_2FaEnabled(true);
                 return ResponseEntity.status(HttpStatus.OK).body(responseBody);
             }
-        } catch (NoSuchElementException | NullPointerException e) {
-            log.info("Detected a new session");
-            responseBody.set_2FaEnabled(true);
-            return ResponseEntity.status(HttpStatus.OK).body(responseBody);
-        }
 
+        }
         //        Step 3: Generate a jwt token [case 2fa is not enabled on this session]
         final String token = jwtUtils.generateToken(authenticatedUser);
         responseBody.setToken(token);
 
+        Session newSession = sessionService.generateSession(authenticatedUser, session, sessionId);
 
+        if (!authenticatedUser.getRole().equals(Role.CLIENT)) {
+            response.addCookie(sessionService.buildCookie("session_id", newSession.getId(), "/", false));
+            response.addCookie(sessionService.buildCookie("refresh_token", newSession.getRefreshToken(), "/", true));
+
+        } else {
 //      Step 4: Generate session data and send it in a cookie
-        response.addCookie(sessionService.buildCookie("refresh_token", sessionService.generateSession(authenticatedUser, session, sessionId).getRefreshToken(), "/", true));
+            response.addCookie(sessionService.buildCookie("refresh_token", sessionService.generateSession(authenticatedUser, session, sessionId).getRefreshToken(), "/", true));
+        }
 
-        response.addCookie(sessionService.buildCookie("session_id", session.getId(), "/", false));
 
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> getNewToken(@CookieValue(value = "session_id", defaultValue = "")  String sessionId, @CookieValue(value = "refresh_token", defaultValue = "") String refreshToken) {
+    public ResponseEntity<?> getNewToken(@CookieValue(value = "session_id", defaultValue = "") String sessionId, @CookieValue(value = "refresh_token", defaultValue = "") String refreshToken) {
         log.info("Received refresh token : {}", refreshToken);
 
         Session session = sessionRedisRepository.findById(sessionId).orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid session ID.")
+                () -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid session ID.")
         );
 
         if (!session.getRefreshToken().equals(refreshToken))
@@ -101,10 +110,10 @@ public class AuthController {
 
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.OK)
-    public void handleLogout(@CookieValue(value = "session_id", defaultValue = "")  String sessionId) {
+    public void handleLogout(@CookieValue(value = "session_id", defaultValue = "") String sessionId) {
 
         Session session = sessionRedisRepository.findById(sessionId).orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid session ID.")
+                () -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid session ID.")
         );
 
         session.setRefreshToken(null);
@@ -113,7 +122,7 @@ public class AuthController {
     }
 
     @PostMapping("/code")
-    public ResponseEntity<?> validateAuthCode(@CookieValue(value = "session_id", defaultValue = "")  String sessionId, @RequestBody CodeValidationRequest body, HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> validateAuthCode(@CookieValue(value = "session_id", defaultValue = "") String sessionId, @RequestBody CodeValidationRequest body, HttpServletRequest request, HttpServletResponse response) {
         //      Step 1: Verify credentials again
         User authenticatedUser = authService.authenticate(body.getEmail(), body.getPassword());
 
@@ -121,7 +130,7 @@ public class AuthController {
         if (!verifier.isValidCode(authenticatedUser.getSecretKey(), body.getCode()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Le code est invalide.");
 
-        Session session =  sessionService.generateSession(authenticatedUser, sessionRedisRepository.findByIdAndUserId(sessionId, authenticatedUser.getId()), sessionId) ;
+        Session session = sessionService.generateSession(authenticatedUser, sessionRedisRepository.findByIdAndUserId(sessionId, authenticatedUser.getId()), sessionId);
 
         //      Step 3: Generate a jwt token
         final String token = jwtUtils.generateToken(authenticatedUser);
@@ -141,7 +150,7 @@ public class AuthController {
     }
 
     @GetMapping("/sessions/{id}")
-    public Session getSessionById (@PathVariable String id) {
+    public Session getSessionById(@PathVariable String id) {
         Session session = sessionRedisRepository.findByIdAndUserId(id, authService.getCurrentUser().getId());
         if (session == null)
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found.");
@@ -157,18 +166,16 @@ public class AuthController {
         if (action.equals("authorize")) {
             session.setAuthorized(true);
             sessionRedisRepository.save(session);
-        }
-        else if (action.equals("block")) {
+        } else if (action.equals("block")) {
             deleteSession(id);
-        }
-        else
+        } else
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Action {" + action + "} is undefined");
 
         return session;
     }
 
     @DeleteMapping("/sessions/{id}/delete")
-    public ResponseEntity deleteSession (@PathVariable String id) {
+    public ResponseEntity deleteSession(@PathVariable String id) {
         sessionRedisRepository.delete(getSessionById(id));
         return ResponseEntity.ok("");
     }
