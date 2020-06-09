@@ -60,27 +60,28 @@ public class AuthController {
                     responseBody.set_2FaEnabled(!session.getAuthorized());
                     return ResponseEntity.status(HttpStatus.OK).body(responseBody);
                 }
+                response.addCookie(sessionService.buildCookie("refresh_token", sessionService.generateSession(authenticatedUser, session, sessionId).getRefreshToken(), "/", true));
             } catch (NoSuchElementException | NullPointerException e) {
                 log.info("Detected a new session");
                 responseBody.set_2FaEnabled(true);
                 return ResponseEntity.status(HttpStatus.OK).body(responseBody);
             }
-
+        } else {
+            Session newSession = sessionService.generateSession(authenticatedUser, session, sessionId);
+            response.addCookie(sessionService.buildCookie("session_id", newSession.getId(), "/", false));
+            response.addCookie(sessionService.buildCookie("refresh_token", newSession.getRefreshToken(), "/", true));
         }
+
         //        Step 3: Generate a jwt token [case 2fa is not enabled on this session]
         final String token = jwtUtils.generateToken(authenticatedUser);
         responseBody.setToken(token);
 
-        Session newSession = sessionService.generateSession(authenticatedUser, session, sessionId);
-
-        if (!authenticatedUser.getRole().equals(Role.CLIENT)) {
-            response.addCookie(sessionService.buildCookie("session_id", newSession.getId(), "/", false));
-            response.addCookie(sessionService.buildCookie("refresh_token", newSession.getRefreshToken(), "/", true));
-
-        } else {
-//      Step 4: Generate session data and send it in a cookie
-            response.addCookie(sessionService.buildCookie("refresh_token", sessionService.generateSession(authenticatedUser, session, sessionId).getRefreshToken(), "/", true));
-        }
+//
+//        if (!authenticatedUser.getRole().equals(Role.CLIENT)) {
+//
+//        } else {
+////      Step 4: Generate session data and send it in a cookie
+//        }
 
 
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
@@ -88,10 +89,10 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<?> getNewToken(@CookieValue(value = "session_id", defaultValue = "") String sessionId, @CookieValue(value = "refresh_token", defaultValue = "") String refreshToken) {
-        log.info("Received refresh token : {}", refreshToken);
+        log.info("Received session : {} refresh token : {}", sessionId, refreshToken);
 
         Session session = sessionRedisRepository.findById(sessionId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid session ID.")
+            () -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid session ID.")
         );
 
         if (!session.getRefreshToken().equals(refreshToken))
@@ -113,7 +114,7 @@ public class AuthController {
     public void handleLogout(@CookieValue(value = "session_id", defaultValue = "") String sessionId) {
 
         Session session = sessionRedisRepository.findById(sessionId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid session ID.")
+            () -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid session ID.")
         );
 
         session.setRefreshToken(null);

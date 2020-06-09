@@ -1,12 +1,12 @@
 package com.akinobank.app.filters;
 
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.*;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -16,6 +16,9 @@ import java.util.Arrays;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Log4j2
 public class CorsFilter implements Filter {
+
+    @Value("${spring.dev}")
+    private Boolean development;
 
 //    Add allowed origins here.
     private final String[] ALLOWED_ORIGINS = {
@@ -31,18 +34,8 @@ public class CorsFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) res;
         HttpServletRequest request = (HttpServletRequest) req;
 
-        Cookie[] cookies = request.getCookies();
-
-//
-//        if (cookies == null)
-//            log.info("No cookies.");
-//        else if (cookies.length > 0)
-//            for (Cookie cookie:cookies) {
-//                log.info("Refresh token cookie value : {}:{}", cookie.getName(), cookie.getValue());
-//            }
-
         log.info("Request origin : {}", request.getHeader("Origin"));
-        if (Arrays.asList(ALLOWED_ORIGINS).contains(request.getHeader("Origin")))
+        if (development || Arrays.asList(ALLOWED_ORIGINS).contains(request.getHeader("Origin")))
             response.setHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
 
         response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE, PUT");

@@ -132,13 +132,13 @@ public class AgentProfileController {
     public User modifyAgentParam(@RequestBody User user) {
         System.out.println(user);
         User oldUser = getAgent().getUser();
-        user.setPassword(oldUser.getPassword());
-        user.setVerificationToken(oldUser.getVerificationToken());
-        user.setAgent(getAgent());
-//        user.setAgent(getAgent());
-        userRepository.save(user);
 
-        return user;
+        oldUser.setEmail(user.getEmail());
+        oldUser.setNom(user.getNom());
+        oldUser.setPrenom(user.getPrenom());
+        oldUser.setNumeroTelephone(user.getNumeroTelephone());
+        userRepository.save(oldUser);
+        return oldUser;
     }
 
     @GetMapping("/avatar/{filename}")

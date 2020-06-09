@@ -80,10 +80,10 @@ public class GenericController {
     @Autowired
     private QrGenerator qrGenerator;
 
-    @PostMapping
+    @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public void index() {
-        logger.info("PIING POOONG");
+        logger.info("PING PONG");
     }
 
     @PostMapping("/api/auth/agent")
