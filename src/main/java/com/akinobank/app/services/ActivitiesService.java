@@ -3,6 +3,7 @@ package com.akinobank.app.services;
 import com.akinobank.app.enumerations.ActivityCategory;
 import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.models.Activity;
+import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.ActivityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -88,4 +89,15 @@ public class ActivitiesService {
 
         repository.save(activity);
     }
+
+    public void save(String evenement, ActivityCategory category, User user) {
+        Activity activity = new Activity();
+
+        activity.setUser(user);
+        activity.setEvenement(evenement);
+        activity.setCategory(categories.get(user.getRole()).get(category));
+
+        repository.save(activity);
+    }
+
 }

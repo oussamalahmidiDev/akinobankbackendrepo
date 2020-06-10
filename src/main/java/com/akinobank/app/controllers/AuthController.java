@@ -153,7 +153,8 @@ public class AuthController {
 
         activitiesService.save(
             String.format("Authentification de %s %s", authenticatedUser.getPrenom(), authenticatedUser.getNom()),
-            ActivityCategory.AUTH
+            ActivityCategory.AUTH,
+                authenticatedUser
         );
 
 
