@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*")
-@RequestMapping("/client/api")
+//@RequestMapping("/client/api")
 @Log4j2
 @RequiredArgsConstructor
 public class ClientPanelController {

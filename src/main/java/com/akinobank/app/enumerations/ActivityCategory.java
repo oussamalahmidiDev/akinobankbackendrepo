@@ -1,0 +1,42 @@
+package com.akinobank.app.enumerations;
+
+public enum ActivityCategory {
+    USERS_C,
+    USERS_U,
+    USERS_D,
+
+    AGENCES_C,
+    AGENCES_U,
+    AGENCES_D,
+
+    CLIENTS_C,
+    CLIENTS_U,
+    CLIENTS_D,
+
+    COMPTES_C,
+    COMPTES_U,
+    COMPTES_D,
+
+    COMPTES_BLOCK,
+    COMPTES_SUSPEND,
+    COMPTES_ACTIVATE,
+    COMPTES_CODE_CHANGE,
+
+    PROFILE_U,
+    PROFILE_PASS_CHANGE,
+    COMPTES_DEMANDE_BLOCK,
+    COMPTES_DEMANDE_SUSPEND,
+
+    VIREMENTS_C,
+    VIREMENTS_D,
+    VIREMENTS_CONF,
+
+    RECHARGES_C,
+    RECHARGE_D,
+
+    AUTH,
+    SESSIONS_AUTHORIZE,
+    SESSIONS_BLOCK,
+    SESSIONS_D
+
+}

@@ -80,7 +80,7 @@ public class GenericController {
     @Autowired
     private QrGenerator qrGenerator;
 
-    @GetMapping
+    @GetMapping("/")
     @ResponseStatus(HttpStatus.OK)
     public void index() {
         logger.info("PING PONG");

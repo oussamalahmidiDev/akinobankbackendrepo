@@ -1,5 +1,6 @@
 package com.akinobank.app.controllers;
 
+import com.akinobank.app.enumerations.ActivityCategory;
 import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.models.CodeValidationRequest;
 import com.akinobank.app.models.Session;
@@ -7,6 +8,7 @@ import com.akinobank.app.models.TokenResponse;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.SessionRedisRepository;
 import com.akinobank.app.repositories.UserRepository;
+import com.akinobank.app.services.ActivitiesService;
 import com.akinobank.app.services.AuthService;
 import com.akinobank.app.services.SessionService;
 import com.akinobank.app.utilities.JwtUtils;
@@ -46,6 +48,9 @@ public class AuthController {
     @Autowired
     private SessionService sessionService;
 
+    @Autowired
+    private ActivitiesService activitiesService;
+
     @PostMapping("")
     public ResponseEntity<?> authenticate(@CookieValue(value = "session_id", defaultValue = "") String sessionId, @RequestBody User user, HttpServletResponse response) {
         User authenticatedUser = authService.authenticate(user.getEmail(), user.getPassword());
@@ -83,6 +88,10 @@ public class AuthController {
 ////      Step 4: Generate session data and send it in a cookie
 //        }
 
+        activitiesService.save(
+            String.format("Authentification de %s %s", authenticatedUser.getPrenom(), authenticatedUser.getNom()),
+            ActivityCategory.AUTH
+        );
 
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
@@ -142,6 +151,12 @@ public class AuthController {
         response.addCookie(sessionService.buildCookie("refresh_token", session.getRefreshToken(), "/", true));
         response.addCookie(sessionService.buildCookie("session_id", session.getId(), "/", false));
 
+        activitiesService.save(
+            String.format("Authentification de %s %s", authenticatedUser.getPrenom(), authenticatedUser.getNom()),
+            ActivityCategory.AUTH
+        );
+
+
         return ResponseEntity.ok(responseBody);
     }
 
@@ -167,8 +182,18 @@ public class AuthController {
         if (action.equals("authorize")) {
             session.setAuthorized(true);
             sessionRedisRepository.save(session);
+            activitiesService.save(
+                String.format("Autorisation de la session %s", session.getId()),
+                ActivityCategory.SESSIONS_AUTHORIZE
+            );
+
         } else if (action.equals("block")) {
-            deleteSession(id);
+            session.setAuthorized(false);
+            sessionRedisRepository.save(session);
+            activitiesService.save(
+                String.format("Blocage de la session %s", session.getId()),
+                ActivityCategory.SESSIONS_BLOCK
+            );
         } else
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Action {" + action + "} is undefined");
 
@@ -176,9 +201,14 @@ public class AuthController {
     }
 
     @DeleteMapping("/sessions/{id}/delete")
-    public ResponseEntity deleteSession(@PathVariable String id) {
-        sessionRedisRepository.delete(getSessionById(id));
-        return ResponseEntity.ok("");
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteSession(@PathVariable String id) {
+        Session session = getSessionById(id);
+        sessionRedisRepository.delete(session);
+        activitiesService.save(
+            String.format("Suppression definitive de la session %s", session.getId()),
+            ActivityCategory.SESSIONS_BLOCK
+        );
     }
 
 }

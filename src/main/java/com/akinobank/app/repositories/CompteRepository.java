@@ -4,12 +4,11 @@ import com.akinobank.app.models.Agence;
 import com.akinobank.app.models.Client;
 import com.akinobank.app.models.Compte;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.rest.webmvc.RepositoryRestController;
 
 import java.util.Collection;
 import java.util.Optional;
 
-@RepositoryRestController
+//@RepositoryRestController
 public interface CompteRepository  extends JpaRepository<Compte, String> {
 
     Collection<Compte> findAllByClientId(Long id);
