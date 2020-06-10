@@ -106,7 +106,8 @@ public class AgentProfileController {
     }
 
     @PostMapping("/modifier/password")
-    public ResponseEntity changePassword(@RequestBody PasswordChangeRequest passwordChangeRequest) {
+    @ResponseStatus(HttpStatus.OK)
+    public void changePassword(@RequestBody PasswordChangeRequest passwordChangeRequest) {
         System.out.println(passwordChangeRequest);
         Agent currentAgent = getAgent();
         Boolean isMatch = encoder.matches(passwordChangeRequest.getOldPassword(), currentAgent.getUser().getPassword());
@@ -121,11 +122,6 @@ public class AgentProfileController {
 
         currentAgent.getUser().setPassword(encoder.encode(passwordChangeRequest.getNewPassword()));
         agentRepository.save(currentAgent);
-
-
-        return new ResponseEntity(HttpStatus.OK);
-
-
     }
 
     @PostMapping("/modifier/user")

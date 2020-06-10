@@ -24,7 +24,7 @@ import java.util.Random;
 @Getter
 @Setter
 @Builder
-@SQLDelete(sql = "UPDATE compte SET deleted=true WHERE id=?")
+@SQLDelete(sql = "UPDATE compte SET deleted=true WHERE numero_compte=?")
 @Where(clause = "deleted = false")
 @JsonPropertyOrder({ "numeroCompte" })
 
