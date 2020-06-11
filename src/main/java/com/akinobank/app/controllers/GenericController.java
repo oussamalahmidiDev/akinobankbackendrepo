@@ -1,5 +1,6 @@
 package com.akinobank.app.controllers;
 
+import com.akinobank.app.enumerations.ActivityCategory;
 import com.akinobank.app.enumerations.CompteStatus;
 import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.exceptions.ConfirmationPasswordException;
@@ -9,6 +10,7 @@ import com.akinobank.app.models.Compte;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.CompteRepository;
 import com.akinobank.app.repositories.UserRepository;
+import com.akinobank.app.services.ActivitiesService;
 import com.akinobank.app.services.AuthService;
 import com.akinobank.app.services.MailService;
 import com.akinobank.app.utilities.JwtUtils;
@@ -80,6 +82,9 @@ public class GenericController {
     @Autowired
     private QrGenerator qrGenerator;
 
+    @Autowired
+    private ActivitiesService activitiesService;
+
     @GetMapping("/")
     @ResponseStatus(HttpStatus.OK)
     public void index() {
@@ -136,6 +141,12 @@ public class GenericController {
 
                 userToVerify.setEmailConfirmed(true);
                 userRepository.save(userToVerify);
+
+                activitiesService.save(
+                    String.format("Confirmation de l'email"),
+                    ActivityCategory.EMAIL_CONF,
+                    userToVerify
+                );
                 if (!userToVerify.get_2FaEnabled() && userToVerify.getPassword() != null)
                     return "redirect:/2fa_setup?token=" + token;
 
@@ -170,6 +181,12 @@ public class GenericController {
         String passwordConfirmation = request.getParameter("password_conf");
         if (!password.equals(passwordConfirmation)) throw new ConfirmationPasswordException();
         user.setPassword(encoder.encode(password));
+
+        activitiesService.save(
+            String.format("Confirmation de l'email"),
+            ActivityCategory.EMAIL_PASS_CHANGE,
+            user
+        );
 
         userRepository.save(user);
 
@@ -233,6 +250,12 @@ public class GenericController {
         user.set_2FaEnabled(true);
         user.setVerificationToken(VerificationTokenGenerator.generateVerificationToken());
         userRepository.save(user);
+
+        activitiesService.save(
+            String.format("Confirmation de l'email"),
+            ActivityCategory.EMAIL_2FA,
+            user
+        );
 
         HashMap res = new HashMap<String, String>();
         res.put("message", "La verification à deux étapes a été activé avec succés");

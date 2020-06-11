@@ -34,7 +34,14 @@ public class ActivitiesService {
         adminCategories.put(ActivityCategory.AGENCES_C, "Création d'une agence");
         adminCategories.put(ActivityCategory.AGENCES_U, "Modification d'une agence");
         adminCategories.put(ActivityCategory.AGENCES_D, "Suppression d'une agence");
+
         adminCategories.put(ActivityCategory.AUTH, "Authentification d'un admin");
+        adminCategories.put(ActivityCategory.PROFILE_U, "Changement des informations de profil");
+        adminCategories.put(ActivityCategory.PROFILE_PASS_CHANGE, "Changement du mot de passe");
+
+        adminCategories.put(ActivityCategory.EMAIL_CONF, "Confirmation d'email");
+        adminCategories.put(ActivityCategory.EMAIL_PASS_CHANGE, "Création d'un nouveau de mot de passe");
+        adminCategories.put(ActivityCategory.EMAIL_2FA, "Activation d'authentification à deux facteurs");
 
         categories.put(Role.ADMIN, adminCategories);
 
@@ -49,7 +56,14 @@ public class ActivitiesService {
         agentCategories.put(ActivityCategory.COMPTES_ACTIVATE, "Activation d'un compte");
         agentCategories.put(ActivityCategory.COMPTES_BLOCK, "Blocage d'un compte");
         agentCategories.put(ActivityCategory.COMPTES_SUSPEND, "Suspension d'un compte");
+
         agentCategories.put(ActivityCategory.AUTH, "Authentification d'un agent");
+        agentCategories.put(ActivityCategory.PROFILE_U, "Changement des informations de profil");
+        agentCategories.put(ActivityCategory.PROFILE_PASS_CHANGE, "Changement du mot de passe");
+
+        agentCategories.put(ActivityCategory.EMAIL_CONF, "Confirmation d'email");
+        agentCategories.put(ActivityCategory.EMAIL_PASS_CHANGE, "Création d'un nouveau de mot de passe");
+        agentCategories.put(ActivityCategory.EMAIL_2FA, "Activation d'authentification à deux facteurs");
 
 
         categories.put(Role.AGENT, agentCategories);
@@ -66,6 +80,11 @@ public class ActivitiesService {
         clientCategories.put(ActivityCategory.RECHARGES_C, "Effectue d'une recharge");
         clientCategories.put(ActivityCategory.RECHARGE_D, "Suppression d'une recharge");
         clientCategories.put(ActivityCategory.AUTH, "Authentification d'un client");
+
+
+        clientCategories.put(ActivityCategory.EMAIL_CONF, "Confirmation d'email");
+        clientCategories.put(ActivityCategory.EMAIL_PASS_CHANGE, "Création d'un nouveau de mot de passe");
+        clientCategories.put(ActivityCategory.EMAIL_2FA, "Activation d'authentification à deux facteurs");
 
         categories.put(Role.CLIENT, clientCategories);
     }

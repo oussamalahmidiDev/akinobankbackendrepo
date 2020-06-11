@@ -1,9 +1,11 @@
 package com.akinobank.app.controllers.agent;
 
+import com.akinobank.app.enumerations.ActivityCategory;
 import com.akinobank.app.models.Agent;
 import com.akinobank.app.models.PasswordChangeRequest;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.*;
+import com.akinobank.app.services.ActivitiesService;
 import com.akinobank.app.services.AuthService;
 import com.akinobank.app.services.MailService;
 import com.akinobank.app.services.UploadService;
@@ -69,6 +71,9 @@ public class AgentProfileController {
     @Autowired
     private PasswordEncoder encoder;
 
+    @Autowired
+    private ActivitiesService activitiesService;
+
     @GetMapping()
     public Agent getAgent() {
         return agentRepository.findByUser(authService.getCurrentUser()).orElseThrow(
@@ -101,6 +106,11 @@ public class AgentProfileController {
         Map<String, String> response = new HashMap<>();
         response.put("link", imageDownloadUri);
 
+        activitiesService.save(
+            String.format("Changement de la photo de profil"),
+            ActivityCategory.PROFILE_U
+        );
+
         return new ResponseEntity<>(response, HttpStatus.CREATED);
 
     }
@@ -122,6 +132,11 @@ public class AgentProfileController {
 
         currentAgent.getUser().setPassword(encoder.encode(passwordChangeRequest.getNewPassword()));
         agentRepository.save(currentAgent);
+
+        activitiesService.save(
+            String.format("Changement du mot de passe"),
+            ActivityCategory.PROFILE_PASS_CHANGE
+        );
     }
 
     @PostMapping("/modifier/user")
@@ -134,6 +149,12 @@ public class AgentProfileController {
         oldUser.setPrenom(user.getPrenom());
         oldUser.setNumeroTelephone(user.getNumeroTelephone());
         userRepository.save(oldUser);
+
+        activitiesService.save(
+            String.format("Changement des informations du profil"),
+            ActivityCategory.PROFILE_U
+        );
+
         return oldUser;
     }
 

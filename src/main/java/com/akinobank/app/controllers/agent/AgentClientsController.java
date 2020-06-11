@@ -1,11 +1,13 @@
 package com.akinobank.app.controllers.agent;
 
+import com.akinobank.app.enumerations.ActivityCategory;
 import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.models.Agent;
 import com.akinobank.app.models.ChangeClientDataRequest;
 import com.akinobank.app.models.Client;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.*;
+import com.akinobank.app.services.ActivitiesService;
 import com.akinobank.app.services.MailService;
 import com.akinobank.app.services.UploadService;
 import com.akinobank.app.utilities.VerificationTokenGenerator;
@@ -72,6 +74,9 @@ public class AgentClientsController {
     @Autowired
     private PasswordEncoder encoder;
 
+    @Autowired
+    private ActivitiesService activitiesService;
+
 
     @GetMapping() //show all clients , works
     public List<Client> getClients() {
@@ -112,6 +117,12 @@ public class AgentClientsController {
 
             clientRepository.save(client);
             mailService.sendVerificationMail(user);
+
+            activitiesService.save(
+                String.format("Création d'un nouveau client \"%s %s\" dans l'agence %s (%s)", client.getUser().getNom(), client.getUser().getNom(), client.getAgence().getLibelleAgence(), client.getAgence().getVille().getNom()),
+                ActivityCategory.CLIENTS_C
+            );
+
             return user;
         } catch (DataIntegrityViolationException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "L'email que vous avez entré est déjà utilisé.");
@@ -123,6 +134,11 @@ public class AgentClientsController {
     public void deleteClient(@PathVariable(value = "id") Long id) {
         Client client = getOneClient(id);
         client.getUser().setArchived(true);
+
+        activitiesService.save(
+            String.format("Suppression du client \"%s %s\" dans l'agence %s (%s)", client.getUser().getNom(), client.getUser().getNom(), client.getAgence().getLibelleAgence(), client.getAgence().getVille().getNom()),
+            ActivityCategory.CLIENTS_D
+        );
     }
 
 
@@ -148,7 +164,14 @@ public class AgentClientsController {
             mailService.sendVerificationMail(userToModify);
         }
 
-        return userRepository.save(userToModify);
+        userRepository.save(userToModify);
+
+        activitiesService.save(
+            String.format("Modification des informations du client \"%s %s\"", userToModify.getNom(), userToModify.getPrenom()),
+            ActivityCategory.CLIENTS_U
+        );
+
+        return userToModify;
 
     }
 
@@ -159,6 +182,11 @@ public class AgentClientsController {
 
         userToModify.setVille(body.getVille());
         userToModify.setAdresse(body.getAdresse());
+
+        activitiesService.save(
+            String.format("Modification de l'adresse postale du client \"%s %s\"", userToModify.getNom(), userToModify.getPrenom()),
+            ActivityCategory.CLIENTS_U
+        );
 
         return userRepository.save(userToModify);
     }

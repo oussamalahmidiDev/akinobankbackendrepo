@@ -1,8 +1,13 @@
 package com.akinobank.app.controllers.agent;
 
+import com.akinobank.app.enumerations.ActivityCategory;
 import com.akinobank.app.enumerations.CompteStatus;
-import com.akinobank.app.models.*;
+import com.akinobank.app.models.AddCompteVerification;
+import com.akinobank.app.models.Agent;
+import com.akinobank.app.models.Client;
+import com.akinobank.app.models.Compte;
 import com.akinobank.app.repositories.*;
+import com.akinobank.app.services.ActivitiesService;
 import com.akinobank.app.services.MailService;
 import com.akinobank.app.services.UploadService;
 import org.slf4j.Logger;
@@ -11,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.server.csrf.CsrfWebFilter;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -63,11 +67,12 @@ public class AgentClientsComptesController {
     @Autowired
     private PasswordEncoder encoder;
 
-
+    @Autowired
+    private ActivitiesService activitiesService;
 
 
     @GetMapping(value = "/{id}/comptes") // works v2
-    public Collection<Compte> getAllComptes(@PathVariable(value = "id")Long id) {
+    public Collection<Compte> getAllComptes(@PathVariable(value = "id") Long id) {
         try {
             return clientRepository.findById(id).get().getComptes();
         } catch (NoSuchElementException e) {
@@ -77,14 +82,14 @@ public class AgentClientsComptesController {
 
 
     @PostMapping(value = "/{id}/comptes/ajouter") // works
-    public Compte addClientCompte(@PathVariable(value = "id")Long id, @RequestBody AddCompteVerification addCompteVerification){
+    public Compte addClientCompte(@PathVariable(value = "id") Long id, @RequestBody AddCompteVerification addCompteVerification) {
         Agent agent = agentProfileController.getAgent();
         Compte compte = new Compte();
         System.out.println(addCompteVerification);
-        Boolean isMatch = encoder.matches(addCompteVerification.getAgentPassword(),agent.getUser().getPassword());
+        Boolean isMatch = encoder.matches(addCompteVerification.getAgentPassword(), agent.getUser().getPassword());
         try { //check firstly if client exist
-            if(!isMatch){
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Mauvais mot de passe.");
+            if (!isMatch) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Mauvais mot de passe.");
             }
             compte.setIntitule(addCompteVerification.getIntitule());
             compte.setSolde(addCompteVerification.getSolde());
@@ -93,6 +98,11 @@ public class AgentClientsComptesController {
             compte.setClient(client);
             compteRepository.save(compte);
             mailService.sendCompteDetails(client.getUser(), compte);
+
+            activitiesService.save(
+                String.format("Création d'un nouveau compte nº %s pour le client %s %s avec l'intitulé %s et de montant %.2f", compte.getNumeroCompte(), client.getUser().getNom(), client.getUser().getPrenom(), compte.getIntitule(), compte.getSolde()),
+                ActivityCategory.COMPTES_C
+            );
 
             //TODO check notificatiion class , there s some prb while parsing a new account for client
 //            Notification notification = notificationRepository.save(Notification.builder()
@@ -107,13 +117,13 @@ public class AgentClientsComptesController {
     }
 
     @GetMapping(value = "/{id}/comptes/{idComptes}") //works
-    public Compte getClientCompteByNum(@PathVariable(value = "id") Long id , @PathVariable(value = "idComptes") String numeroCompte){
+    public Compte getClientCompteByNum(@PathVariable(value = "id") Long id, @PathVariable(value = "idComptes") String numeroCompte) {
         Agent agent = agentProfileController.getAgent();
         System.out.println(id);
         Client client = agentClientsController.getOneClient(id);
         try {
 //            String subNumero = numeroCompte.substring(8);
-                Compte compte = compteRepository.findByClientAndClient_AgenceAndNumeroCompteContaining(client ,agent.getAgence(), numeroCompte).get();
+            Compte compte = compteRepository.findByClientAndClient_AgenceAndNumeroCompteContaining(client, agent.getAgence(), numeroCompte).get();
             return compte;
         } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le compte avec le numero = " + numeroCompte + " est introuvable.");
@@ -122,7 +132,7 @@ public class AgentClientsComptesController {
 
 
     @DeleteMapping(value = "/{id}/comptes/{idComptes}/supprimer") //works
-    public ResponseEntity<?> deleteClientCompte(@PathVariable(value = "id") Long id , @PathVariable(value = "idComptes") String numeroCompte){
+    public ResponseEntity<?> deleteClientCompte(@PathVariable(value = "id") Long id, @PathVariable(value = "idComptes") String numeroCompte) {
         Agent agent = agentProfileController.getAgent();
         try {
             String subNumero = numeroCompte.substring(8);
@@ -136,7 +146,7 @@ public class AgentClientsComptesController {
 //                    .build()
 //            );
 
-            return new ResponseEntity<>("Le compte est supprime avec succes." , HttpStatus.OK);
+            return new ResponseEntity<>("Le compte est supprime avec succes.", HttpStatus.OK);
         } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le compte avec le numero = " + numeroCompte + " est introuvable.");
         }
@@ -144,8 +154,8 @@ public class AgentClientsComptesController {
 
 
     @PutMapping(value = "/{id}/comptes/{idComptes}/modifier")
-    public Compte modifyClientCompte(@PathVariable(value = "id") Long id ,
-                                     @PathVariable(value = "idComptes") String numeroCompte ,
+    public Compte modifyClientCompte(@PathVariable(value = "id") Long id,
+                                     @PathVariable(value = "idComptes") String numeroCompte,
                                      @RequestBody Compte compte) {
         try {
             Compte compteToModify = compteRepository.findById(numeroCompte).get();
@@ -163,24 +173,31 @@ public class AgentClientsComptesController {
 //            );
 
             return compteRepository.save(compteToModify);
-        }  catch (NoSuchElementException e) {
+        } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le compte avec le numero = " + numeroCompte + " est introuvable.");
         }
     }
+
     @PutMapping(value = "/{id}/comptes/{idComptes}/modifier/status")
-    public Compte modifyClientCompteStatus(@PathVariable(value = "id") Long id ,
-                                           @PathVariable(value = "idComptes") String numeroCompte ,
-                                           @RequestParam(value = "status") String status ) {
+    public Compte modifyClientCompteStatus(@PathVariable(value = "id") Long id,
+                                           @PathVariable(value = "idComptes") String numeroCompte,
+                                           @RequestParam(value = "status") String status) {
         try {
             Compte compteToModify = compteRepository.findById(numeroCompte).get();
 //            Client client = userRepository.findById(id).get().getClient();
 //            Compte compte = getClientCompteByNum(id,numeroCompte) ;// just for test
             System.out.println(status);
 
-            switch (status){
-                case "ACTIVER" : compteToModify.setStatut(CompteStatus.ACTIVE);break;
-                case "BLOQUER" : compteToModify.setStatut(CompteStatus.BLOCKED);break;
-                case "SUSPENDRE" : compteToModify.setStatut(CompteStatus.SUSPENDED);break;
+            switch (status) {
+                case "ACTIVER":
+                    compteToModify.setStatut(CompteStatus.ACTIVE);
+                    break;
+                case "BLOQUER":
+                    compteToModify.setStatut(CompteStatus.BLOCKED);
+                    break;
+                case "SUSPENDRE":
+                    compteToModify.setStatut(CompteStatus.SUSPENDED);
+                    break;
             }
             compteRepository.save(compteToModify);
 
@@ -192,7 +209,7 @@ public class AgentClientsComptesController {
 //            );
 
             return compteToModify;
-        }  catch (NoSuchElementException e) {
+        } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le compte avec le numero = " + numeroCompte + " est introuvable.");
         }
     }

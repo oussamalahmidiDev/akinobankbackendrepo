@@ -1,11 +1,13 @@
 package com.akinobank.app.controllers.admin;
 
 
+import com.akinobank.app.enumerations.ActivityCategory;
 import com.akinobank.app.models.Admin;
 import com.akinobank.app.models.Agence;
 import com.akinobank.app.models.Agent;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.*;
+import com.akinobank.app.services.ActivitiesService;
 import com.akinobank.app.services.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +49,9 @@ public class AdminPanelController {
 
     @Autowired
     private MailService mailService;
+
+    @Autowired
+    private ActivitiesService activitiesService;
 
     Logger logger = LoggerFactory.getLogger(AdminPanelController.class);
 
@@ -96,6 +101,12 @@ public class AdminPanelController {
                 user.setAgent(null);
                 user = userRepository.save(user);
                 adminRepository.save(Admin.builder().user(user).build());
+
+                activitiesService.save(
+                    String.format("Création d'un nouveau administrateur \"%s %s \"", user.getPrenom(), user.getNom()),
+                    ActivityCategory.USERS_C,
+                    user // c temporaire
+                );
             }
             if (user.getRole().name().equals("AGENT")) {
 //            System.out.println("SAVING AGENT : " + user.toString());
@@ -106,6 +117,12 @@ public class AdminPanelController {
                 // c juste parcequ'on n'a pas encore implemente l'auth.
                 Admin admin = adminRepository.getOne((long) 1);
                 agentRepository.save(Agent.builder().user(user).admin(admin).agence(chosenAgence).build());
+
+                activitiesService.save(
+                    String.format("Création d'un nouveau agent \"%s %s \" dans l'agence %s (%s)", user.getPrenom(), user.getNom(), chosenAgence.getLibelleAgence(), chosenAgence.getVille().getNom()),
+                    ActivityCategory.USERS_C,
+                    admin.getUser()
+                );
             }
             mailService.sendVerificationMail(user);
         } catch (DataIntegrityViolationException e) {
@@ -130,6 +147,11 @@ public class AdminPanelController {
         userToUpdate.setPrenom(user.getPrenom());
 
         userRepository.save(userToUpdate);
+
+        activitiesService.save(
+            String.format("Modification des informations de l'utlisateur \"%s %s \"", user.getPrenom(), user.getNom()),
+            ActivityCategory.USERS_U
+        );
         return "redirect:/admin/users";
     }
 
@@ -138,6 +160,11 @@ public class AdminPanelController {
         User user = userRepository.getOne(id);
         // agentRepository.delete(user.getAgent());
         userRepository.delete(user);
+
+        activitiesService.save(
+            String.format("Suppression de l'utilisateur \"%s %s\"", user.getPrenom(), user.getNom()),
+            ActivityCategory.USERS_D
+        );
 
         return "redirect:/admin/users";
     }
@@ -159,6 +186,12 @@ public class AdminPanelController {
         Admin admin = adminRepository.getOne((long) 1);
         agence = Agence.builder().ville(agence.getVille()).libelleAgence(agence.getLibelleAgence()).admin(admin).build();
         agenceRepository.save(agence);
+
+        activitiesService.save(
+            String.format("Création d'une nouvelle agence \"%s\" dans la ville %s", agence.getLibelleAgence(), agence.getVille().getNom()),
+            ActivityCategory.AGENCES_C,
+            admin.getUser()
+        );
         return "redirect:/admin/agences";
     }
     @GetMapping("agences/update/{id}")
@@ -175,12 +208,22 @@ public class AdminPanelController {
         agenceToUpdate.setLibelleAgence(agence.getLibelleAgence());
         agenceToUpdate.setVille(agence.getVille());
         agenceRepository.save(agenceToUpdate);
+
+        activitiesService.save(
+            String.format("Modification des informations de l'agence \"%s\"", agence.getLibelleAgence()),
+            ActivityCategory.AGENCES_C
+        );
         return "redirect:/admin/agences";
     }
     @PostMapping("agences/delete/{id}")
     public String deleteAgence(@PathVariable(value = "id") Long id) {
         Agence agence = agenceRepository.getOne(id);
         agenceRepository.delete(agence);
+
+        activitiesService.save(
+            String.format("Suppression de l'agence \"%s\"", agence.getLibelleAgence()),
+            ActivityCategory.AGENCES_D
+        );
         return "redirect:/admin/agences";
     }
 
