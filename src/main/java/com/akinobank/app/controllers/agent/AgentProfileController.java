@@ -188,9 +188,9 @@ public class AgentProfileController {
     }
 
 
-    @DeleteMapping("/avatar/delete/{filename}")
-    public ResponseEntity deleteAgentPhoto(@PathVariable("filename") String filename) {
-        uploadService.delete(filename);
+    @DeleteMapping("/avatar/delete")
+    public ResponseEntity deleteAgentPhoto() {
+        uploadService.delete(getAgent().getUser().getPhoto());
         getAgent().getUser().setPhoto(null);
         agentRepository.save(getAgent());
         return new ResponseEntity(HttpStatus.OK);

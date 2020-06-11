@@ -84,3 +84,4 @@ spring.redis.password=
 
 # Spring env dev mode
 spring.dev = true
+
