@@ -1,5 +1,6 @@
 package com.akinobank.app.services;
 
+import com.akinobank.app.enumerations.ActivityCategory;
 import com.akinobank.app.models.Session;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.SessionRedisRepository;
@@ -21,6 +22,9 @@ public class SessionService {
     @Autowired
     private SessionsUtils sessionsUtils;
 
+    @Autowired
+    private ActivitiesService activitiesService;
+
 
     public Session generateSession(User user, Session oldSession, String sessionId) {
         CityResponse cityResponse = sessionsUtils.getCityResponse();
@@ -38,6 +42,15 @@ public class SessionService {
             newSession.setAuthorized(oldSession.getAuthorized());
             newSession.setTimestamp(new Date());
             newSession.setRefreshToken(VerificationTokenGenerator.generateVerificationToken());
+
+        }
+        else {
+            activitiesService.save(
+                String.format("Détection d'une nouvelle connexion sur l'appareil %s, %s sur l'adresse IP : %s",
+                    newSession.getOperatingSystem(), newSession.getBrowser(), newSession.getIp()),
+                ActivityCategory.SESSIONS_C,
+                user
+            );
         }
         return sessionRedisRepository.save(newSession);
     }

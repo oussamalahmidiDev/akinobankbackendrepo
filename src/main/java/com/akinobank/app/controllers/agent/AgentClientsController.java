@@ -2,10 +2,7 @@ package com.akinobank.app.controllers.agent;
 
 import com.akinobank.app.enumerations.ActivityCategory;
 import com.akinobank.app.enumerations.Role;
-import com.akinobank.app.models.Agent;
-import com.akinobank.app.models.ChangeClientDataRequest;
-import com.akinobank.app.models.Client;
-import com.akinobank.app.models.User;
+import com.akinobank.app.models.*;
 import com.akinobank.app.repositories.*;
 import com.akinobank.app.services.ActivitiesService;
 import com.akinobank.app.services.MailService;
@@ -17,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -77,6 +76,9 @@ public class AgentClientsController {
     @Autowired
     private ActivitiesService activitiesService;
 
+    @Autowired
+    private ActivityRepository activityRepository;
+
 
     @GetMapping() //show all clients , works
     public List<Client> getClients() {
@@ -98,6 +100,15 @@ public class AgentClientsController {
         } catch (NoSuchElementException | EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client avec nom = " + clientName + " est introuvable");
         }
+    }
+
+    @GetMapping("/{id}/activities")
+    public List<Activity> getClientActivities(
+        @PathVariable("id") Long id,
+        @RequestParam(value = "offset", defaultValue = "0", required = false) int offset,
+        @RequestParam(value = "limit", defaultValue = "20", required = false) int limit) {
+
+        return activityRepository.findAllByUser(getOneClient(id).getUser(), PageRequest.of(offset, limit, Sort.by("timestamp").descending()));
     }
 
 

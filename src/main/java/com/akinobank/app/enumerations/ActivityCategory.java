@@ -38,6 +38,7 @@ public enum ActivityCategory {
     SESSIONS_AUTHORIZE,
     SESSIONS_BLOCK,
     SESSIONS_D,
+    SESSIONS_C,
 
     EMAIL_CONF,
     EMAIL_PASS_CHANGE,

@@ -80,6 +80,10 @@ public class ActivitiesService {
         clientCategories.put(ActivityCategory.RECHARGES_C, "Effectue d'une recharge");
         clientCategories.put(ActivityCategory.RECHARGE_D, "Suppression d'une recharge");
         clientCategories.put(ActivityCategory.AUTH, "Authentification d'un client");
+        clientCategories.put(ActivityCategory.SESSIONS_C, "Gestion des sessions");
+        clientCategories.put(ActivityCategory.SESSIONS_AUTHORIZE, "Gestion des sessions");
+        clientCategories.put(ActivityCategory.SESSIONS_BLOCK, "Gestion des sessions");
+        clientCategories.put(ActivityCategory.SESSIONS_D, "Gestion des sessions");
 
 
         clientCategories.put(ActivityCategory.EMAIL_CONF, "Confirmation d'email");

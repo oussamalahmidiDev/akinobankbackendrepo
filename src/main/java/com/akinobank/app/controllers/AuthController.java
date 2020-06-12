@@ -185,7 +185,7 @@ public class AuthController {
             session.setAuthorized(true);
             sessionRedisRepository.save(session);
             activitiesService.save(
-                String.format("Autorisation de la session %s", session.getId()),
+                String.format("Désactivation de l'authentification à 2 facteurs pour l'appareil definitive de %s", session.getOperatingSystem()),
                 ActivityCategory.SESSIONS_AUTHORIZE
             );
 
@@ -193,7 +193,7 @@ public class AuthController {
             session.setAuthorized(false);
             sessionRedisRepository.save(session);
             activitiesService.save(
-                String.format("Blocage de la session %s", session.getId()),
+                String.format("Activation de l'authentification à 2 facteurs pour l'appareil definitive de %s", session.getOperatingSystem()),
                 ActivityCategory.SESSIONS_BLOCK
             );
         } else
@@ -208,8 +208,8 @@ public class AuthController {
         Session session = getSessionById(id);
         sessionRedisRepository.delete(session);
         activitiesService.save(
-            String.format("Suppression definitive de la session %s", session.getId()),
-            ActivityCategory.SESSIONS_BLOCK
+            String.format("Suppression definitive de la session de %s, %s (%s)", session.getBrowser(), session.getOperatingSystem(), session.getId()),
+            ActivityCategory.SESSIONS_D
         );
     }
 
