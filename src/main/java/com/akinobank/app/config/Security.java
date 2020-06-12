@@ -66,12 +66,13 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
             .and().logout().logoutUrl("/admin/logout");
 
         httpSecurity.cors().disable().csrf()
+//            .disable()
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .and()
 //      Allow certain routes
             .authorizeRequests().antMatchers(
                 "/",
-            "/test", "/session",
+            "/test/**", "/session",
             "/admin/login", "/verify","/2fa_setup",
             "/api/auth",
             "/api/auth/",

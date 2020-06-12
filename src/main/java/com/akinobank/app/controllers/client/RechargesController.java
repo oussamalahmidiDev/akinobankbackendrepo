@@ -60,7 +60,7 @@ public class RechargesController {
             () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le nº de compte est erroné.")
         );
 
-        comptesController.verifyCompteStatus(compte);
+        comptesController.verifyCompteStatus(compte, false);
 
 
         if (!compte.getCodeSecret().equals(rechargeRequest.getCodeSecret()))

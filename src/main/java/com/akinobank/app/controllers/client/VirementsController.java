@@ -17,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -46,14 +45,29 @@ public class VirementsController {
     private ActivitiesService activitiesService;
 
 
-
     @GetMapping()// return listes des virements  d'un client
-    public Collection<Virement> getAllVirements() {
+    public HashMap getAllVirements() {
         Collection<Compte> comptes = comptesController.getClientComptes();
-        Collection<Virement> virements = new ArrayList<>();
+        HashMap<String, Collection<Virement>> virements = new HashMap<>();
 
         for (Compte compte : comptes) {
-            virements.addAll(compte.getVirements());
+            Collection<Virement> sentVirements;
+            Collection<Virement> receivedVirements;
+            if (virements.get("sent") != null) {
+                sentVirements = virements.get("sent");
+                sentVirements.addAll(virementRepository.findAllByCompte(compte));
+            } else {
+                sentVirements = virementRepository.findAllByCompte(compte);
+            }
+            virements.put("sent", sentVirements);
+
+            if (virements.get("received") != null) {
+                receivedVirements = virements.get("received");
+                receivedVirements.addAll(virementRepository.findAllByDestCompteAndStatutIsNot(compte, VirementStatus.UNCOFIRMED));
+            } else {
+                receivedVirements = virementRepository.findAllByDestCompteAndStatutIsNot(compte, VirementStatus.UNCOFIRMED);
+            }
+            virements.put("received", receivedVirements);
         }
 
         return virements;
@@ -70,9 +84,17 @@ public class VirementsController {
         if (!compte.getCodeSecret().equals(virementRequest.getCodeSecret()))
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
 
-        comptesController.verifyCompteStatus(compte);
+        comptesController.verifyCompteStatus(compte, false);
 
-        Compte compteDest = compteRepository.findById(virementRequest.getNumeroCompteDest()).orElseThrow(
+        String formattednumeroCompteDest = virementRequest.getNumeroCompteDest().replace(" ", "");
+        formattednumeroCompteDest = String.format("%s %s %s %s",
+            formattednumeroCompteDest.substring(0, 4),
+            formattednumeroCompteDest.substring(4, 8),
+            formattednumeroCompteDest.substring(8, 12),
+            formattednumeroCompteDest.substring(12, 16)
+        );
+
+        Compte compteDest = compteRepository.findById(formattednumeroCompteDest).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le nº de compte de destination est erroné.")
         );
 
@@ -115,19 +137,19 @@ public class VirementsController {
     }
 
     @PostMapping(value = "/{id}/confirm")
-    public ResponseEntity<String> virementConfirmation(@PathVariable(value = "id") Long id, @RequestBody HashMap<String, Integer> request) {
+    public ResponseEntity<Virement> virementConfirmation(@PathVariable(value = "id") Long id, @RequestBody HashMap<String, String> request) {
         Virement virement = virementRepository.findByIdAndAndCompte_Client(id, profileController.getClient()).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Le virement avec le id= " + id + " est introuvable.")
         );
         // verifier si le virement est confirmé
-        if (virement.getStatut().name().equals(VirementStatus.CONFIRMED.name()) || virement.getStatut().name().equals(VirementStatus.RECEIVED.name())) {
+        if (virement.getStatut().equals(VirementStatus.CONFIRMED) || virement.getStatut().equals(VirementStatus.RECEIVED)) {
             log.info("Virement status : {}", virement.getStatut().name());
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Ce virement est déjà confirmé.");
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Ce virement est déjà confirmé.");
         }
 
         // verifier le code de verification
-        int codeVerification = Math.toIntExact(request.get("codeVerification"));
-        if (codeVerification != virement.getCodeVerification())
+        String codeVerification = request.get("codeVerification");
+        if (!codeVerification.equals(virement.getCodeVerification()))
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est invalide.");
 
 
@@ -150,7 +172,21 @@ public class VirementsController {
             ActivityCategory.VIREMENTS_CONF
         );
 
-        return new ResponseEntity<>("Votre virement a été bien confirmé !", HttpStatus.OK);
+        return new ResponseEntity<>(virement, HttpStatus.OK);
+    }
+
+    @PostMapping("/{id}/confirm_receipt")
+    public Virement confirmReceipt(@PathVariable("id") Long id) {
+        Client client = profileController.getClient();
+
+        Virement virement = virementRepository.findByIdAndDestCompte_Client(id, client).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Le virement est introuvable.")
+        );
+
+        virement.setStatut(VirementStatus.RECEIVED);
+        virementRepository.save(virement);
+
+        return virement;
     }
 
     @DeleteMapping("/{id}/delete")

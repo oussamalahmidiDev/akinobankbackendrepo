@@ -6,7 +6,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.*;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -23,21 +22,6 @@ public class CorsFilter implements Filter {
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         HttpServletResponse response = (HttpServletResponse) res;
         HttpServletRequest request = (HttpServletRequest) req;
-
-        Cookie[] cookies = request.getCookies();
-
-        if (request.getRequestURI().contains("api")) {
-            log.info("A stateless request : {}", request.getRequestURI());
-        }
-
-
-
-        if (cookies == null)
-            log.info("No cookies.");
-        else if (cookies.length > 0)
-            for (Cookie cookie:cookies) {
-                log.info("Refresh token cookie value : {}:{}", cookie.getName(), cookie.getValue());
-            }
 
         log.info("Request origin : {}", request.getHeader("Origin"));
         response.setHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));

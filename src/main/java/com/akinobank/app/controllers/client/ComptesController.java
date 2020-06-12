@@ -64,13 +64,16 @@ public class ComptesController {
 
     @PostMapping(value = "/verify_number")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void verifyCompteNumber(@RequestBody CompteCredentialsRequest request) {
+    public void verifyCompteNumber(@RequestBody CompteCredentialsRequest request, @RequestParam(value = "operation") String operation) {
         Compte compte = compteRepository.findByNumeroCompteAndClient(request.getNumeroCompte(), profileController.getClient()).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le nº de compte est erroné.")
         );
         if (!compte.getCodeSecret().equals(request.getCodeSecret()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Le code est incorrect.");
-        verifyCompteStatus(compte);
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
+        if (operation.equals("change_status") || operation.equals("change_code"))
+            verifyCompteStatus(compte, true);
+        else
+            verifyCompteStatus(compte, false);
     }
 
     @PutMapping(value = "/block")
@@ -80,10 +83,10 @@ public class ComptesController {
         Compte compte = compteRepository.findByNumeroCompteAndClient(request.getNumeroCompte(), client).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le nº de compte est erroné.")
         );
-        if (compte.getStatut().name().equals(CompteStatus.BLOCKED.name()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Le compte est déjà bloqué.");
+        if (compte.getStatut().equals(CompteStatus.BLOCKED) || compte.getStatut().equals(CompteStatus.PENDING_BLOCKED))
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le compte est déjà bloqué.");
         if (!compte.getCodeSecret().equals(request.getCodeSecret()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Le code est incorrect.");
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
 
         compte.setStatut(CompteStatus.PENDING_BLOCKED);
         compte.setRaison(request.getRaison());
@@ -106,10 +109,12 @@ public class ComptesController {
             () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le nº de compte est erroné.")
         );
 
-        if (compte.getStatut().name().equals(CompteStatus.BLOCKED))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Le compte est bloqué.");
+        if (compte.getStatut().equals(CompteStatus.BLOCKED) || compte.getStatut().equals(CompteStatus.PENDING_SUSPENDED))
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le compte est bloqué.");
+
+
         if (!compte.getCodeSecret().equals(request.getCodeSecret()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Le code est incorrect.");
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
 
         compte.setStatut(CompteStatus.PENDING_SUSPENDED);
         compte.setRaison(request.getRaison());
@@ -125,9 +130,9 @@ public class ComptesController {
     }
 
     // helper function to check if Compte is active.
-    public void verifyCompteStatus(Compte compte) {
-        if (!compte.getStatut().name().equals(CompteStatus.ACTIVE.name()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ce compte n'est pas actif.");
+    public void verifyCompteStatus(Compte compte, boolean allow) {
+        if (!compte.getStatut().name().equals(CompteStatus.ACTIVE.name()) && !allow)
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Ce compte n'est pas actif.");
     }
 
 

@@ -12,7 +12,6 @@ import com.akinobank.app.services.UploadService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -82,7 +81,6 @@ public class AgentProfileController {
     }
 
     @PostMapping("/avatar/upload")
-    @CacheEvict(cacheNames = "clients", allEntries = true)
     public ResponseEntity<?> uploadAvatar(@RequestParam("image") MultipartFile image) {
         System.out.println(image);
         Agent agent = getAgent();
@@ -104,7 +102,7 @@ public class AgentProfileController {
         agentRepository.save(agent);
 
         Map<String, String> response = new HashMap<>();
-        response.put("link", imageDownloadUri);
+        response.put("name", fileName);
 
         activitiesService.save(
             String.format("Changement de la photo de profil"),
@@ -113,6 +111,13 @@ public class AgentProfileController {
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
 
+    }
+
+    @PostMapping("/password_check")
+    @ResponseStatus(HttpStatus.OK)
+    public void checkPassword(@RequestBody User credentials) {
+        if (!encoder.matches(credentials.getPassword(), getAgent().getUser().getPassword()))
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le mot de passe est incorrect.");
     }
 
     @PostMapping("/modifier/password")
@@ -140,7 +145,7 @@ public class AgentProfileController {
     }
 
     @PostMapping("/modifier/user")
-    public User modifyAgentParam(@RequestBody User user) {
+    public Agent modifyAgentParam(@RequestBody User user) {
         System.out.println(user);
         User oldUser = getAgent().getUser();
 
@@ -155,7 +160,7 @@ public class AgentProfileController {
             ActivityCategory.PROFILE_U
         );
 
-        return oldUser;
+        return oldUser.getAgent();
     }
 
     @GetMapping("/avatar/{filename}")
@@ -188,12 +193,17 @@ public class AgentProfileController {
     }
 
 
-    @DeleteMapping("/avatar/delete/{filename}")
-    public ResponseEntity deleteAgentPhoto(@PathVariable("filename") String filename) {
-        uploadService.delete(filename);
-        getAgent().getUser().setPhoto(null);
-        agentRepository.save(getAgent());
-        return new ResponseEntity(HttpStatus.OK);
+    @DeleteMapping("/avatar/delete/")
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteAgentPhoto() {
+        User agentUser = getAgent().getUser();
+
+        if (agentUser.getPhoto() == null)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+
+        uploadService.delete(agentUser.getPhoto());
+        agentUser.setPhoto(null);
+        userRepository.save(agentUser);
     }
 
 

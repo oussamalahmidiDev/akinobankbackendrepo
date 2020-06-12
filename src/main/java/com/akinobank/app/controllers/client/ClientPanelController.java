@@ -327,15 +327,15 @@ public class ClientPanelController {
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Le virement avec le id= " + id + " est introuvable.")
         );
         // verifier si le virement est confirmé
-        if (virement.getStatut().name().equals(VirementStatus.CONFIRMED.name()) || virement.getStatut().name().equals(VirementStatus.RECEIVED.name())) {
+        if (virement.getStatut().equals(VirementStatus.CONFIRMED) || virement.getStatut().equals(VirementStatus.RECEIVED)) {
             logger.info("Virement status : {}", virement.getStatut().name());
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Ce virement est déjà confirmé.");
         }
 
         // verifier le code de verification
-        int codeVerification = Math.toIntExact(request.get("codeVerification"));
-        if (codeVerification != virement.getCodeVerification())
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est invalide.");
+//        int codeVerification = Math.toIntExact(request.get("codeVerification"));
+//        if (codeVerification != virement.getCodeVerification())
+//            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est invalide.");
 
 
         Compte compte = virement.getCompte();

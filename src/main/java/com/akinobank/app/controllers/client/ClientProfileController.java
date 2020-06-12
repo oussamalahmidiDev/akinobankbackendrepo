@@ -127,7 +127,7 @@ public class ClientProfileController {
         log.info("QR secret key validation : {}, code : {}", secretKey, body.getCode());
 
         if (!verifier.isValidCode(secretKey, body.getCode()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Le code est invalide.");
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est invalide.");
 
         currentClientUser.set_2FaEnabled(true);
         currentClientUser.setSecretKey(secretKey);

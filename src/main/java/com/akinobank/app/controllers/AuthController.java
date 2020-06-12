@@ -90,7 +90,8 @@ public class AuthController {
 
         activitiesService.save(
             String.format("Authentification de %s %s", authenticatedUser.getPrenom(), authenticatedUser.getNom()),
-            ActivityCategory.AUTH
+            ActivityCategory.AUTH,
+            authenticatedUser
         );
 
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
@@ -138,7 +139,7 @@ public class AuthController {
 
         //      Step 2: Validate 2fa code
         if (!verifier.isValidCode(authenticatedUser.getSecretKey(), body.getCode()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Le code est invalide.");
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est invalide.");
 
         Session session = sessionService.generateSession(authenticatedUser, sessionRedisRepository.findByIdAndUserId(sessionId, authenticatedUser.getId()), sessionId);
 

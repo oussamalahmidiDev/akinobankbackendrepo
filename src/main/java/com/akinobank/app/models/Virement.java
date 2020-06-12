@@ -36,7 +36,7 @@ public class Virement implements Serializable {
 
 //    @NotNull
     @JsonIgnore
-    private int codeVerification; // pour vérifier la transaction avant d'envoyer
+    private String codeVerification; // pour vérifier la transaction avant d'envoyer
 
 //    @NotNull
     @Positive
@@ -53,7 +53,8 @@ public class Virement implements Serializable {
     void beforeInsert() {
         System.out.println("SETTING DEFAULT VALUES FOR VIREMENT");
         statut = VirementStatus.UNCOFIRMED;
-        codeVerification = new Random().nextInt(90000000) + 10000000;
+        codeVerification = Integer.toString(new Random().nextInt(90000000) + 10000000);
+//        codeVerification.toString();
     }
 
 
