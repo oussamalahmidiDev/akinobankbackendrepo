@@ -3,7 +3,6 @@ package com.akinobank.app.controllers;
 import com.akinobank.app.enumerations.ActivityCategory;
 import com.akinobank.app.enumerations.CompteStatus;
 import com.akinobank.app.enumerations.Role;
-import com.akinobank.app.exceptions.ConfirmationPasswordException;
 import com.akinobank.app.exceptions.InvalidVerificationTokenException;
 import com.akinobank.app.models.CodeValidationRequest;
 import com.akinobank.app.models.Compte;
@@ -173,13 +172,17 @@ public class GenericController {
     }
 
     @PostMapping("/set_password")
-    public String setPassword(HttpServletRequest request) {
+    public String setPassword(HttpServletRequest request, Model model) {
         String token = request.getParameter("token");
         User user = userRepository.findOneByVerificationToken(token);
         if (user == null) throw new InvalidVerificationTokenException();
         String password = request.getParameter("password");
         String passwordConfirmation = request.getParameter("password_conf");
-        if (!password.equals(passwordConfirmation)) throw new ConfirmationPasswordException();
+        if (!password.equals(passwordConfirmation)) {
+            model.addAttribute("error_password_conf", "Les mots de passes ne sont pas identiques");
+            return setPasswordView(request, model);
+        }
+
         user.setPassword(encoder.encode(password));
 
         activitiesService.save(
@@ -189,6 +192,7 @@ public class GenericController {
         );
 
         userRepository.save(user);
+
 
         if (!user.get_2FaEnabled())
             return "redirect:/2fa_setup?token=" + token;

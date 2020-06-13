@@ -75,7 +75,7 @@ public class MailService  {
             context.setVariable("receiver", receiver);
             context.setVariable("compte", compte);
             context.setVariable("url", url);
-            String content = templateEngine.process("mails/compte_details", context);
+            String content = templateEngine.process("mails/compte.details", context);
             messageHelper.setText(content, true);
             // Send message
             Transport.send(message);
