@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="views/admin/fragments :: head(title = 'Historique d\'activités')"></head>
+<body>
+<nav th:replace="views/admin/fragments :: navbar"></nav>
+<div th:replace="views/admin/fragments ::
+    header(title = 'Historique d\'activités',
+    description = 'Suivre les activités d\'utilisateurs et de tout ce qui déroule dans vos agences.')">
+</div>
+<!--Main section-->
+<div class="ml-5 mr-5 mb-5">
+    <ul class="nav nav-pills nav-fill">
+        <li class="nav-item">
+            <a class="nav-link active" href="#">Activités d'utilisateurs</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="./agences">Activités des agences</a>
+        </li>
+    </ul>
+    <table class="table mt-3">
+        <thead>
+        <tr>
+            <th scope="col">Évenement</th>
+            <th scope="col">Utilisateur</th>
+            <th scope="col">Catégorie</th>
+            <th scope="col">Temps</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <th scope="row">1</th>
+            <td>Mark</td>
+            <td>Otto</td>
+            <td>@mdo</td>
+        </tr>
+        <tr>
+            <th scope="row">2</th>
+            <td>Jacob</td>
+            <td>Thornton</td>
+            <td>@fat</td>
+        </tr>
+        <tr>
+            <th scope="row">3</th>
+            <td>Larry</td>
+            <td>the Bird</td>
+            <td>@twitter</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<!---->
+<div th:replace="views/admin/fragments :: scripts"></div>
+</body>
+</html>

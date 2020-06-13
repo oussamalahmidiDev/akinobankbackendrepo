@@ -103,9 +103,9 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
             .and()
 //      Allow certain routes
             .authorizeRequests().antMatchers(
-                "/",
+            "/",
             "/test/**", "/session",
-            "/admin/login", "/verify","/2fa_setup", "/admin/auth",
+            "/admin/login", "/verify", "/2fa_setup", "/admin/auth",
             "/api/auth",
             "/api/auth/",
             "/api/auth/code",
@@ -124,6 +124,15 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
 
         httpSecurity.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
     }
+
+//    @Bean
+//    public FilterRegistrationBean adminAuthFilterRegistration() {
+//        FilterRegistrationBean registration = new FilterRegistrationBean();
+//        registration.setFilter(adminAuthFilter);
+////        registration.setOrder(2);
+//        registration.addUrlPatterns("/admin/*");
+//        return registration;
+//    }
 
     @Override
     public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {

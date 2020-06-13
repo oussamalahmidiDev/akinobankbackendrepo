@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="views/admin/fragments :: head(title = 'Paramètres de compte')"></head>
+<body>
+<nav th:replace="views/admin/fragments :: navbar"></nav>
+<!--Main section-->
+<main class="py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">Editer vos informations</div>
+
+                    <div class="card-body">
+                        <form th:object="${user}" method="post" th:action="@{/admin/settings/profil}">
+                            <div class="form-group row">
+                                <label for="nom" class="col-md-4 col-form-label text-md-right">Nom</label>
+                                <div class="col-md-6">
+                                    <input id="nom" type="text" class="form-control"
+                                           th:field="*{nom}"
+                                           required autofocus>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="prenom" class="col-md-4 col-form-label text-md-right">Prénom</label>
+                                <div class="col-md-6">
+                                    <input id="prenom" type="text" class="form-control"
+                                           th:field="*{prenom}"
+                                           required autofocus>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="email" class="col-md-4 col-form-label text-md-right">Adresse
+                                    électronique</label>
+                                <div class="col-md-6">
+                                    <input id="email" type="email" class="form-control"
+                                           th:field="*{email}"
+                                           th:value=" ${session.email}" required autofocus>
+                                    <span class="invalid-feedback" style="display: unset" role="alert"
+                                    >
+                                    <strong th:text="${error_email}"></strong>
+                                </span>
+                                </div>
+
+                            </div>
+                            <div class="form-group row mb-0">
+                                <div class="col-md-8 offset-md-4">
+                                    <button type="submit" class="btn btn-primary">
+                                        Enregistrer
+                                    </button>
+                                    <span class="invalid-feedback" style="display: unset" role="alert"
+                                    >
+                                    <strong th:text="${error}"></strong>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4 justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">Modifier le mot de passe</div>
+
+                    <div class="card-body">
+                        <form method="post" th:action="@{/admin/settings/password}">
+                            <div class="form-group row">
+                                <label for="old_password" class="col-md-4 col-form-label text-md-right">Ancien mot de
+                                    passe</label>
+                                <div class="col-md-6">
+                                    <input id="old_password" type="password" class="form-control"
+                                           name="old_password"
+                                           required autofocus>
+                                    <span class="invalid-feedback" style="display: unset" role="alert">
+                                        <strong th:text="${error_password_old}">
+                                        </strong>
+                                    </span>
+                                    <span class="invalid-feedback" style="display: unset; color: green" role="alert">
+                                        <strong th:text="${success_password}">
+                                        </strong>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="new_password" class="col-md-4 col-form-label text-md-right">Nouveau mot de
+                                    passe</label>
+                                <div class="col-md-6">
+                                    <input id="new_password" type="password" class="form-control"
+                                           name="new_password"
+                                           required autofocus>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="new_password_conf" class="col-md-4 col-form-label text-md-right">Confirmation
+                                    du mot de passe
+                                </label>
+                                <div class="col-md-6">
+                                    <input id="new_password_conf" type="password" class="form-control"
+                                           name="new_password_conf"
+                                           required autofocus>
+                                    <span class="invalid-feedback" style="display: unset" role="alert">
+                                        <strong th:text="${error_password_conf}">
+                                        </strong>
+                                    </span>
+
+                                </div>
+
+                            </div>
+                            <div class="form-group row mb-0">
+                                <div class="col-md-8 offset-md-4">
+                                    <button type="submit" class="btn btn-primary">
+                                        Enregistrer
+                                    </button>
+                                    <span class="invalid-feedback" style="display: unset" role="alert"
+                                    >
+                                    <strong th:text="${error}"></strong>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<!---->
+<div th:replace="views/admin/fragments :: scripts"></div>
+</body>
+</html>

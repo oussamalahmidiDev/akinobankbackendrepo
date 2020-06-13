@@ -19,6 +19,9 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint, Serializable
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         log.info("req url : {}", request.getRequestURI());
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+        if (!request.getRequestURI().contains("/admin"))
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+        else
+            response.sendRedirect("/admin/login");
     }
 }

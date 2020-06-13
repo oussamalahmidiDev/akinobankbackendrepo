@@ -16,6 +16,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -73,11 +76,11 @@ public class AdminPanelController {
     @RequestMapping("/login")
     public String login() {
 //        Redirect user to hompage if he's already authenticated
-//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//        logger.info("Auth : {}", auth.getPrincipal().toString());
-//        if (!(auth instanceof AnonymousAuthenticationToken)) {
-//            return "redirect:/admin";
-//        }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        logger.info("Auth : {}", auth.getPrincipal().toString());
+        if (!(auth instanceof AnonymousAuthenticationToken)) {
+            return "redirect:/admin";
+        }
         return ADMIN_VIEWS_PATH + "login";
     }
 
@@ -101,10 +104,79 @@ public class AdminPanelController {
         return ADMIN_VIEWS_PATH + "index";
     }
 
+    @GetMapping("/settings")
+    public String settings(Model model) {
+
+        model.addAttribute("user", authService.getCurrentUser());
+        return ADMIN_VIEWS_PATH + "settings";
+    }
+
+    @PostMapping("/settings/profil")
+    public String updateProfile(@ModelAttribute User user, HttpServletRequest request, Model model) {
+        try {
+            User currentUser = authService.getCurrentUser();
+            currentUser.setPrenom(user.getPrenom());
+            currentUser.setNom(user.getNom());
+            currentUser.setAdresse(user.getAdresse());
+            currentUser.setNumeroTelephone(user.getNumeroTelephone());
+            if (currentUser.getEmail() != user.getEmail()) {
+                currentUser.setEmail(user.getEmail());
+                mailService.sendVerificationMail(currentUser);
+            }
+            userRepository.save(currentUser);
+        } catch (DataIntegrityViolationException e) {
+            model.addAttribute("error_email", "Cet email existe déjà.");
+            return settings(model);
+        }
+
+        return settings(model);
+    }
+
+    @PostMapping("/settings/password")
+    public String updatePassword(HttpServletRequest request, Model model) {
+        String oldPassword = request.getParameter("old_password");
+        String newPassword = request.getParameter("new_password");
+        String newPasswordConf = request.getParameter("new_password_conf");
+
+        if (!encoder.matches(oldPassword, authService.getCurrentUser().getPassword())) {
+            model.addAttribute("error_password_old", "L'ancien mot de passe est incorrect");
+            return settings(model);
+        }
+
+        if (!newPassword.equals(newPasswordConf)) {
+            model.addAttribute("error_password_conf", "Les mots de passes ne sont pas identiques");
+            return settings(model);
+        }
+
+        User currentUser = authService.getCurrentUser();
+        currentUser.setPassword(encoder.encode(newPassword));
+        userRepository.save(currentUser);
+
+        model.addAttribute("success_password", "Le mot de passe a été changé.");
+
+        return settings(model);
+
+    }
+
     @GetMapping("users")
     public String usersView(Model model) {
         model.addAttribute("users", userRepository.findAllByRoleIsNot(Role.CLIENT));
         return ADMIN_VIEWS_PATH + "users";
+    }
+
+    @GetMapping("historique")
+    public String historique(Model model) {
+        return "redirect:/admin/historique/users";
+    }
+
+    @GetMapping("historique/users")
+    public String historiqueUsers(Model model) {
+        return ADMIN_VIEWS_PATH + "historique.users";
+    }
+
+    @GetMapping("historique/agences")
+    public String historiqueAgences(Model model) {
+        return ADMIN_VIEWS_PATH + "historique.agences";
     }
 
     @GetMapping("users/ajouter")
