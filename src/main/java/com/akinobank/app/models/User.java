@@ -7,7 +7,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Where;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,6 +27,8 @@ import java.util.List;
 @Data
 @Builder
 @ToString
+@SQLDelete(sql = "UPDATE user SET deleted=true WHERE id=?")
+@Where(clause = "deleted = false")
 public class User implements UserDetails { // We use interface UserDetials instead of create a User class and defend each method, because there s a lot of methods already exist and helpful for us
 
 
@@ -49,6 +53,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
 
 
     private Boolean archived;
+    private Boolean deleted;
 
     @JsonIgnore
     private String secretKey;

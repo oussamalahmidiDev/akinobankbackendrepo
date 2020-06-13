@@ -11,6 +11,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findAllByRoleIsNotOrderByDateDeCreationDesc(Role role);
 
     List<User> findAllByRole(Role role);
+    List<User> findAllByRoleIsNot(Role role);
 
     User findUserByRoleAndId(Role role , Long id);
 
@@ -27,6 +28,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     User findByEmail(String email);
 
     Optional<User> findByRefreshToken(String token);
+
+    Optional<User> findByIdAndRoleIsNot(Long id, Role role);
 
     List<User> findAllByRoleAndArchived(Role role , Boolean archived);
 

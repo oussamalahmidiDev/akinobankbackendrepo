@@ -12,6 +12,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -35,7 +36,9 @@ public class AuthService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email);
-
+        if (user == null)
+            throw new UsernameNotFoundException("Wrong creds");
+        log.info("User is found : {}", user.getNom());
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), user.getAuthorities());
     }
 
@@ -71,8 +74,14 @@ public class AuthService implements UserDetailsService {
 
 
     public User getCurrentUser() {
-        return jwtUtils.getUserFromToken();
+        if (jwtUtils.getToken() != null && jwtUtils.getUserFromToken() != null)
+            return jwtUtils.getUserFromToken();
+        return userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
     }
+
+//    public User getCurrentAdmin() {
+//        return userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+//    }
 
 
 }

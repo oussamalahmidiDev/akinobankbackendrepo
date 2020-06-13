@@ -1,53 +1,111 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 <head  th:fragment="head(title)">
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<!--    <script src="/js/app.js"></script>-->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+<!--    <link href="/css/app.css" rel="stylesheet">-->
     <title>Akino Bank - [[${title}]]</title>
-    <link rel="stylesheet" href="/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<!--    <link rel="stylesheet" href="/css/bootstrap.min.css">-->
+<!--    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">-->
 </head>
 <body>
-<nav class="navbar navbar-expand-lg  navbar-dark bg-dark" th:fragment="navbar">
-    <a class="navbar-brand" href="#">Akino Bank</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
+<nav class="navbar navbar-expand-md  navbar-dark bg-dark shadow-sm" th:fragment="navbar">
+    <div class="container">
+        <a class="navbar-brand" href="#">
+            Akinobank
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" >
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item">
-                <a class="nav-link" href="">Journal d'activités <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/users">Utilisateurs</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/agences" >Agences</a>
-            </li>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <!-- Left Side Of Navbar -->
+            <ul class="navbar-nav mr-auto" sec:authorize="isAuthenticated()">
+                <li class="nav-item" >
+                    <a class="nav-link" href="/admin/users">Utilisateurs</a>
+                </li>
+                <li class="nav-item" >
+                    <a class="nav-link" href="/admin/agences">Agences</a>
+                </li>
+                <li class="nav-item" >
+                    <a class="nav-link" href="/admin/historique">Historique d'activités</a>
+                </li>
+            </ul>
 
-        </ul>
-        <ul class="nav navbar-nav navbar-right">
-            <form  method="post" action="/admin/logout" class="form-inline my-2 my-lg-0">
-                <button class="btn btn-primary my-2 my-sm-0" type="submit">Se deconnecter</button>
-            </form>
-        </ul>
-<!--        <form class="form-inline my-2 my-lg-0">-->
-<!--            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">-->
-<!--            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>-->
-<!--        </form>-->
+            <!-- Right Side Of Navbar -->
+            <ul class="navbar-nav ml-auto">
+                <!-- Authentication Links -->
+<!--                @guest-->
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="nav-link" href="{{ route('login') }}">Se connecter</a>
+                </li>
+<!--                @else-->
+                <li class="nav-item dropdown"  sec:authorize="isAuthenticated()">
+                    <a th:text="${principal.nom + ' ' + principal.prenom}"  id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                       Ouss <span class="caret"></span>
+                    </a>
+
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="/admin/logout"
+                           onclick="event.preventDefault();
+                                                     document.getElementById('logout-form').submit();">
+                            Se deconnecter
+                        </a>
+
+                        <form id="logout-form"  th:action="@{/admin/logout}" method="POST" style="display: none;">
+
+                        </form>
+                    </div>
+                </li>
+<!--                @endguest-->
+            </ul>
+        </div>
     </div>
 </nav>
+<!--<nav class="navbar navbar-expand-lg  navbar-dark bg-dark" th:fragment="navbar">-->
+<!--    <a class="navbar-brand" href="#">Akinobank</a>-->
+<!--    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">-->
+<!--        <span class="navbar-toggler-icon"></span>-->
+<!--    </button>-->
+
+<!--    <div class="collapse navbar-collapse" id="navbarSupportedContent">-->
+<!--        <ul class="navbar-nav mr-auto">-->
+<!--            <li class="nav-item">-->
+<!--                <a class="nav-link" href="">Journal d'activités <span class="sr-only">(current)</span></a>-->
+<!--            </li>-->
+<!--            <li class="nav-item">-->
+<!--                <a class="nav-link" href="/admin/users">Utilisateurs</a>-->
+<!--            </li>-->
+<!--            <li class="nav-item">-->
+<!--                <a class="nav-link" href="/admin/agences" >Agences</a>-->
+<!--            </li>-->
+
+<!--        </ul>-->
+<!--        <ul class="nav navbar-nav navbar-right">-->
+<!--            <form  method="post" action="/admin/logout" class="form-inline my-2 my-lg-0">-->
+<!--                <button class="btn btn-primary my-2 my-sm-0" type="submit">Se deconnecter</button>-->
+<!--            </form>-->
+<!--        </ul>-->
+<!--&lt;!&ndash;        <form class="form-inline my-2 my-lg-0">&ndash;&gt;-->
+<!--&lt;!&ndash;            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">&ndash;&gt;-->
+<!--&lt;!&ndash;            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>&ndash;&gt;-->
+<!--&lt;!&ndash;        </form>&ndash;&gt;-->
+<!--    </div>-->
+<!--</nav>-->
 
 <div class="jumbotron m-5" th:fragment="header(title, description)">
     <h1 class="display-4">[[${title}]]</h1>
     <p class="lead">[[${description}]]</p>
 </div>
 
+
 <div th:fragment="scripts">
-    <script src="/js/jquery-3.4.1.slim.min.js?v=prod" ></script>
-    <script src="/js/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-    <script src="/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 <!--    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js" ></script>-->
 <!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>-->
 <!--    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>-->

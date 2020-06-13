@@ -35,6 +35,8 @@ public class JwtUtils {
 
     //retrieve user from jwt token
     public User getUserFromToken() {
+        String token = this.token;
+        this.token = null;
         return new ObjectMapper().convertValue(getAllClaimsFromToken(token).get("user"), User.class);
     }
 

@@ -8,43 +8,122 @@
     description = 'Ici vous ajouter les administrateurs et les agents de l\'application.')">
 </div>
 <!--Main section-->
-<div class="ml-5 mr-5 mb-5">
-    <form  th:object="${user}" method="post" action="/admin/users/ajouter">
-        <div class="form-group">
-            <label for="nom">Nom de l'utilisateur</label>
-            <input type="text" class="form-control" id="nom" th:field="*{nom}" required>
+<main class="py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">Entrer les informations du nouveau utilisateur</div>
+
+                    <div class="card-body">
+                        <form th:object="${user}" method="post" th:action="@{/admin/users/ajouter}">
+                            <div class="form-group row">
+                                <label for="nom" class="col-md-4 col-form-label text-md-right">Nom</label>
+                                <div class="col-md-6">
+                                    <input id="nom" type="text" class="form-control"
+                                           th:field="*{nom}"
+                                           th:value=" ${session.nom}" required autofocus>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="prenom" class="col-md-4 col-form-label text-md-right">Prénom</label>
+                                <div class="col-md-6">
+                                    <input id="prenom" type="text" class="form-control"
+                                           th:field="*{prenom}"
+                                           th:value=" ${session.prenom}" required autofocus>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="email" class="col-md-4 col-form-label text-md-right">Adresse
+                                    électronique</label>
+                                <div class="col-md-6">
+                                    <input id="email" type="email" class="form-control"
+                                           th:field="*{email}"
+                                           th:value=" ${session.email}" required autofocus>
+                                    <span class="invalid-feedback" style="display: unset" role="alert"
+                                          >
+                                    <strong th:text="${error_email}"></strong>
+                                </span>
+                                </div>
+
+                            </div>
+                            <div class="form-group row">
+                                <label for="role" class="col-md-4 col-form-label text-md-right">Le role
+                                    d'utilisateur</label>
+                                <div class="col-md-6">
+                                    <select class="form-control" id="role" th:field="*{role}">
+                                        <option value="ADMIN">Administrateur</option>
+                                        <option value="AGENT" th:if="${not #lists.isEmpty(agences)}">Agent</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row" id="agences-group" th:if="${not #lists.isEmpty(agences)}">
+                                <label for="agence" class="col-md-4 col-form-label text-md-right">Affecter à une
+                                    agence</label>
+                                <div class="col-md-6">
+                                    <select class="form-control" id="agence" th:field="*{agent.agence}">
+                                        <option th:each="agence: ${agences}" th:value="${agence.id}"
+                                                th:text="${agence.ville.nom + ' / ' + agence.libelleAgence}"></option>
+                                    </select>
+                                </div>
+
+                            </div>
+                            <div class="form-group row mb-0">
+                                <div class="col-md-8 offset-md-4">
+                                    <button type="submit" class="btn btn-primary">
+                                        Enregistrer
+                                    </button>
+                                    <span class="invalid-feedback" style="display: unset" role="alert"
+                                    >
+                                    <strong th:text="${error}"></strong>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="prenom">Prenom de l'utilisateur</label>
-            <input type="text" class="form-control" id="prenom" th:field="*{prenom}" required>
-        </div>
-        <div class="form-group">
-            <label for="email">Email de l'utilisateur</label>
-            <input type="email" class="form-control" id="email" th:field="*{email}" required>
-        </div>
-        <div class="form-group">
-            <label for="role">Le role d'utilisateur</label>
-            <select class="form-control" id="role"  th:field="*{role}">
-                <option value="ADMIN">Administrateur</option>
-                <option value="AGENT" th:if="${not #lists.isEmpty(agences)}">Agent</option>
-            </select>
-        </div>
-        <div class="form-group" id="agences-group" th:if="${not #lists.isEmpty(agences)}">
-            <label for="agence">Affecter à une agence</label>
-            <select class="form-control" id="agence" th:field="*{agent.agence}">
-                <option th:each="agence: ${agences}" th:value="${agence.id}" th:text="${agence.ville.nom + ' / ' + agence.libelleAgence}"></option>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Enregistrer</button>
-    </form>
-</div>
+    </div>
+</main>
+
+<!--<div class="ml-5 mr-5 mb-5">-->
+<!--    <form th:object="${user}" method="post" th:action="@{/admin/users/ajouter}">-->
+<!--        <div class="form-group">-->
+<!--            <label for="nom">Nom de l'utilisateur</label>-->
+<!--            <input type="text" class="form-control" id="nom" th:field="*{nom}" required>-->
+<!--        </div>-->
+<!--        <div class="form-group">-->
+<!--            <label for="prenom">Prenom de l'utilisateur</label>-->
+<!--            <input type="text" class="form-control" id="prenom" th:field="*{prenom}" required>-->
+<!--        </div>-->
+<!--        <div class="form-group">-->
+<!--            <label for="email">Email de l'utilisateur</label>-->
+<!--            <input type="email" class="form-control" id="email" th:field="*{email}" required>-->
+<!--        </div>-->
+<!--        <div class="form-group">-->
+<!--            <label for="role">Le role d'utilisateur</label>-->
+<!--            <select class="form-control" id="role" th:field="*{role}">-->
+<!--                <option value="ADMIN">Administrateur</option>-->
+<!--                <option value="AGENT" th:if="${not #lists.isEmpty(agences)}">Agent</option>-->
+<!--            </select>-->
+<!--        </div>-->
+<!--        <div class="form-group" id="agences-group" th:if="${not #lists.isEmpty(agences)}">-->
+<!--            <label for="agence">Affecter à une agence</label>-->
+<!--            <select class="form-control" id="agence" th:field="*{agent.agence}">-->
+<!--                <option th:each="agence: ${agences}" th:value="${agence.id}"-->
+<!--                        th:text="${agence.ville.nom + ' / ' + agence.libelleAgence}"></option>-->
+<!--            </select>-->
+<!--        </div>-->
+<!--        <button type="submit" class="btn btn-primary">Enregistrer</button>-->
+<!--    </form>-->
+<!--</div>-->
 <!---->
 <div th:replace="views/admin/fragments :: scripts"></div>
 <script>
-    $(document).ready(function(){
+    $(document).ready(function () {
         $("#agences-group").hide();
 
-        $("select#role").change(function(){
+        $("select#role").change(function () {
 
             var selected = $(this).children("option:selected").val();
 

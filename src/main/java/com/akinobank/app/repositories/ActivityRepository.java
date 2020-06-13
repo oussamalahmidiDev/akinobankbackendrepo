@@ -12,6 +12,7 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
 
     List<Activity> findAllByUserRole(Role role, Pageable pageable);
     List<Activity> findAllByUser(User user, Pageable pageable);
+    List<Activity> findAllByUserId(Long id, Pageable pageable);
 
     List<Activity> findAllByUserRole(Role role);
     List<Activity> findAllByUser(User user);

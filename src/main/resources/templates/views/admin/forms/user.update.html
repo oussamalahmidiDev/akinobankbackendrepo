@@ -3,35 +3,63 @@
 <head th:replace="views/admin/fragments :: head(title = 'Panneau d\'administrateur')"></head>
 <body>
 <nav th:replace="views/admin/fragments :: navbar"></nav>
-<div th:replace="views/admin/fragments ::
-    header(title = 'Ajouter un utilisateur',
-    description = 'Ici vous ajouter les administrateurs et les agents de l\'application.')">
-</div>
 <!--Main section-->
-<div class="ml-5 mr-5 mb-5">
-    <form  th:object="${user}" method="post" action="/admin/users/update/" th:action="${'/admin/users/update/' + user.id}">
-        <div class="form-group">
-            <label for="nom">Nom de l'utilisateur</label>
-            <input type="text" class="form-control" id="nom" th:field="*{nom}" required>
-        </div>
-        <div class="form-group">
-            <label for="prenom">Prenom de l'utilisateur</label>
-            <input type="text" class="form-control" id="prenom" th:field="*{prenom}" required>
-        </div>
-        <div class="form-group">
-            <label for="email">Email de l'utilisateur</label>
-            <input type="email" class="form-control" id="email" th:field="*{email}" required>
-        </div>
+<main class="py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header" th:text="'Modifier les informations de ' + ${user.nom} + ' ' + ${user.prenom}">Mo les informations du nouveau utilisateur</div>
 
-        <!--        <div class="form-group">-->
-<!--            <label for="role">Affecter à une agence</label>-->
-<!--            <select class="form-control" id="role" th:field="*{agent.agence}">-->
-<!--                <option th:each="agence: ${agences}" th:value="${agence.id}" th:text="${agence.ville + ' / ' + agence.libelleAgence}"></option>-->
-<!--            </select>-->
-<!--        </div>-->
-        <button type="submit" class="btn btn-primary">Enregistrer</button>
-    </form>
-</div>
+                    <div class="card-body">
+                        <form th:object="${user}" method="post" th:action="${'/admin/users/update/' + user.id}">
+                            <div class="form-group row">
+                                <label for="nom" class="col-md-4 col-form-label text-md-right">Nom</label>
+                                <div class="col-md-6">
+                                    <input id="nom" type="text" class="form-control"
+                                           th:field="*{nom}"
+                                           required autofocus>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="prenom" class="col-md-4 col-form-label text-md-right">Prénom</label>
+                                <div class="col-md-6">
+                                    <input id="prenom" type="text" class="form-control"
+                                           th:field="*{prenom}"
+                                           required autofocus>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="email" class="col-md-4 col-form-label text-md-right">Adresse
+                                    électronique</label>
+                                <div class="col-md-6">
+                                    <input id="email" type="email" class="form-control"
+                                           th:field="*{email}"
+                                          required autofocus>
+                                    <span class="invalid-feedback" style="display: unset" role="alert"
+                                    >
+                                    <strong th:text="${error_email}"></strong>
+                                </span>
+                                </div>
+                            </div>
+                            <div class="form-group row mb-0">
+                                <div class="col-md-8 offset-md-4">
+                                    <button type="submit" class="btn btn-primary">
+                                        Enregistrer
+                                    </button>
+                                    <span class="invalid-feedback" style="display: unset" role="alert"
+                                    >
+                                    <strong th:text="${error}"></strong>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
 <!---->
 <div th:replace="views/admin/fragments :: scripts"></div>
 </body>

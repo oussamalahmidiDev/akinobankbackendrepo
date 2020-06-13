@@ -30,15 +30,16 @@
                 <p  th:if="${user.role.name().equals('AGENT')}" style="opacity: 0.65;font-size: 12px;" th:text="${user.agent.agence.ville.nom + ' / ' + user.agent.agence.libelleAgence}"></p>
             </th>
             <td th:text="${user.email}">o@g.c</td>
-            <td th:text="${user.role}">AGENT</td>
+            <td th:if="${user.role.name() == 'ADMIN'}">Administrateur</td>
+            <td th:if="${user.role.name() == 'AGENT'}">Agent</td>
             <td th:text="${user.dateDeCreation}">20 Mars 2020</td>
             <td>
                 <a th:href="@{'users/update/' + ${user.id}}">
                     <button class="btn btn-outline-primary mr-2 btn-sm">Modifier</button>
                 </a>
-                <form method="post" style="display: inline-block" th:action="${'/admin/users/delete/' + user.id}">
+                <form id="delete-form" method="post" style="display: inline-block" th:action="${'users/delete/' + user.id}">
                     <input type="hidden" name="_method" value="DELETE" id="">
-                    <button class="btn btn-outline-danger btn-sm">Supprimer</button>
+                    <button  id="" type="submit" class="btn delete-btn btn-outline-danger btn-sm">Supprimer</button>
                 </form>
             </td>
         </tr>
@@ -47,5 +48,31 @@
 </div>
 <!---->
 <div th:replace="views/admin/fragments :: scripts"></div>
+<script>
+    $(document).ready(() => {
+        $('.delete-btn').click((e) => {
+            e.preventDefault();
+            console.log("Clicked", e);
+            var data = $("#delete-form").serialize();
+            var url = e.target.form.action;
+            var password = prompt("Entrez votre mot de passe pour confirmer la suppression de cet utilisateur :");
+            if (password.length) {
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: data + '&password=' + password
+                }).done((response) => {
+                    console.log("Response", response);
+                    location.reload();
+
+                }).fail((error) => {
+                    console.log("Failed", error);
+                    alert(error.responseJSON.message);
+                });
+            }
+            return false;
+        })
+    })
+</script>
 </body>
 </html>

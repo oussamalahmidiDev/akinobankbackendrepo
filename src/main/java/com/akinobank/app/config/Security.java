@@ -8,6 +8,7 @@ import com.akinobank.app.utilities.JsonHTMLEscape;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,11 +16,14 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -31,6 +35,7 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
+@Log4j2
 public class Security extends WebSecurityConfigurerAdapter implements WebMvcConfigurer {
 
     @Autowired
@@ -62,8 +67,35 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.formLogin().loginPage("/admin/login").defaultSuccessUrl("/admin", true)
-            .and().logout().logoutUrl("/admin/logout");
+        httpSecurity
+            .formLogin()
+            .loginPage("/admin/login")
+            .loginProcessingUrl("/admin/auth")
+            .usernameParameter("email")
+            .passwordParameter("password")
+            .successHandler((req, res, auth) -> {
+                log.info("Auth success : {}", auth.getName());
+                for (GrantedAuthority authority : auth.getAuthorities()) {
+                    log.info("AUTHORITY : {}", authority.getAuthority());
+                }
+                res.sendRedirect("/admin");
+            })
+            .failureHandler((req, res, exception) -> {
+                String message = "";
+                if (exception.getClass().isAssignableFrom(BadCredentialsException.class) || exception instanceof UsernameNotFoundException)
+                    message = "L'email ou mot de passe est incorrect.";
+                else
+                    message = "Erreur d'authentification.";
+                log.info("Authentication failed : {}", message);
+                req.getSession().setAttribute("message", message);
+                req.getSession().setAttribute("email", req.getParameter("email"));
+                res.sendRedirect("/admin/login");
+            })
+            .permitAll()
+            .and()
+            .logout()
+            .logoutUrl("/admin/logout")
+            .deleteCookies("JSESSIONID");
 
         httpSecurity.cors().disable().csrf()
 //            .disable()
@@ -73,7 +105,7 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
             .authorizeRequests().antMatchers(
                 "/",
             "/test/**", "/session",
-            "/admin/login", "/verify","/2fa_setup",
+            "/admin/login", "/verify","/2fa_setup", "/admin/auth",
             "/api/auth",
             "/api/auth/",
             "/api/auth/code",
@@ -105,7 +137,7 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
 //    }
 
 //    @Bean
-//    public FilterRegistrationBean<JwtFilter> jwtFilter(){
+//    public FilterRegistrationBean<JwtFilter> jwtFilter() {
 //        FilterRegistrationBean<JwtFilter> registrationBean
 //            = new FilterRegistrationBean<>();
 //

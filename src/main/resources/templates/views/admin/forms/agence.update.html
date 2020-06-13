@@ -8,30 +8,76 @@
     description = 'Ici vous ajouter les agences de l\'application.')">
 </div>
 <!--Main section-->
-<div class="ml-5 mr-5 mb-5">
-    <form  th:object="${agence}" method="post" action="/admin/agences/update/" th:action="${'/admin/agences/update/' + agence.id}">
-        <div class="form-group">
-            <label for="libelleAgence">Nom de l'agence</label>
-            <input type="text" class="form-control" id="libelleAgence" th:field="*{libelleAgence}" required>
+<main class="py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">Entrer les informations du nouveau utilisateur</div>
+
+                    <div class="card-body">
+                        <form th:object="${agence}" method="post" th:action="${'/admin/agences/update/' + agence.id}">
+                            <div class="form-group row">
+                                <label class="col-md-4 col-form-label text-md-right" for="libelleAgence">Nom de
+                                    l'agence</label>
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" id="libelleAgence"
+                                           th:field="*{libelleAgence}" required>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-4 col-form-label text-md-right" for="ville">Ville de
+                                    L'agence</label>
+                                <div class="col-md-6">
+                                    <select class="form-control" id="ville" th:field="*{ville.id}">
+                                        <option th:each="ville: ${villes}" th:value="${ville.id}"
+                                                th:text="${ville.nom}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <!-- <input type="text" class="form-control" id="ville" th:field="*{ville}" required> -->
+                            </div>
+                            <div class="form-group row mb-0">
+                                <div class="col-md-8 offset-md-4">
+                                    <button type="submit" class="btn btn-primary">
+                                        Enregistrer
+                                    </button>
+                                    <span class="invalid-feedback" style="display: unset" role="alert"
+                                    >
+                                    <strong th:text="${error}"></strong>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="ville">Ville de L'agence</label>
-            <select class="form-control" id="ville" th:field="*{ville.id}">
-                <option th:each="ville: ${villes}" th:value="${ville.id}" th:text="${ville.nom}">
-                </option>
-            </select>
-        </div>
+    </div>
+</main>
+<!--<div class="ml-5 mr-5 mb-5">-->
+<!--    <form  th:object="${agence}" method="post"  th:action="${'/admin/agences/update/' + agence.id}">-->
+<!--        <div class="form-group">-->
+<!--            <label for="libelleAgence">Nom de l'agence</label>-->
+<!--            <input type="text" class="form-control" id="libelleAgence" th:field="*{libelleAgence}" required>-->
+<!--        </div>-->
+<!--        <div class="form-group">-->
+<!--            <label for="ville">Ville de L'agence</label>-->
+<!--            <select class="form-control" id="ville" th:field="*{ville.id}">-->
+<!--                <option th:each="ville: ${villes}" th:value="${ville.id}" th:text="${ville.nom}">-->
+<!--                </option>-->
+<!--            </select>-->
+<!--        </div>-->
 
 
-        <!--        <div class="form-group">-->
-        <!--            <label for="role">Affecter à une agence</label>-->
-        <!--            <select class="form-control" id="role" th:field="*{agent.agence}">-->
-        <!--                <option th:each="agence: ${agences}" th:value="${agence.id}" th:text="${agence.ville + ' / ' + agence.libelleAgence}"></option>-->
-        <!--            </select>-->
-        <!--        </div>-->
-        <button type="submit" class="btn btn-primary">Enregistrer</button>
-    </form>
-</div>
+<!--        &lt;!&ndash;        <div class="form-group">&ndash;&gt;-->
+<!--        &lt;!&ndash;            <label for="role">Affecter à une agence</label>&ndash;&gt;-->
+<!--        &lt;!&ndash;            <select class="form-control" id="role" th:field="*{agent.agence}">&ndash;&gt;-->
+<!--        &lt;!&ndash;                <option th:each="agence: ${agences}" th:value="${agence.id}" th:text="${agence.ville + ' / ' + agence.libelleAgence}"></option>&ndash;&gt;-->
+<!--        &lt;!&ndash;            </select>&ndash;&gt;-->
+<!--        &lt;!&ndash;        </div>&ndash;&gt;-->
+<!--        <button type="submit" class="btn btn-primary">Enregistrer</button>-->
+<!--    </form>-->
+<!--</div>-->
 <!---->
 <div th:replace="views/admin/fragments :: scripts"></div>
 </body>

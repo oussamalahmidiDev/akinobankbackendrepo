@@ -41,9 +41,9 @@
                 <a th:href="@{'agences/update/' + ${agence.id}}">
                     <button class="btn btn-outline-primary mr-2 btn-sm">Modifier</button>
                 </a>
-                <form method="post" style="display: inline-block" th:action="${'/admin/agences/delete/' + agence.id}">
+                <form method="post" id="delete-form" style="display: inline-block" th:action="${'/admin/agences/delete/' + agence.id}">
                     <input type="hidden" name="_method" value="DELETE" id="">
-                    <button class="btn btn-outline-danger btn-sm">Supprimer</button>
+                    <button class="btn delete-btn btn-outline-danger btn-sm">Supprimer</button>
                 </form>
             </td>
         </tr>
@@ -52,5 +52,32 @@
 </div>
 <!---->
 <div th:replace="views/admin/fragments :: scripts"></div>
+<script>
+    $(document).ready(() => {
+        $('.delete-btn').click((e) => {
+            e.preventDefault();
+            console.log("Clicked", e);
+            var data = $("#delete-form").serialize();
+            var url = e.target.form.action;
+            var password = prompt("La suppression de cette agence entrainera la suppression de toutes ses agents et ses clients. Confirmez cette opération en entrant votre mot de passe : ");
+            if (password.length) {
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: data + '&password=' + password
+                }).done((response) => {
+                    console.log("Response", response);
+                    location.reload();
+
+                }).fail((error) => {
+                    console.log("Failed", error);
+                    alert(error.responseJSON.message);
+                });
+            }
+            return false;
+        })
+    })
+</script>
+
 </body>
 </html>
