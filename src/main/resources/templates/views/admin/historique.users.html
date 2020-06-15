@@ -11,10 +11,10 @@
 <div class="ml-5 mr-5 mb-5">
     <ul class="nav nav-pills nav-fill">
         <li class="nav-item">
-            <a class="nav-link active" href="#">Activités d'utilisateurs</a>
+            <a class="nav-link active" th:href="@{/admin/historique/users}">Activités d'utilisateurs</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="./agences">Activités des agences</a>
+            <a class="nav-link" th:href="@{/admin/historique/agences}">Activités des agences</a>
         </li>
     </ul>
     <table class="table mt-3">
@@ -27,23 +27,12 @@
         </tr>
         </thead>
         <tbody>
-        <tr>
-            <th scope="row">1</th>
-            <td>Mark</td>
-            <td>Otto</td>
-            <td>@mdo</td>
-        </tr>
-        <tr>
-            <th scope="row">2</th>
-            <td>Jacob</td>
-            <td>Thornton</td>
-            <td>@fat</td>
-        </tr>
-        <tr>
-            <th scope="row">3</th>
-            <td>Larry</td>
-            <td>the Bird</td>
-            <td>@twitter</td>
+        <tr th:each="historique : ${histUsers}">
+            <th scope="row">
+                <div th:text="${historique.evenement}"></div>1</th>
+            <td th:text="${historique.user.nom + ' ' + historique.user.prenom }">Mark</td>
+            <td th:text="${historique.category}">Otto</td>
+            <td th:text="${historique.timestamp}">@mdo</td>
         </tr>
         </tbody>
     </table>

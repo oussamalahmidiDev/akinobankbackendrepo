@@ -3,10 +3,7 @@ package com.akinobank.app.controllers.admin;
 
 import com.akinobank.app.enumerations.ActivityCategory;
 import com.akinobank.app.enumerations.Role;
-import com.akinobank.app.models.Admin;
-import com.akinobank.app.models.Agence;
-import com.akinobank.app.models.Agent;
-import com.akinobank.app.models.User;
+import com.akinobank.app.models.*;
 import com.akinobank.app.repositories.*;
 import com.akinobank.app.services.ActivitiesService;
 import com.akinobank.app.services.AuthService;
@@ -15,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -41,6 +40,8 @@ public class AdminPanelController {
 
     @Autowired
     private AgentRepository agentRepository;
+    @Autowired
+    private ActivityRepository activityRepository;
 
     @Autowired
     private ClientRepository clientRepository;
@@ -122,12 +123,14 @@ public class AdminPanelController {
             if (currentUser.getEmail() != user.getEmail()) {
                 currentUser.setEmail(user.getEmail());
                 mailService.sendVerificationMail(currentUser);
+                activitiesService.save("Confirmation d'email",ActivityCategory.EMAIL_CONF);
             }
             userRepository.save(currentUser);
         } catch (DataIntegrityViolationException e) {
             model.addAttribute("error_email", "Cet email existe déjà.");
             return settings(model);
         }
+        activitiesService.save("Changement des informations de profil",ActivityCategory.PROFILE_U);
 
         return settings(model);
     }
@@ -153,6 +156,7 @@ public class AdminPanelController {
         userRepository.save(currentUser);
 
         model.addAttribute("success_password", "Le mot de passe a été changé.");
+        activitiesService.save("Changement du mot de passe", ActivityCategory.PROFILE_PASS_CHANGE);
 
         return settings(model);
 
@@ -171,11 +175,14 @@ public class AdminPanelController {
 
     @GetMapping("historique/users")
     public String historiqueUsers(Model model) {
+        model.addAttribute("histUsers",activityRepository.findAllByUserRoleIsNot(Role.CLIENT, PageRequest.of(0, 100, Sort.by("timestamp").descending())));
         return ADMIN_VIEWS_PATH + "historique.users";
     }
 
     @GetMapping("historique/agences")
     public String historiqueAgences(Model model) {
+
+        model.addAttribute("histAgences",activityRepository.findAllByUserRole(Role.CLIENT, PageRequest.of(0, 100, Sort.by("timestamp").descending())));
         return ADMIN_VIEWS_PATH + "historique.agences";
     }
 
@@ -192,6 +199,7 @@ public class AdminPanelController {
 //        if (user.getAgent() )
         model.addAttribute("user", user);
 
+
         if (user.getNom().equals("") || user.getPrenom().equals("") || user.getEmail().equals("") || user.getRole() == null) {
             model.addAttribute("error", "Veuillez remplir tous les champs.");
             return addUserView(model);
@@ -202,6 +210,7 @@ public class AdminPanelController {
             if (user.getRole().name().equals("ADMIN")) {
 //            System.out.println("SAVING ADMIN : " + user.toString());
                 // pour eviter le probleme de transaction
+                activitiesService.save("Authentification d'un admin",ActivityCategory.AUTH);
                 user.setAgent(null);
                 user = userRepository.save(user);
                 adminRepository.save(Admin.builder().user(user).build());
@@ -228,6 +237,7 @@ public class AdminPanelController {
                 );
             }
             mailService.sendVerificationMail(user);
+            activitiesService.save("Confirmation d'email",ActivityCategory.EMAIL_CONF);
         } catch (DataIntegrityViolationException e) {
             model.addAttribute("error_email", "Cet email existe déjà.");
             return addUserView(model);
@@ -260,6 +270,7 @@ public class AdminPanelController {
             if (!user.getEmail().equals(userToUpdate.getEmail())) {
                 userToUpdate.setEmail(user.getEmail());
                 mailService.sendVerificationMail(userToUpdate);
+                activitiesService.save("Confirmation d'email",ActivityCategory.EMAIL_CONF);
             }
             userToUpdate.setNom(user.getNom());
             userToUpdate.setPrenom(user.getPrenom());
