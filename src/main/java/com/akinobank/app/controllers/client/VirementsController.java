@@ -2,11 +2,9 @@ package com.akinobank.app.controllers.client;
 
 import com.akinobank.app.enumerations.ActivityCategory;
 import com.akinobank.app.enumerations.VirementStatus;
-import com.akinobank.app.models.Client;
-import com.akinobank.app.models.Compte;
-import com.akinobank.app.models.Virement;
-import com.akinobank.app.models.VirementRequest;
+import com.akinobank.app.models.*;
 import com.akinobank.app.repositories.CompteRepository;
+import com.akinobank.app.repositories.NotificationRepository;
 import com.akinobank.app.repositories.VirementRepository;
 import com.akinobank.app.services.ActivitiesService;
 import com.akinobank.app.services.MailService;
@@ -17,9 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
 
 @RestController
 @RequestMapping("/client/api/virements")
@@ -43,6 +39,9 @@ public class VirementsController {
 
     @Autowired
     private ActivitiesService activitiesService;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
 
 
     @GetMapping()// return listes des virements  d'un client
@@ -86,15 +85,8 @@ public class VirementsController {
 
         comptesController.verifyCompteStatus(compte, false);
 
-        String formattednumeroCompteDest = virementRequest.getNumeroCompteDest().replace(" ", "");
-        formattednumeroCompteDest = String.format("%s %s %s %s",
-            formattednumeroCompteDest.substring(0, 4),
-            formattednumeroCompteDest.substring(4, 8),
-            formattednumeroCompteDest.substring(8, 12),
-            formattednumeroCompteDest.substring(12, 16)
-        );
 
-        Compte compteDest = compteRepository.findById(formattednumeroCompteDest).orElseThrow(
+        Compte compteDest = compteRepository.findById(virementRequest.getNumeroCompteDest()).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le nº de compte de destination est erroné.")
         );
 
@@ -138,6 +130,8 @@ public class VirementsController {
 
     @PostMapping(value = "/{id}/confirm")
     public ResponseEntity<Virement> virementConfirmation(@PathVariable(value = "id") Long id, @RequestBody HashMap<String, String> request) {
+        Client client = profileController.getClient();
+
         Virement virement = virementRepository.findByIdAndAndCompte_Client(id, profileController.getClient()).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Le virement avec le id= " + id + " est introuvable.")
         );
@@ -172,6 +166,18 @@ public class VirementsController {
             ActivityCategory.VIREMENTS_CONF
         );
 
+        List<User> receivers = new ArrayList<>();
+        receivers.add(destCompte.getClient().getUser());
+
+        Notification notification = Notification.builder()
+            .receiver(receivers)
+            .contenu("Vous avez reçu un virement de " + client.getUser().getNom() + " " + client.getUser().getPrenom() + " d'un montant de " + virement.getMontant() + " DH")
+            .build();
+
+        notificationRepository.save(notification);
+
+//        template.convertAndSendToUser(destCompte.getClient().getUser().getEmail(), "/topic/notifications", notification);
+
         return new ResponseEntity<>(virement, HttpStatus.OK);
     }
 
@@ -182,9 +188,25 @@ public class VirementsController {
         Virement virement = virementRepository.findByIdAndDestCompte_Client(id, client).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Le virement est introuvable.")
         );
+        Client receiver = virement.getDestCompte().getClient();
+        Client sender = virement.getCompte().getClient();
 
         virement.setStatut(VirementStatus.RECEIVED);
         virementRepository.save(virement);
+
+        List<User> receivers = new ArrayList<>();
+
+        receivers.add(client.getUser());
+
+        Notification notification = Notification.builder()
+            .receiver(receivers)
+            .contenu(receiver.getUser().getNom() + " " + receiver.getUser().getPrenom() + " a confirmé la réception de votre virement.")
+            .build();
+
+
+        notificationRepository.save(notification);
+
+//        template.convertAndSendToUser(sender.getUser().getEmail(), "/topic/notifications", notification);
 
         return virement;
     }

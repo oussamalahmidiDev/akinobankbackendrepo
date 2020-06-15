@@ -3,15 +3,22 @@ package com.akinobank.app.services;
 import com.akinobank.app.enumerations.ActivityCategory;
 import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.models.Activity;
+import com.akinobank.app.models.Agence;
+import com.akinobank.app.models.Agent;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.ActivityRepository;
+import com.akinobank.app.repositories.AgentRepository;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
+@Log4j2
 public class ActivitiesService {
 
     private Map<Role, HashMap<ActivityCategory, String>> categories;
@@ -20,7 +27,13 @@ public class ActivitiesService {
     private ActivityRepository repository;
 
     @Autowired
+    private AgentRepository agentRepository;
+
+    @Autowired
     private AuthService authService;
+
+    @Autowired
+    private SimpMessagingTemplate template;
 
     public ActivitiesService() {
 
@@ -101,6 +114,9 @@ public class ActivitiesService {
         activity.setCategory(categories.get(authService.getCurrentUser().getRole()).get(category));
 
         repository.save(activity);
+        sendActivityNotification(activity, authService.getCurrentUser());
+
+//        template.convertAndSendToUser(authService.getCurrentUser().getEmail(), "/topic/activities", activity);
     }
 
     public void save(ActivityCategory category) {
@@ -111,6 +127,10 @@ public class ActivitiesService {
         activity.setCategory(categories.get(authService.getCurrentUser().getRole()).get(category));
 
         repository.save(activity);
+
+//        template.convertAndSendToUser(authService.getCurrentUser().getEmail(), "/topic/activities", activity);
+        sendActivityNotification(activity, authService.getCurrentUser());
+
     }
 
     public void save(String evenement, ActivityCategory category, User user) {
@@ -121,6 +141,39 @@ public class ActivitiesService {
         activity.setCategory(categories.get(user.getRole()).get(category));
 
         repository.save(activity);
+
+//        template.convertAndSendToUser(user.getEmail(), "/topic/activities", activity);
+        sendActivityNotification(activity, user);
+
+    }
+
+    public void sendActivityNotification(Activity activity, User user) {
+//        Notify the current user (client/agent)
+        template.convertAndSendToUser(user.getEmail(), "/topic/activities", activity);
+
+//        notify all agents.
+        if (user.getRole().equals(Role.CLIENT) && user.getClient() != null) {
+            Agence agence = user.getClient().getAgence();
+            log.info("Sending notification to all agents of : {}", agence.getLibelleAgence());
+            List<Agent> agents = agentRepository.findAllByAgence(agence);
+            for (Agent agent: agents) {
+                log.info("Sending notification to : {}", agent.getUser().getEmail());
+                template.convertAndSendToUser(agent.getUser().getEmail(), "/topic/activities.clients", activity);
+                template.convertAndSendToUser(agent.getUser().getEmail(), "/topic/activities.clients." + user.getClient().getId(), activity);
+            }
+//            agents.stream().forEach(agent -> {
+//                log.info("Sending notification to : {}", agent.getUser().getEmail());
+//                template.convertAndSendToUser(agent.getUser().getEmail(), "/topic/activities.clients", activity);
+//                template.convertAndSendToUser(agent.getUser().getEmail(), "/topic/activities.clients." + user.getClient().getId(), activity);
+//            });
+//            agentRepository.findAllByAgence(agence)
+//                .forEach(agent ->{
+//                    log.info("Sending notification to : {}", agent.getUser().getEmail());
+//                    template.convertAndSendToUser(agent.getUser().getEmail(), "/topic/activities.clients", activity);
+//                    template.convertAndSendToUser(agent.getUser().getEmail(), "/topic/activities.clients." + user.getClient().getId(), activity);
+//                });
+        }
+
     }
 
 }

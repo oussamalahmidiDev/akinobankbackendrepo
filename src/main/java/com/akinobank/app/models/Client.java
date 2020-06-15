@@ -1,6 +1,5 @@
 package com.akinobank.app.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
@@ -49,10 +48,10 @@ public class Client {
 //    @NotNull
     @JsonIgnoreProperties({"client"})
     private Collection<Compte> comptes;
-
-    @OneToMany(mappedBy = "client",fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})  // pour la relation : chaque client a 0 ou pls notification
-    @JsonIgnore
-    private Collection<Notification> notifications;
+//
+//    @OneToMany(mappedBy = "client",fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})  // pour la relation : chaque client a 0 ou pls notification
+//    @JsonIgnore
+//    private Collection<Notification> notifications;
 
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})
     @JsonIgnoreProperties("client")

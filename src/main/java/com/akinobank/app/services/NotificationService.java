@@ -34,8 +34,8 @@ public class NotificationService {
         logger.info("PROCESS NOTIF : {}", notification);
 
         // make sure the notification is sent only to the according client.
-        if (notification.getClient().getId() == authService.getCurrentUser().getClient().getId())
-            listeners.forEach(c -> c.accept(notification));
+//        if (notification.getClient().getId() == authService.getCurrentUser().getClient().getId())
+//            listeners.forEach(c -> c.accept(notification));
 
     }
 

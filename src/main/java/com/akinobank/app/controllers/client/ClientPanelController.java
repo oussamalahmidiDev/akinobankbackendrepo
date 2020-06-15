@@ -40,7 +40,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -422,10 +421,10 @@ public class ClientPanelController {
         return new ResponseEntity<>("Votre virement a été bien supprimé !", HttpStatus.OK);
     }
 
-    @GetMapping(path = "/notifications")
-    public Collection<Notification> getAllNotifications() {
-        return getClient().getNotifications();
-    }
+//    @GetMapping(path = "/notifications")
+//    public Collection<Notification> getAllNotifications() {
+//        return getClient().getNotifications();
+//    }
 
     // api to subscribe to notifications event stream via SSE
     @GetMapping(path = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -433,31 +432,31 @@ public class ClientPanelController {
         return Flux.create(sink -> notificationService.subscribe(sink::next));
     }
 
-    @PostMapping(path = "/notification")
-    public String sendNotification(@RequestBody Notification notification) {
-        logger.info("NOTIF = {}", notification.getContenu());
-
-        // we set notification reciever to current client.
-        notification.setClient(getClient());
-        notificationService.publish(notification);
-        return "OK";
-    }
+//    @PostMapping(path = "/notification")
+//    public String sendNotification(@RequestBody Notification notification) {
+//        logger.info("NOTIF = {}", notification.getContenu());
+//
+//        // we set notification reciever to current client.
+//        notification.setClient(getClient());
+//        notificationService.publish(notification);
+//        return "OK";
+//    }
 
     // ******** this api to mark all notifications as seen *******
-    @PutMapping("/notifications/mark_seen")
-    public ResponseEntity<String> markNotificationsSeen() {
-        Collection<Notification> notifications = getClient().getNotifications()
-            .stream()
-            .map(notification -> {
-                notification.setLue(true);
-                return notification;
-            })
-            .collect(Collectors.toList());
-
-        notificationRepository.saveAll(notifications);
-
-        return ResponseEntity.ok().body("OK");
-    }
+//    @PutMapping("/notifications/mark_seen")
+//    public ResponseEntity<String> markNotificationsSeen() {
+//        Collection<Notification> notifications = getClient().getNotifications()
+//            .stream()
+//            .map(notification -> {
+//                notification.setLue(true);
+//                return notification;
+//            })
+//            .collect(Collectors.toList());
+//
+//        notificationRepository.saveAll(notifications);
+//
+//        return ResponseEntity.ok().body("OK");
+//    }
 
     // helper function to check if Compte is active.
     public void verifyCompteStatus(Compte compte) {

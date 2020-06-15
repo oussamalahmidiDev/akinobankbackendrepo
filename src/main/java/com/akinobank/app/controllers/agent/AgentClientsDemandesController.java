@@ -1,7 +1,6 @@
 package com.akinobank.app.controllers.agent;
 
 import com.akinobank.app.models.Demande;
-import com.akinobank.app.models.Notification;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.*;
 import com.akinobank.app.services.MailService;
@@ -68,13 +67,6 @@ public class AgentClientsDemandesController {
 
         userRepository.save(clientUser);
         demandeRepository.delete(demande);
-
-        Notification notification = Notification.builder()
-                .contenu("Vos données ont été mises à jour. Voir votre profil.")
-                .client(clientUser.getClient())
-                .build();
-
-        notificationRepository.save(notification);
 
         return new ResponseEntity<>(HttpStatus.OK);
 

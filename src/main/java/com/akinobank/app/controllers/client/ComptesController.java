@@ -2,11 +2,10 @@ package com.akinobank.app.controllers.client;
 
 import com.akinobank.app.enumerations.ActivityCategory;
 import com.akinobank.app.enumerations.CompteStatus;
-import com.akinobank.app.models.Client;
-import com.akinobank.app.models.CodeChangeRequest;
-import com.akinobank.app.models.Compte;
-import com.akinobank.app.models.CompteCredentialsRequest;
+import com.akinobank.app.models.*;
+import com.akinobank.app.repositories.AgentRepository;
 import com.akinobank.app.repositories.CompteRepository;
+import com.akinobank.app.repositories.NotificationRepository;
 import com.akinobank.app.services.ActivitiesService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +16,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -31,6 +32,12 @@ public class ComptesController {
 
     @Autowired
     private ActivitiesService activitiesService;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired
+    private AgentRepository agentRepository;
 
 
     @GetMapping()
@@ -98,6 +105,21 @@ public class ComptesController {
             ActivityCategory.COMPTES_DEMANDE_BLOCK
         );
 
+        List<User> receivers = agentRepository.findAllByAgence(client.getAgence()).stream()
+            .map(agent -> agent.getUser()).collect(Collectors.toList());
+
+        receivers.forEach(user -> {
+            log.info("Sending compte notification to : {}", user.getEmail());
+        });
+
+        Notification notification = Notification.builder()
+            .receiver(receivers)
+            .contenu(String.format("Le client \"%s %s\" a envoyé une demande de blocage de son compte", client.getUser().getNom(), client.getUser().getPrenom()))
+            .build();
+
+        notificationRepository.save(notification);
+
+
         return new ResponseEntity<>(compte, HttpStatus.OK);
     }
 
@@ -125,6 +147,20 @@ public class ComptesController {
             String.format("Envoie d'une demande de suspension du compte nº %s pour la raison : %s", compte.getNumeroCompte(), request.getRaison()),
             ActivityCategory.COMPTES_DEMANDE_SUSPEND
         );
+
+        List<User> receivers = agentRepository.findAllByAgence(client.getAgence()).stream()
+            .map(agent -> agent.getUser()).collect(Collectors.toList());
+
+        receivers.forEach(user -> {
+            log.info("Sending compte notification to : {}", user.getEmail());
+        });
+
+        Notification notification = Notification.builder()
+            .receiver(receivers)
+            .contenu(String.format("Le client \"%s %s\" a envoyé une demande de suspsension de son compte", client.getUser().getNom(), client.getUser().getPrenom()))
+            .build();
+
+        notificationRepository.save(notification);
 
         return new ResponseEntity<>(compte, HttpStatus.OK);
     }
