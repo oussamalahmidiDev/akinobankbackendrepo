@@ -1,0 +1,84 @@
+package com.akinobank.app;
+
+import com.akinobank.app.config.Storage;
+import com.akinobank.app.models.User;
+import com.akinobank.app.repositories.*;
+import com.akinobank.app.services.AuthService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Optional;
+
+
+@SpringBootApplication
+@EnableConfigurationProperties({ Storage.class })
+//@EnableCaching
+public class AppApplication implements CommandLineRunner     {
+
+    Logger logger = LoggerFactory.getLogger(AppApplication.class);
+    @Autowired
+    private AdminRepository adminRepository;
+
+    @Autowired
+    private AgentRepository agentRepository;
+
+    @Autowired
+    private AgenceRepository agenceRepository;
+
+    @Autowired
+    private ClientRepository clientRepository;
+
+    @Autowired
+    private CompteRepository compteRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private DemandeRepository demandeRepository;
+
+
+    @Autowired
+    private AuthService authService;
+
+
+    private String bucketName = "akinobank-storage-cos-standard-prg";  // eg my-unique-bucket-name
+    private String apiKey = "RtVXAjHCVOFLxZ2f28NJO-CrVllvqYyHxG76IS0p0-uf"; // eg "W00YiRnLW4k3fTjMB-oiB-2ySfTrFBIQQWanc--P3byk"
+    private String serviceInstanceId = "crn:v1:bluemix:public:cloud-object-storage:global:a/e3fd215119994f9eac475c145040cfa4:23d75bfc-22eb-4d27-afb2-be8ed2d6acf6::"; // eg "crn:v1:bluemix:public:cloud-object-storage:global:a/3bf0d9003abfb5d29761c3e97696b71c:d6f04d83-6c4f-4a62-a165-696756d63903::"
+    private String endpointUrl = "s3.ams03.cloud-object-storage.appdomain.cloud"; // this could be any service endpoint
+
+    String storageClass = "us-south-standard";
+    String location = "Global";
+
+    public static void main(String[] args)  {
+
+        ApplicationContext ctx = SpringApplication.run(AppApplication.class, args);
+    }
+
+//    //Just for test
+    @Override
+    public void run(String... args) throws Exception {
+
+         // Mocking up currently authenticated client
+//         Optional<User> authenticatedUser = userRepository.findByEmail("oussama.lahmidi@icloud.com");
+//
+//         authService.setCurrentUser(authenticatedUser.orElseThrow(
+//             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Email not found")
+//         ));
+//
+//        AmazonS3Config.createClient(apiKey, serviceInstanceId, endpointUrl, location)
+//            .putObject(bucketName, "myfile", new File("/Users/oussamalahmidi/Downloads/Arch.jpg"));
+//
+
+
+
+    }
+}

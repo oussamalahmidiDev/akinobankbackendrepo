@@ -104,7 +104,7 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
             .deleteCookies("JSESSIONID");
 
         CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
-        csrfTokenRepository.setCookieDomain("herokuapp.com");
+//        csrfTokenRepository.setCookieDomain("herokuapp.com");
 
         httpSecurity.cors().disable().csrf()
 //            .disable()
