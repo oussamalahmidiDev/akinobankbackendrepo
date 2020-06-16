@@ -67,6 +67,12 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
+
+        httpSecurity
+            .headers()
+            .frameOptions()
+            .disable();
+
         httpSecurity
             .formLogin()
             .loginPage("/admin/login")
@@ -97,9 +103,12 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
             .logoutUrl("/admin/logout")
             .deleteCookies("JSESSIONID");
 
+        CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        csrfTokenRepository.setCookieDomain("herokuapp.com");
+
         httpSecurity.cors().disable().csrf()
 //            .disable()
-            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+            .csrfTokenRepository(csrfTokenRepository)
             .and()
 //      Allow certain routes
             .authorizeRequests().antMatchers(
