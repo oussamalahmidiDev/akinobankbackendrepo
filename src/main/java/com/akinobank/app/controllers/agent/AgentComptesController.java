@@ -2,13 +2,15 @@ package com.akinobank.app.controllers.agent;
 
 import com.akinobank.app.enumerations.ActivityCategory;
 import com.akinobank.app.enumerations.CompteStatus;
+import com.akinobank.app.enumerations.NotificationType;
 import com.akinobank.app.models.Compte;
 import com.akinobank.app.models.Notification;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.CompteRepository;
+import com.akinobank.app.repositories.NotificationRepository;
 import com.akinobank.app.services.ActivitiesService;
 import com.akinobank.app.services.AuthService;
-import com.akinobank.app.services.NotificationService;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +21,7 @@ import java.util.List;
 
 @RequestMapping("/agent/api/comptes")
 @RestController
+@Log4j2
 public class AgentComptesController {
 
     @Autowired
@@ -28,13 +31,14 @@ public class AgentComptesController {
     private ActivitiesService activitiesService;
 
     @Autowired
-    private NotificationService notificationService;
+    private NotificationRepository notificationRepository;
 
     @Autowired
     private AuthService authService;
 
     @GetMapping("{id}")
     public Compte getCompteById(@PathVariable String id) {
+        log.info("GET ALL COMPTEs");
         return compteRepository.findById(id).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Le compte avec nº " + id + " est introuvable.")
         );
@@ -67,8 +71,6 @@ public class AgentComptesController {
         return compteToUpdate;
     }
 
-
-
     @PutMapping("{id}/modifier/status")
     public Compte updateCompteStatus(@PathVariable String id, @RequestParam(value = "status") String status) {
         Compte compteToUpdate = getCompteById(id);
@@ -83,14 +85,16 @@ public class AgentComptesController {
         List<User> receivers = new ArrayList<>();
         receivers.add(compteToUpdate.getClient().getUser());
 
-        Notification notification = new Notification();
+//        Notification notification = Notification.builder().
+//            .receiver(receivers)
+//            .type(NotificationType.SUCCESS)
+//            .build();
 
-        if (compteToUpdate.getStatut().equals(CompteStatus.BLOCKED))
-            notification.setContenu(String.format("Le compte nº %s a été bloqué par l'agent %s %s suivant votre demande.", compteToUpdate.getNumeroCompte(), authService.getCurrentUser().getPrenom(), authService.getCurrentUser().getNom()));
-        else if (compteToUpdate.getStatut().equals(CompteStatus.SUSPENDED))
-            notification.setContenu(String.format("Le compte nº %s a été suspendu par l'agent %s %s suivant votre demande.", compteToUpdate.getNumeroCompte(), authService.getCurrentUser().getPrenom(), authService.getCurrentUser().getNom()));
-
-        notificationService.send(notification, compteToUpdate.getClient().getUser());
+//        if (compteToUpdate.getStatut().equals(CompteStatus.BLOCKED))
+//            notification.setContenu(String.format("Le compte nº %s a été bloqué par l'agent %s %s suivant votre demande.", compteToUpdate.getNumeroCompte(), authService.getCurrentUser().getPrenom(), authService.getCurrentUser().getNom()));
+//        else if (compteToUpdate.getStatut().equals(CompteStatus.SUSPENDED))
+//            notification.setContenu(String.format("Le compte nº %s a été suspendu par l'agent %s %s suivant votre demande.", compteToUpdate.getNumeroCompte(), authService.getCurrentUser().getPrenom(), authService.getCurrentUser().getNom()));
+//
 //        notificationRepository.save(notification);
 
         return compteToUpdate;

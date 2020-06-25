@@ -31,8 +31,9 @@ public class ActivitiesController {
         @RequestParam(value = "offset", defaultValue = "0", required = false) int offset,
         @RequestParam(value = "limit", defaultValue = "3", required = false) int limit
     ) {
-        return repository.findAllByUser(authService.getCurrentUser(),
-            PageRequest.of(offset, limit, Sort.by("timestamp").descending()));
+        return repository.findAllByUser(
+                authService.getCurrentUser(),
+                PageRequest.of(offset, limit, Sort.by("timestamp").descending()));
     }
 
 }

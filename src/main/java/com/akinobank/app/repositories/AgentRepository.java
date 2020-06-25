@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 //@RepositoryRestController
-public interface AgentRepository extends JpaRepository<Agent,Long> {
+public interface AgentRepository extends JpaRepository<Agent,Long>  {
     Optional<Agent> findByUser(User user);
 
     List<Agent> findAllByAgence(Agence agence);

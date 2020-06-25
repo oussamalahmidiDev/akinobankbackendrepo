@@ -92,9 +92,12 @@ public class ComptesController {
         );
         if (compte.getStatut().equals(CompteStatus.BLOCKED) || compte.getStatut().equals(CompteStatus.PENDING_BLOCKED))
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le compte est déjà bloqué.");
+
         if (!compte.getCodeSecret().equals(request.getCodeSecret()))
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
 
+        client.setNumberOfDemandes( client.getNumberOfDemandes() + 1);
+        compte.setOldStatut(compte.getStatut()); //
         compte.setStatut(CompteStatus.PENDING_BLOCKED);
         compte.setRaison(request.getRaison());
 
@@ -130,13 +133,15 @@ public class ComptesController {
             () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le nº de compte est erroné.")
         );
 
-        if (compte.getStatut().equals(CompteStatus.BLOCKED) || compte.getStatut().equals(CompteStatus.PENDING_SUSPENDED))
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le compte est bloqué.");
+        if (compte.getStatut().equals(CompteStatus.SUSPENDED) || compte.getStatut().equals(CompteStatus.PENDING_SUSPENDED))
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le compte est déjà suspendu.");
 
 
         if (!compte.getCodeSecret().equals(request.getCodeSecret()))
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
 
+        client.setNumberOfDemandes( client.getNumberOfDemandes() + 1);
+        compte.setOldStatut(compte.getStatut());
         compte.setStatut(CompteStatus.PENDING_SUSPENDED);
         compte.setRaison(request.getRaison());
 
@@ -157,6 +162,51 @@ public class ComptesController {
         Notification notification = Notification.builder()
             .contenu(String.format("Le client \"%s %s\" a envoyé une demande de suspsension de son compte", client.getUser().getNom(), client.getUser().getPrenom()))
             .build();
+
+        notificationService.send(notification, receivers.toArray(new User[receivers.size()]));
+
+        return new ResponseEntity<>(compte, HttpStatus.OK);
+    }
+
+
+
+    @PutMapping(value = "/active")
+    public ResponseEntity<Compte> compteActive(@RequestBody Compte request) {
+        Client client = profileController.getClient();
+
+        Compte compte = compteRepository.findByNumeroCompteAndClient(request.getNumeroCompte(), client).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le nº de compte est erroné.")
+        );
+
+        if (compte.getStatut().equals(CompteStatus.ACTIVE) || compte.getStatut().equals(CompteStatus.PENDING_ACTIVE))
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le compte est déjà actif.");
+
+
+        if (!compte.getCodeSecret().equals(request.getCodeSecret()))
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
+
+        client.setNumberOfDemandes( client.getNumberOfDemandes() + 1);
+        compte.setOldStatut(compte.getStatut());
+        compte.setStatut(CompteStatus.PENDING_ACTIVE);
+        compte.setRaison(request.getRaison());
+
+        compteRepository.save(compte);
+
+        activitiesService.save(
+                String.format("Envoie d'une demande de suspension du compte nº %s pour la raison : %s", compte.getNumeroCompte(), request.getRaison()),
+                ActivityCategory.COMPTES_DEMANDE_SUSPEND
+        );
+
+        List<User> receivers = agentRepository.findAllByAgence(client.getAgence()).stream()
+                .map(agent -> agent.getUser()).collect(Collectors.toList());
+
+        receivers.forEach(user -> {
+            log.info("Sending compte notification to : {}", user.getEmail());
+        });
+
+        Notification notification = Notification.builder()
+                .contenu(String.format("Le client \"%s %s\" a envoyé une demande d'activation de son compte", client.getUser().getNom(), client.getUser().getPrenom()))
+                .build();
 
         notificationService.send(notification, receivers.toArray(new User[receivers.size()]));
 

@@ -9,6 +9,7 @@ import com.akinobank.app.services.MailService;
 import com.akinobank.app.services.UploadService;
 import com.akinobank.app.utilities.VerificationTokenGenerator;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,7 @@ import java.util.NoSuchElementException;
 @RequestMapping("/agent/api/clients")
 @Transactional
 @CrossOrigin(value = "*")
+@Log4j2
 public class AgentClientsController {
 
     Logger logger = LoggerFactory.getLogger(AgentClientsController.class);
@@ -82,13 +84,12 @@ public class AgentClientsController {
 
     @GetMapping() //show all clients , works
     public List<Client> getClients() {
-        return clientRepository.findAll();
+        return clientRepository.findAllByAgence(agentProfileController.getAgent().getAgence());
     }
-
 
     @GetMapping(value = "/{id}")
     public Client getOneClient(@PathVariable(value = "id") Long id) {
-        return clientRepository.findById(id).orElseThrow(
+        return clientRepository.findByIdAndAgence(id,agentProfileController.getAgent().getAgence()).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ce client est introuvable.")
         );
     }
@@ -96,7 +97,9 @@ public class AgentClientsController {
     @GetMapping(value = "/rechercher/{nom}")
     public List<User> getClientByName(@PathVariable(value = "nom") String clientName) {
         try {
-            return userRepository.findUserByRoleAndNom(Role.CLIENT, clientName);
+            return userRepository.findUserByRoleAndNomAndAgent_Agence(Role.CLIENT,
+                    clientName,
+                    agentProfileController.getAgent().getAgence());
         } catch (NoSuchElementException | EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client avec nom = " + clientName + " est introuvable");
         }
@@ -104,11 +107,12 @@ public class AgentClientsController {
 
     @GetMapping("/{id}/activities")
     public List<Activity> getClientActivities(
-        @PathVariable("id") Long id,
-        @RequestParam(value = "offset", defaultValue = "0", required = false) int offset,
-        @RequestParam(value = "limit", defaultValue = "20", required = false) int limit) {
+        @PathVariable("id") Long id) {
+//        log.info("CURRENTUSER : "+getOneClient(id).getUser());
 
-        return activityRepository.findAllByUser(getOneClient(id).getUser(), PageRequest.of(offset, limit, Sort.by("timestamp").descending()));
+        return activityRepository.findAllByUser(
+                getOneClient(id).getUser(),
+                PageRequest.of(0, 20, Sort.by("timestamp").descending()));
     }
 
 
@@ -116,15 +120,16 @@ public class AgentClientsController {
     public User addClient(@RequestBody User user) {
         try {
             user.setRole(Role.CLIENT);
+            user.setDeleted(false);
             Agent agent = agentProfileController.getAgent();
 
             userRepository.save(user);
 
             Client client = Client.builder()
-                .agence(agent.getAgence())
-                .agent(agent)
-                .user(user)
-                .build();
+                    .agence(agent.getAgence())
+                    .agent(agent)
+                    .user(user)
+                    .build();
 
             clientRepository.save(client);
             mailService.sendVerificationMail(user);
@@ -144,8 +149,8 @@ public class AgentClientsController {
     @ResponseStatus(value = HttpStatus.OK, reason = "Le client a été supprimé avec succès.")
     public void deleteClient(@PathVariable(value = "id") Long id) {
         Client client = getOneClient(id);
-        client.getUser().setArchived(true);
-
+//        client.getUser().setArchived(true);
+        clientRepository.delete(client);
         activitiesService.save(
             String.format("Suppression du client \"%s %s\" dans l'agence %s (%s)", client.getUser().getNom(), client.getUser().getNom(), client.getAgence().getLibelleAgence(), client.getAgence().getVille().getNom()),
             ActivityCategory.CLIENTS_D
@@ -202,43 +207,17 @@ public class AgentClientsController {
         return userRepository.save(userToModify);
     }
 
-    @PostMapping(value = "/{id}/verification")
-    public ResponseEntity sendClientVerification(@PathVariable(value = "id") Long id,
-                                                 @RequestBody ChangeClientDataRequest changeClientDataRequest) {
-        System.out.println(changeClientDataRequest);
-        HashMap<String, String> map = new HashMap<>();
-        try {
-            if (!agentProfileController.getAgent().getUser().getPassword().equals(changeClientDataRequest.getAgentPassword())) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Mauvais mot de passe.");
-            }
-            User user = getOneClient(id).getUser();
-            user.setPassword(null);
-            user.setVerificationToken(VerificationTokenGenerator.generateVerificationToken());
-            userRepository.save(user);
-            map.put("text", "La vérification a été envoyée avec succès.");
-
-            mailService.sendVerificationMail(user);
-            return new ResponseEntity(map, HttpStatus.OK);
-        } catch (NoSuchElementException | EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le client avec id = " + id + " est introuvable.");
-        }
-    }
-
     @GetMapping("/avatar/{filename}")
     public ResponseEntity<Resource> getCLientAvatar(HttpServletRequest request, @PathVariable("filename") String filename) {
         System.out.println(filename);
-
         Resource resource = uploadService.get(filename);
 
-        // setting content-type header
         String contentType = null;
         try {
-            // setting content-type header according to file type
             contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
         } catch (IOException e) {
             System.out.println("Type indéfini.");
         }
-        // setting content-type header to generic octet-stream
         if (contentType == null) {
             contentType = "application/octet-stream";
         }

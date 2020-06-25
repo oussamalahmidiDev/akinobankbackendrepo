@@ -29,8 +29,9 @@ public class Client {
     private Long id;
 
 //    @NotNull
-
     private boolean deleted;
+    private int numberOfDemandes ;
+
 
     @ManyToOne
     @JoinColumn(name = "id_agent") // pour la relation : chaque client a un seul agent
@@ -56,6 +57,7 @@ public class Client {
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})
     @JsonIgnoreProperties("client")
     private Collection<Demande> demandes;
+
 
     @OneToOne // pour la relation : un admin a un compte user pour la auth
     @JoinColumn(name = "id_user")

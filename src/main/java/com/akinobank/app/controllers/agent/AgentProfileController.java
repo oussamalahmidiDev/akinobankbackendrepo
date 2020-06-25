@@ -1,9 +1,7 @@
 package com.akinobank.app.controllers.agent;
 
 import com.akinobank.app.enumerations.ActivityCategory;
-import com.akinobank.app.models.Agent;
-import com.akinobank.app.models.PasswordChangeRequest;
-import com.akinobank.app.models.User;
+import com.akinobank.app.models.*;
 import com.akinobank.app.repositories.*;
 import com.akinobank.app.services.ActivitiesService;
 import com.akinobank.app.services.AuthService;
@@ -75,6 +73,12 @@ public class AgentProfileController {
 
     @GetMapping()
     public Agent getAgent() {
+//        Notification notification = notificationRepository.save(Notification.builder()
+////                    .client(compte.getClient())
+//                        .contenu("Agent "+ authService.getCurrentUser().getNom() +" est connecté")
+//                        .build()
+//        );
+//        UserNotification.builder().notification(notification).receiver(getAgent().getUser()).lue(false).build();
         return agentRepository.findByUser(authService.getCurrentUser()).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "L'agent est introuvable.")
         );
@@ -82,7 +86,7 @@ public class AgentProfileController {
 
     @PostMapping("/avatar/upload")
     public ResponseEntity<?> uploadAvatar(@RequestParam("image") MultipartFile image) {
-        System.out.println(image);
+//        System.out.println(image);
         Agent agent = getAgent();
 
         String fileName = uploadService.store(image);
@@ -123,7 +127,7 @@ public class AgentProfileController {
     @PostMapping("/modifier/password")
     @ResponseStatus(HttpStatus.OK)
     public void changePassword(@RequestBody PasswordChangeRequest passwordChangeRequest) {
-        System.out.println(passwordChangeRequest);
+//        System.out.println(passwordChangeRequest);
         Agent currentAgent = getAgent();
         Boolean isMatch = encoder.matches(passwordChangeRequest.getOldPassword(), currentAgent.getUser().getPassword());
 
@@ -146,7 +150,7 @@ public class AgentProfileController {
 
     @PostMapping("/modifier/user")
     public Agent modifyAgentParam(@RequestBody User user) {
-        System.out.println(user);
+//        System.out.println(user);
         User oldUser = getAgent().getUser();
 
         oldUser.setEmail(user.getEmail());
@@ -155,10 +159,7 @@ public class AgentProfileController {
         oldUser.setNumeroTelephone(user.getNumeroTelephone());
         userRepository.save(oldUser);
 
-        activitiesService.save(
-            String.format("Changement des informations du profil"),
-            ActivityCategory.PROFILE_U
-        );
+        activitiesService.save(String.format("Changement des informations du profil"), ActivityCategory.PROFILE_U);
 
         return oldUser.getAgent();
     }
@@ -166,7 +167,7 @@ public class AgentProfileController {
     @GetMapping("/avatar/{filename}")
     public ResponseEntity<Resource> getAvatar(HttpServletRequest request, @PathVariable("filename") String filename) {
         Agent agent = getAgent();
-        System.out.println(filename);
+//        System.out.println(filename);
 
 //        if (agent.getUser().getPhoto() == null )
 //            throw new ResponseStatusException(HttpStatus.OK, "Pas de photo définie.");

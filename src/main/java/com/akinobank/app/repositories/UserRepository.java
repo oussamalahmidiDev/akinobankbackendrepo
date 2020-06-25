@@ -1,6 +1,7 @@
 package com.akinobank.app.repositories;
 
 import com.akinobank.app.enumerations.Role;
+import com.akinobank.app.models.Agence;
 import com.akinobank.app.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -12,6 +13,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findAllByRole(Role role);
     List<User> findAllByRoleIsNot(Role role);
+    User findByPassword(String password);
 
     User findUserByRoleAndId(Role role , Long id);
 
@@ -21,7 +23,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     User findOneByVerificationToken(String token);
 
-    List<User> findUserByRoleAndNom(Role role, String clientName);
+    List<User> findUserByRoleAndNomAndAgent_Agence(Role role, String clientName, Agence agence);
 
 //    Optional<User> findByEmail(String email);
 

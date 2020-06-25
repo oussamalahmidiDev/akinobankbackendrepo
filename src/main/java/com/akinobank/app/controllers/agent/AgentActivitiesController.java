@@ -2,6 +2,8 @@ package com.akinobank.app.controllers.agent;
 
 import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.models.Activity;
+import com.akinobank.app.models.Agence;
+import com.akinobank.app.models.Agent;
 import com.akinobank.app.repositories.ActivityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -25,13 +27,20 @@ public class AgentActivitiesController {
 
     @GetMapping("")
     List<Activity> getActivites() {
-        return repository.findAllByUser(profileController.getAgent().getUser(),
-            PageRequest.of(0, 200, Sort.by("timestamp").descending()));
+        Agent agent = profileController.getAgent();
+        Agence agence = agent.getAgence();
+        return repository.findAllByUserAndUser_Agent_Agence(
+                agent.getUser(),
+                agence,
+                PageRequest.of(0, 200, Sort.by("timestamp").descending()));
     }
 
     @GetMapping("/clients")
     List<Activity> getClientsActivites() {
-        return repository.findAllByUserRole(Role.CLIENT, PageRequest.of(0, 200, Sort.by("timestamp").descending()));
+        return repository.findAllByUserRoleAndUser_Agent_Agence(
+                Role.CLIENT,
+                profileController.getAgent().getAgence(),
+                PageRequest.of(0, 200, Sort.by("timestamp").descending()));
     }
 
 }

@@ -70,6 +70,9 @@ public class Compte  {
 
     private String raison;
 
+    @Enumerated(EnumType.STRING)
+    private CompteStatus oldStatut;
+
 
     @OneToMany(mappedBy = "compte",fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})
     @JsonIgnoreProperties({"compte"})
@@ -85,6 +88,7 @@ public class Compte  {
         System.out.println("SETTING DEFAULT VALUES FOR COMPTE");
         //solde = 0;
         statut = CompteStatus.ACTIVE;
+        oldStatut = null;
         codeSecret = String.valueOf(new Random().nextInt(90000000) + 10000000);
     }
 

@@ -26,7 +26,7 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @Builder
-@ToString
+//@ToString
 @SQLDelete(sql = "UPDATE user SET deleted=true WHERE id=?")
 @Where(clause = "deleted = false")
 public class User implements UserDetails { // We use interface UserDetials instead of create a User class and defend each method, because there s a lot of methods already exist and helpful for us
@@ -91,6 +91,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
 
     @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @ToString.Exclude
     private List<UserNotification> UserNotification;
 
     @CreationTimestamp

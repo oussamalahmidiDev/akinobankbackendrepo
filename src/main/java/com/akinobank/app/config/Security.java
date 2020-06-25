@@ -111,6 +111,7 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
 //            .disable()
             .csrfTokenRepository(csrfTokenRepository)
             .and()
+
 //      Allow certain routes
             .authorizeRequests().antMatchers(
             "/",
@@ -118,6 +119,7 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
             "/ws/**",
             "/admin/login", "/verify", "/2fa_setup", "/admin/auth", "/recover_account",
             "/api/auth",
+            "/test",
             "/api/auth/",
             "/api/auth/code",
             "/api/auth/refresh",
