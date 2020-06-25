@@ -1,36 +1,26 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="views/admin/fragments :: head(title = 'Historique d\'activités')"></head>
+<head th:replace="views/admin/fragments :: head(title = 'Historique personnel d\'activités')"></head>
 <body>
 <nav th:replace="views/admin/fragments :: navbar"></nav>
 <div th:replace="views/admin/fragments ::
-    header(title = 'Historique d\'activités',
-    description = 'Suivre les activités d\'utilisateurs et de tout ce qui déroule dans vos agences.')">
+    header(title = 'Historique personnel d\'activités',
+    description = 'Vos derniers activités.')">
 </div>
 <!--Main section-->
 <div class="ml-5 mr-5 mb-5">
-    <ul class="nav nav-pills nav-fill">
-        <li class="nav-item">
-            <a class="nav-link active" th:href="@{/admin/historique/users}">Activités d'utilisateurs</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" th:href="@{/admin/historique/agences}">Activités des agences</a>
-        </li>
-    </ul>
     <table class="table mt-3">
         <thead>
         <tr>
             <th scope="col">Évenement</th>
-            <th scope="col">Utilisateur</th>
             <th scope="col">Catégorie</th>
             <th scope="col">Temps</th>
         </tr>
         </thead>
         <tbody>
-        <tr th:each="historique : ${histUsers}">
+        <tr th:each="historique : ${historique}">
             <th scope="row">
                 <div th:text="${historique.evenement}"></div></th>
-            <td th:text="${historique.user.nom + ' ' + historique.user.prenom }">Mark</td>
             <td th:text="${historique.category}">Otto</td>
             <td th:text="${historique.timestamp}">@mdo</td>
         </tr>

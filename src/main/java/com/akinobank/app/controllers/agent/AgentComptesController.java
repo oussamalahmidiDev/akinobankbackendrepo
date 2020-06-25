@@ -2,14 +2,13 @@ package com.akinobank.app.controllers.agent;
 
 import com.akinobank.app.enumerations.ActivityCategory;
 import com.akinobank.app.enumerations.CompteStatus;
-import com.akinobank.app.enumerations.NotificationType;
 import com.akinobank.app.models.Compte;
 import com.akinobank.app.models.Notification;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.CompteRepository;
-import com.akinobank.app.repositories.NotificationRepository;
 import com.akinobank.app.services.ActivitiesService;
 import com.akinobank.app.services.AuthService;
+import com.akinobank.app.services.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +28,7 @@ public class AgentComptesController {
     private ActivitiesService activitiesService;
 
     @Autowired
-    private NotificationRepository notificationRepository;
+    private NotificationService notificationService;
 
     @Autowired
     private AuthService authService;
@@ -68,6 +67,8 @@ public class AgentComptesController {
         return compteToUpdate;
     }
 
+
+
     @PutMapping("{id}/modifier/status")
     public Compte updateCompteStatus(@PathVariable String id, @RequestParam(value = "status") String status) {
         Compte compteToUpdate = getCompteById(id);
@@ -82,17 +83,15 @@ public class AgentComptesController {
         List<User> receivers = new ArrayList<>();
         receivers.add(compteToUpdate.getClient().getUser());
 
-        Notification notification = Notification.builder()
-            .receiver(receivers)
-            .type(NotificationType.SUCCESS)
-            .build();
+        Notification notification = new Notification();
 
         if (compteToUpdate.getStatut().equals(CompteStatus.BLOCKED))
             notification.setContenu(String.format("Le compte nº %s a été bloqué par l'agent %s %s suivant votre demande.", compteToUpdate.getNumeroCompte(), authService.getCurrentUser().getPrenom(), authService.getCurrentUser().getNom()));
         else if (compteToUpdate.getStatut().equals(CompteStatus.SUSPENDED))
             notification.setContenu(String.format("Le compte nº %s a été suspendu par l'agent %s %s suivant votre demande.", compteToUpdate.getNumeroCompte(), authService.getCurrentUser().getPrenom(), authService.getCurrentUser().getNom()));
 
-        notificationRepository.save(notification);
+        notificationService.send(notification, compteToUpdate.getClient().getUser());
+//        notificationRepository.save(notification);
 
         return compteToUpdate;
     }

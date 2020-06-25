@@ -2,42 +2,45 @@ package com.akinobank.app.services;
 
 
 import com.akinobank.app.models.Notification;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.akinobank.app.models.User;
+import com.akinobank.app.models.UserNotification;
+import com.akinobank.app.repositories.NotificationRepository;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Consumer;
+
 
 @Service
-@EnableScheduling
+//@EnableScheduling
+@Log4j2
 public class NotificationService {
 
-    Logger logger = LoggerFactory.getLogger(NotificationService.class);
-
     @Autowired
-    private AuthService authService;
+    private NotificationRepository repository;
 
-    private List<Consumer<Notification>> listeners = new CopyOnWriteArrayList<>();
+    public void send(Notification notification, User...receivers) {
 
-    // function to subscribe clients to server events (notifications)
-    public void subscribe (Consumer<Notification> listener) {
-        listeners.add(listener);
-        logger.info("Added a listener, for a total of {} listener{}", listeners.size(), listeners.size() > 1 ? "s" : "");
+        List<UserNotification> userNotifications = new ArrayList<>();
+
+        Arrays.stream(receivers).forEach(receiver -> {
+            log.info("Adding receiver : {}", receiver.getEmail());
+            UserNotification userNotification = UserNotification.builder()
+                .notification(notification)
+                .receiver(receiver)
+                .build();
+            userNotifications.add(userNotification);
+        });
+
+        log.info("Attaching receiver to the notif");
+        notification.setUserNotification(userNotifications);
+
+        log.info("Saving notif");
+        repository.save(notification);
+        log.info("Notif saved");
     }
-
-    // function to push notification
-    public void publish (Notification notification) {
-        logger.info("PROCESS NOTIF : {}", notification);
-
-        // make sure the notification is sent only to the according client.
-//        if (notification.getClient().getId() == authService.getCurrentUser().getClient().getId())
-//            listeners.forEach(c -> c.accept(notification));
-
-    }
-
 
 }

@@ -89,6 +89,10 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @JsonIgnoreProperties({"user"})
     private Client client;
 
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private List<UserNotification> UserNotification;
+
     @CreationTimestamp
     private Date dateDeCreation;
 

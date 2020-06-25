@@ -30,7 +30,7 @@
         <tbody>
         <tr th:each="historique : ${histAgences}">
             <th scope="row">
-                <div th:text="${historique.evenement}"></div>1</th>
+                <div th:text="${historique.evenement}"></div></th>
             <td th:text="${historique.user.client.agence.libelleAgence}">Mark</td>
             <td th:text="${historique.user.nom + ' ' + historique.user.prenom}">Mark</td>
             <td th:text="${historique.category}">Otto</td>

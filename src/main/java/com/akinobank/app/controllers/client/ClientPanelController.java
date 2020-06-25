@@ -32,7 +32,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import reactor.core.publisher.Flux;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -426,11 +425,11 @@ public class ClientPanelController {
 //        return getClient().getNotifications();
 //    }
 
-    // api to subscribe to notifications event stream via SSE
-    @GetMapping(path = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<Notification> receive() {
-        return Flux.create(sink -> notificationService.subscribe(sink::next));
-    }
+//    // api to subscribe to notifications event stream via SSE
+//    @GetMapping(path = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+//    public Flux<Notification> receive() {
+//        return Flux.create(sink -> notificationService.subscribe(sink::next));
+//    }
 
 //    @PostMapping(path = "/notification")
 //    public String sendNotification(@RequestBody Notification notification) {

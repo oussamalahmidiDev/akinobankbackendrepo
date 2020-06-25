@@ -4,10 +4,10 @@ import com.akinobank.app.enumerations.ActivityCategory;
 import com.akinobank.app.enumerations.VirementStatus;
 import com.akinobank.app.models.*;
 import com.akinobank.app.repositories.CompteRepository;
-import com.akinobank.app.repositories.NotificationRepository;
 import com.akinobank.app.repositories.VirementRepository;
 import com.akinobank.app.services.ActivitiesService;
 import com.akinobank.app.services.MailService;
+import com.akinobank.app.services.NotificationService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -41,7 +41,7 @@ public class VirementsController {
     private ActivitiesService activitiesService;
 
     @Autowired
-    private NotificationRepository notificationRepository;
+    private NotificationService notificationService;
 
 
     @GetMapping()// return listes des virements  d'un client
@@ -170,11 +170,10 @@ public class VirementsController {
         receivers.add(destCompte.getClient().getUser());
 
         Notification notification = Notification.builder()
-            .receiver(receivers)
             .contenu("Vous avez reçu un virement de " + client.getUser().getNom() + " " + client.getUser().getPrenom() + " d'un montant de " + virement.getMontant() + " DH")
             .build();
 
-        notificationRepository.save(notification);
+        notificationService.send(notification, destCompte.getClient().getUser());
 
 //        template.convertAndSendToUser(destCompte.getClient().getUser().getEmail(), "/topic/notifications", notification);
 
@@ -199,12 +198,10 @@ public class VirementsController {
         receivers.add(client.getUser());
 
         Notification notification = Notification.builder()
-            .receiver(receivers)
             .contenu(receiver.getUser().getNom() + " " + receiver.getUser().getPrenom() + " a confirmé la réception de votre virement.")
             .build();
 
-
-        notificationRepository.save(notification);
+        notificationService.send(notification, client.getUser());
 
 //        template.convertAndSendToUser(sender.getUser().getEmail(), "/topic/notifications", notification);
 

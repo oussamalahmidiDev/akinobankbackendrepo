@@ -7,7 +7,7 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8">
-                <div class="card">
+                <div id="login" class="card">
                     <div class="card-header">Se connecter en tant que administrateur</div>
 
                     <div class="card-body">
@@ -23,11 +23,6 @@
                                     <input id="email" type="email" class="form-control" name="email"
                                            th:value=" ${session.email}" required autocomplete="email" autofocus>
 
-                                    <!--                                    @error('email')-->
-                                    <!--                                    <span class="invalid-feedback" role="alert">-->
-                                    <!--                                        <strong>{{ $message }}</strong>-->
-                                    <!--                                    </span>-->
-                                    <!--                                    @enderror-->
                                 </div>
                             </div>
 
@@ -37,72 +32,119 @@
                                 <div class="col-md-6">
                                     <input id="password" type="password" class="form-control" name="password" required
                                            autocomplete="current-password">
-
-                                    <!--                                    @error('password')-->
-                                    <!--                                    <span class="invalid-feedback" role="alert">-->
-                                    <!--                                        <strong>{{ $message }}</strong>-->
-                                    <!--                                    </span>-->
-                                    <!--                                    @enderror-->
                                     <span class="invalid-feedback" style="display: unset" role="alert" th:if="session.message != null">
                                          <strong th:text="${session.message}"></strong>
                                     </span>
                                 </div>
                             </div>
 
-                            <!--                            <div class="form-group row">-->
-                            <!--                                <div class="col-md-6 offset-md-4">-->
-                            <!--                                    <div class="form-check">-->
-                            <!--&lt;!&ndash;                                        <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>&ndash;&gt;-->
-
-                            <!--                                        <label class="form-check-label" for="remember">-->
-                            <!--                                            {{ __('Remember Me') }}-->
-                            <!--                                        </label>-->
-                            <!--                                    </div>-->
-                            <!--                                </div>-->
-                            <!--                            </div>-->
-
                             <div class="form-group row mb-0">
                                 <div class="col-md-8 offset-md-4">
                                     <button type="submit" class="btn btn-primary">
                                         Se connecter
                                     </button>
-                                    <a class="btn btn-link" href="{{ route('password.request') }}">
-                                        Mot de passe oublié ?
-                                    </a>
+                                    <input type="button" value="Problème de connexion ?" class="btn btn-link" id="recovery_button" />
                                 </div>
                             </div>
                         </form>
                     </div>
                 </div>
+                <div id="recovery" class="card">
+                    <div class="card-header">Problème d'authentification</div>
+
+                    <div class="card-body">
+                        <form action="">
+                            <div class="form-group row">
+                                <label for="email" class="col-md-4 col-form-label text-md-right">Adresse
+                                    électronique</label>
+
+                                <div class="col-md-6">
+                                    <input id="email_recovery" type="email" class="form-control" name="email_recovery"
+                                           th:value=" ${session.email}" required autocomplete="email" autofocus>
+
+                                    <!--                                    @error('email')-->
+                                    <!--                                    <span class="invalid-feedback" role="alert">-->
+                                    <!--                                        <strong>{{ $message }}</strong>-->
+                                    <!--                                    </span>-->
+                                    <!--                                    @enderror-->
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label for="operation" class="col-md-4 col-form-label text-md-right">Sélectionnez l'opération que vous voulez effectuer</label>
+
+                                <div class="col-md-6">
+                                    <select class="form-control" id="operation" name="operation">
+                                        <option value="SETUP_PASSWORD">
+                                            Renvoyer l'email de confirmation
+                                        </option>
+                                        <option value="RECOVER_PASSWORD">
+                                            Mot de passe oublié
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row mb-0">
+                                <div class="col-md-8 offset-md-4">
+                                    <button id="submit" class="btn btn-primary">
+                                        Envoyer
+                                    </button>
+                                    <button id="retour" class="btn btn-outline-primary">
+                                        Retour
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 </main>
-<!--<div class="space col-md-6 col-xs-12 col-md-offset-8" >-->
-<!--    <div class="panel panel-primary ">-->
-<!--        <div class="panel-heading">Logino Page</div>-->
-<!--        <div class="panel-body">-->
-<!--            <form th:action="@{/admin/login}" method="post" >-->
-<!--&lt;!&ndash;            <form th:action="@{/connect}" method="post" >&ndash;&gt;-->
-<!--                <div class="form-group">-->
-<!--                    <label class="control-label">Login</label>-->
-<!--                    <input class="form-control" type="text" name="username" >-->
-<!--                </div>-->
-<!--                <div class="form-group">-->
-<!--                    <label class="control-label">Password</label>-->
-<!--                    <input class="form-control" type="password" name="password" >-->
-<!--                </div>-->
-<!--                <div class="container" th:if="${param.error}">-->
-<!--                    <p class="red">Incorrect Login or Password!</p>-->
-<!--                </div>-->
-<!--                <div class="container" th:if="${param.logout}">-->
-<!--                    <p class="green">You have been logged out</p>-->
-<!--                </div>-->
-<!--                <button type="submit"  class="btn btn-primary">Connect</button>-->
-<!--            </form>-->
-<!--        </div>-->
-<!--    </div>-->
 
-<!--</div>-->
+<!---->
+<div th:replace="views/admin/fragments :: scripts"></div>
+<script>
+    $(document).ready(() => {
+        $("#recovery").hide();
+        $("#recovery_button").click(() => {
+            $("#login").hide();
+            $("#recovery").show();
+        });
+
+        $("#retour").click(() => {
+            $("#recovery").hide();
+            $("#login").show();
+        });
+
+        $('#submit').click((e) => {
+            e.preventDefault();
+            $.ajax({
+                url: "/recover_account",
+                method: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    email: $("input[name='email_recovery']").val(),
+                    operation: $("select[name='operation']").children("option:selected").val()
+                }),
+                headers: {
+                    "X-XSRF-Token": $("meta[name='_csrf']").attr("content")
+                },
+                contentType: "application/json",
+                success: function (response) {
+                    console.log(response);
+                    alert(response.message);
+                    $("#recovery").hide();
+                    $("#login").show();
+                },
+                error: response => alert(response.responseJSON.message)
+            });
+        })
+
+    })
+
+</script>
 </body>
 </html>

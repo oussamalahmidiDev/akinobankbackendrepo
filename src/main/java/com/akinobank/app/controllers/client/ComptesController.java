@@ -5,8 +5,8 @@ import com.akinobank.app.enumerations.CompteStatus;
 import com.akinobank.app.models.*;
 import com.akinobank.app.repositories.AgentRepository;
 import com.akinobank.app.repositories.CompteRepository;
-import com.akinobank.app.repositories.NotificationRepository;
 import com.akinobank.app.services.ActivitiesService;
+import com.akinobank.app.services.NotificationService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,7 +34,7 @@ public class ComptesController {
     private ActivitiesService activitiesService;
 
     @Autowired
-    private NotificationRepository notificationRepository;
+    private NotificationService notificationService;
 
     @Autowired
     private AgentRepository agentRepository;
@@ -113,11 +113,10 @@ public class ComptesController {
         });
 
         Notification notification = Notification.builder()
-            .receiver(receivers)
             .contenu(String.format("Le client \"%s %s\" a envoyé une demande de blocage de son compte", client.getUser().getNom(), client.getUser().getPrenom()))
             .build();
 
-        notificationRepository.save(notification);
+        notificationService.send(notification, receivers.toArray(new User[receivers.size()]));
 
 
         return new ResponseEntity<>(compte, HttpStatus.OK);
@@ -156,11 +155,10 @@ public class ComptesController {
         });
 
         Notification notification = Notification.builder()
-            .receiver(receivers)
             .contenu(String.format("Le client \"%s %s\" a envoyé une demande de suspsension de son compte", client.getUser().getNom(), client.getUser().getPrenom()))
             .build();
 
-        notificationRepository.save(notification);
+        notificationService.send(notification, receivers.toArray(new User[receivers.size()]));
 
         return new ResponseEntity<>(compte, HttpStatus.OK);
     }

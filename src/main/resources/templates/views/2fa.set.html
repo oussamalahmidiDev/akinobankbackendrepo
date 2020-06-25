@@ -9,13 +9,14 @@
 <!--Main section-->
 <div class="container">
     <img style="height: 200px; display: block; margin: 0 auto;" th:src="${ uri }" alt="">
-    <h4 th:text="${ secretkey }"></h4>
+    <h4 style="text-align: center;" th:text="${ secretkey }"></h4>
     <form action="" style="width: 300px;margin: 20px auto;">
         <input class="form-control" type="text" id="code">
         <input class="form-control" type="hidden" th:value="${ user.verificationToken }" id="token">
         <input type="hidden"
-               name="${_csrf.parameterName}"
-               value="${_csrf.token}"/>
+               id="xsrf_field"
+               th:name="${_csrf.parameterName}"
+               th:value="${_csrf.token}"/>
         <button style="width: -moz-available; margin-top: 10px;" class="btn btn-primary" id="submit">Verifier</button>
     </form>
 </div>
@@ -33,6 +34,9 @@
                 data: JSON.stringify({
                     code: $("#code").val(),
                 }),
+                headers: {
+                    "X-XSRF-Token": $("meta[name='_csrf']").attr("content")
+                },
                 contentType: "application/json",
                 success: function (response) {
                     console.log(response);

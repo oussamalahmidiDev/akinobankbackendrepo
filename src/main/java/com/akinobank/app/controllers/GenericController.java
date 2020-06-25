@@ -2,10 +2,10 @@ package com.akinobank.app.controllers;
 
 import com.akinobank.app.enumerations.ActivityCategory;
 import com.akinobank.app.enumerations.CompteStatus;
-import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.exceptions.InvalidVerificationTokenException;
 import com.akinobank.app.models.CodeValidationRequest;
 import com.akinobank.app.models.Compte;
+import com.akinobank.app.models.CompteRecoveryRequest;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.CompteRepository;
 import com.akinobank.app.repositories.UserRepository;
@@ -36,7 +36,6 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
 import static dev.samstevens.totp.util.Utils.getDataUriForImage;
@@ -90,29 +89,29 @@ public class GenericController {
         logger.info("PING PONG");
     }
 
-    @PostMapping("/api/auth/agent")
-    @ResponseBody
-    public ResponseEntity<?> agentAuthenticate(@RequestBody User user) throws Exception {
-        System.out.println(user.getEmail() + " " + user.getPassword());
-
-        User authenticatedUser = userRepository.findByEmail(user.getEmail());
-        try {
-            Role role = authenticatedUser.getRole();
-            System.out.println(role);
-            authService.agentAuthenticate(user.getEmail(), user.getPassword(), role);
-
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "L'email ou mot de passe est incorrect");
-        }
-
-        final String token = jwtUtils.generateToken(authenticatedUser);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", token);
-//        System.out.println(jwtUtils.getAllClaimsFromToken(token));
-
-        return ResponseEntity.ok(response);
-    }
+//    @PostMapping("/api/auth/agent")
+//    @ResponseBody
+//    public ResponseEntity<?> agentAuthenticate(@RequestBody User user) throws Exception {
+//        System.out.println(user.getEmail() + " " + user.getPassword());
+//
+//        User authenticatedUser = userRepository.findByEmail(user.getEmail());
+//        try {
+//            Role role = authenticatedUser.getRole();
+//            System.out.println(role);
+//            authService.agentAuthenticate(user.getEmail(), user.getPassword(), role);
+//
+//        } catch (Exception e) {
+//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "L'email ou mot de passe est incorrect");
+//        }
+//
+//        final String token = jwtUtils.generateToken(authenticatedUser);
+//
+//        Map<String, Object> response = new HashMap<>();
+//        response.put("token", token);
+////        System.out.println(jwtUtils.getAllClaimsFromToken(token));
+//
+//        return ResponseEntity.ok(response);
+//    }
 
     // page de confirmation d email
     @GetMapping("/confirm")
@@ -124,7 +123,7 @@ public class GenericController {
         String action = request.getParameter("action");
         String ccn = request.getParameter("ccn");
         try {
-             if (action.equals("confirm")) {
+            if (action.equals("confirm")) {
                 if (userToVerify.isEmailConfirmed()
                     && userToVerify.getPassword() != null
                     && userToVerify.get_2FaEnabled()
@@ -142,16 +141,15 @@ public class GenericController {
                 if (!userToVerify.get_2FaEnabled() && userToVerify.getPassword() != null)
                     return "redirect:/2fa_setup?token=" + token;
 
-                if (userToVerify.getPassword() != null )
+                if (userToVerify.getPassword() != null)
                     return "redirect:/";
                 return "redirect:/set_password?token=" + token;
             } else if (action.equals("forgot_password")) {
-                 if (!userToVerify.isEmailConfirmed())
-                     userToVerify.setEmailConfirmed(true);
-                     userRepository.save(userToVerify);
-                 return "redirect:/set_password?token=" + token;
-             }else
-              {
+                if (!userToVerify.isEmailConfirmed())
+                    userToVerify.setEmailConfirmed(true);
+                userRepository.save(userToVerify);
+                return "redirect:/set_password?token=" + token;
+            } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
             }
         } catch (NullPointerException e) {
@@ -267,7 +265,6 @@ public class GenericController {
     }
 
 
-
     @GetMapping("/compte_details")
     public String getCompteDetailsView(HttpServletRequest request, Model model) {
         String token = request.getParameter("token");
@@ -325,5 +322,24 @@ public class GenericController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @ResponseBody
+    @PostMapping("/recover_account")
+    public HashMap<String, String> handleComptRecovery(@RequestBody CompteRecoveryRequest request) {
+        User user = userRepository.findByEmail(request.getEmail());
+        switch (request.getOperation()) {
+            case "RECOVER_PASSWORD":
+                mailService.sendPasswordRecoveryMail(user);
+                break;
+            case "2FA_CONFIG":
+//                mail for 2fa auth
+                break;
+            case "SETUP_PASSWORD":
+                mailService.sendVerificationMail(user);
+                break;
+        }
+        HashMap<String, String> response = new HashMap<>();
+        response.put("message", "L'email a été envoyé avec succès");
+        return response;
+    }
 
 }

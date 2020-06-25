@@ -106,7 +106,8 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
         CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
 //        csrfTokenRepository.setCookieDomain("herokuapp.com");
 
-        httpSecurity.cors().disable().csrf()
+        httpSecurity.cors().disable()
+            .csrf()
 //            .disable()
             .csrfTokenRepository(csrfTokenRepository)
             .and()
@@ -115,7 +116,7 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
             "/",
             "/test/**", "/session",
             "/ws/**",
-            "/admin/login", "/verify", "/2fa_setup", "/admin/auth",
+            "/admin/login", "/verify", "/2fa_setup", "/admin/auth", "/recover_account",
             "/api/auth",
             "/api/auth/",
             "/api/auth/code",
