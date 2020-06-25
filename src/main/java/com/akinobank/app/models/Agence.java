@@ -20,7 +20,7 @@ import java.util.Date;
 @Getter
 @Setter
 @Builder
-@ToString
+//@ToString
 @SQLDelete(sql = "UPDATE agence SET deleted=true WHERE id=?")
 @Where(clause = "deleted = false")
 public class Agence implements Serializable {
@@ -45,10 +45,10 @@ public class Agence implements Serializable {
     private Ville ville;
 
 
-    @ManyToOne
-    @JoinColumn(name = "id_admin", nullable = false) // pour la relation : chaque agence a un seul admin
-    @JsonIgnore
-    private Admin admin;
+//    @ManyToOne
+//    @JoinColumn(name = "id_admin", nullable = false) // pour la relation : chaque agence a un seul admin
+//    @JsonIgnore
+//    private Admin admin;
 
     @OneToMany(mappedBy = "agence", fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})// pour la relation : chaque agence a pls agents
     @JsonIgnore

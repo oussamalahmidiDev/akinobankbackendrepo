@@ -61,7 +61,7 @@
                                 <label for="agence" class="col-md-4 col-form-label text-md-right">Affecter à une
                                     agence</label>
                                 <div class="col-md-6">
-                                    <select class="form-control" id="agence" th:field="*{agent.agence}">
+                                    <select class="form-control" id="agence" th:field="*{agence}">
                                         <option th:each="agence: ${agences}" th:value="${agence.id}"
                                                 th:text="${agence.ville.nom + ' / ' + agence.libelleAgence}"></option>
                                     </select>

@@ -109,6 +109,29 @@ public class MailService  {
         }
     }
 
+    public void sendPasswordRecoveryMail (User receiver) {
+        String url = getConfirmationURL(receiver) + "&action=forgot_password";
+        try {
+            MimeMessage message = getMimeMessage(
+                    receiver.getEmail(),
+                    "Recuperation de mot de passe",
+                    "Bienvenue "  + receiver.getPrenom() + " sur AKINOBANK"
+            );
+            MimeMessageHelper messageHelper = new MimeMessageHelper(message);
+
+            Context context = new Context();
+            context.setVariable("url", url);
+            context.setVariable("receiver", receiver);
+            String content = templateEngine.process("mails/confirm", context);
+            messageHelper.setText(content, true);
+            // Send message
+            Transport.send(message);
+            logger.info("Message sent successfully.");
+        } catch (MessagingException ex) {
+            ex.printStackTrace();
+        }
+    }
+
     public void sendVirementCodeMail (User receiver, Virement virement) {
         try {
             MimeMessage message = getMimeMessage(

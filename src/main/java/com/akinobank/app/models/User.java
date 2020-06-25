@@ -76,9 +76,9 @@ public class User implements UserDetails { // We use interface UserDetials inste
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @OneToOne(mappedBy = "user", cascade = {CascadeType.REMOVE})
-//    @JsonIgnore
-    private Admin admin;
+//    @OneToOne(mappedBy = "user", cascade = {CascadeType.REMOVE})
+////    @JsonIgnore
+//    private Admin admin;
 
     @OneToOne(mappedBy = "user", fetch = FetchType.EAGER, cascade = {CascadeType.REMOVE})
     @JsonIgnoreProperties({"user"})
@@ -100,7 +100,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
     void beforeInsert() {
         System.out.println("SETTING DEFAULT VALUES FOR USER");
         emailConfirmed = false;
-        archived = false;
+        deleted = false;
         _2FaEnabled = false;
         verificationToken = VerificationTokenGenerator.generateVerificationToken();
     }

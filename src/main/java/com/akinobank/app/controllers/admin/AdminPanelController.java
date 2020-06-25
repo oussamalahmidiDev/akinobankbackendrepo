@@ -93,13 +93,6 @@ public class AdminPanelController {
 ////        model.addAttribute()
 //    }
 
-    @PostMapping("/logout")
-    public String logout(HttpServletRequest request) {
-        HttpSession session = request.getSession();
-        session.invalidate();
-        return ADMIN_VIEWS_PATH + "login";
-    }
-
     @GetMapping("")
     public String index(Model model) {
         return ADMIN_VIEWS_PATH + "index";
@@ -190,29 +183,35 @@ public class AdminPanelController {
     public String addUserView(Model model) {
         model.addAttribute("agences", agenceRepository.findAll());
         if (!model.containsAttribute("user"))
-            model.addAttribute("user", new User());
+            model.addAttribute("user", new UserCreationRequest());
         return ADMIN_VIEWS_PATH + "forms/user.add";
     }
 
     @PostMapping("users/ajouter")
-    public String addUser(@ModelAttribute User user, HttpServletRequest request, Model model) {
+    public String addUser(@ModelAttribute UserCreationRequest body, HttpServletRequest request, Model model) {
 //        if (user.getAgent() )
-        model.addAttribute("user", user);
+        model.addAttribute("user", body);
 
 
-        if (user.getNom().equals("") || user.getPrenom().equals("") || user.getEmail().equals("") || user.getRole() == null) {
+        if (body.getNom().equals("") || body.getPrenom().equals("") || body.getEmail().equals("") || body.getRole() == null) {
             model.addAttribute("error", "Veuillez remplir tous les champs.");
             return addUserView(model);
         }
 
+        User user = User.builder()
+                .email(body.getEmail())
+                .nom(body.getNom())
+                .prenom(body.getPrenom())
+                .role(body.getRole())
+                .build();
+
         User adminUser = authService.getCurrentUser();
         try {
-            if (user.getRole().name().equals("ADMIN")) {
+            if (body.getRole().equals(Role.ADMIN)) {
 //            System.out.println("SAVING ADMIN : " + user.toString());
                 // pour eviter le probleme de transaction
                 activitiesService.save("Authentification d'un admin",ActivityCategory.AUTH);
-                user.setAgent(null);
-                user = userRepository.save(user);
+                userRepository.save(user);
                 adminRepository.save(Admin.builder().user(user).build());
 
                 activitiesService.save(
@@ -220,15 +219,14 @@ public class AdminPanelController {
                     ActivityCategory.USERS_C
                 );
             }
-            if (user.getRole().name().equals("AGENT")) {
+            if (body.getRole().equals(Role.AGENT)){
 //            System.out.println("SAVING AGENT : " + user.toString());
-                Agence chosenAgence = user.getAgent().getAgence();
+                Agence chosenAgence = body.getAgence();
                 // pour eviter le probleme de transaction
-                user.setAgent(null);
-                user = userRepository.save(user);
+                userRepository.save(user);
                 // c juste parcequ'on n'a pas encore implemente l'auth.
 //                Admin admin = adminRepository.getOne((long) 1);
-                agentRepository.save(Agent.builder().user(user).admin(adminUser.getAdmin()).agence(chosenAgence).build());
+                agentRepository.save(Agent.builder().user(user).agence(chosenAgence).build());
 
                 activitiesService.save(
                     String.format("Création d'un nouveau agent \"%s %s \" dans l'agence %s (%s)", user.getPrenom(), user.getNom(), chosenAgence.getLibelleAgence(), chosenAgence.getVille().getNom()),
@@ -330,7 +328,7 @@ public class AdminPanelController {
     public String addAgence(@ModelAttribute Agence agence, Model model) {
         model.addAttribute("agence", agence);
 
-        agence = Agence.builder().ville(agence.getVille()).libelleAgence(agence.getLibelleAgence()).admin(authService.getCurrentUser().getAdmin()).build();
+        agence = Agence.builder().ville(agence.getVille()).libelleAgence(agence.getLibelleAgence()).build();
         agenceRepository.save(agence);
 
         activitiesService.save(

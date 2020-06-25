@@ -23,11 +23,11 @@ public class Admin {
     @GeneratedValue(strategy = GenerationType.IDENTITY) //pour la generation auto
     private Long id;
 
-    @OneToMany(mappedBy = "admin", fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE}) // pour la relation : chaque admin a pls agents
-    Collection<Agent> agents;
+   // @OneToMany(mappedBy = "admin", fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE}) // pour la relation : chaque admin a pls agents
+    //Collection<Agent> agents;
 
-    @OneToMany(mappedBy = "admin", fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})// pour la relation : chaque admin a pls agences
-    Collection<Agence> agences;
+    //@OneToMany(mappedBy = "admin", fetch = FetchType.LAZY,  cascade={CascadeType.REMOVE})// pour la relation : chaque admin a pls agences
+    //Collection<Agence> agences;
 
     @OneToOne // pour la relation : un admin a un compte user pour la auth
     @JoinColumn(name = "id_user")

@@ -124,14 +124,7 @@ public class GenericController {
         String action = request.getParameter("action");
         String ccn = request.getParameter("ccn");
         try {
-            if (action.equals("compte_details")) {
-                if (!userToVerify.isEmailConfirmed())
-                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Veuillez verifier votre email.");
-                if (ccn == null || ccn == "")
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-
-                return "redirect:/compte_details?ref=email&token=" + token + "&ccn=" + ccn;
-            } else if (action.equals("confirm")) {
+             if (action.equals("confirm")) {
                 if (userToVerify.isEmailConfirmed()
                     && userToVerify.getPassword() != null
                     && userToVerify.get_2FaEnabled()
@@ -152,7 +145,13 @@ public class GenericController {
                 if (userToVerify.getPassword() != null )
                     return "redirect:/";
                 return "redirect:/set_password?token=" + token;
-            } else {
+            } else if (action.equals("forgot_password")) {
+                 if (!userToVerify.isEmailConfirmed())
+                     userToVerify.setEmailConfirmed(true);
+                     userRepository.save(userToVerify);
+                 return "redirect:/set_password?token=" + token;
+             }else
+              {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
             }
         } catch (NullPointerException e) {
@@ -322,7 +321,7 @@ public class GenericController {
     public ResponseEntity<String> sendVerification(@RequestBody User credentials) {
 //        Long id = Long.parseLong(request.getParameter("id"));
         User user = userRepository.findByEmail(credentials.getEmail());
-        mailService.sendVerificationMail(user);
+        mailService.sendPasswordRecoveryMail(user);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
