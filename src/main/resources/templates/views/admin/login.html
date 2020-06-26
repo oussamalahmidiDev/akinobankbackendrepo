@@ -90,9 +90,7 @@
                                     <button id="submit" class="btn btn-primary">
                                         Envoyer
                                     </button>
-                                    <button id="retour" class="btn btn-outline-primary">
-                                        Retour
-                                    </button>
+                                    <input type="button" value="Retour" id="retour" class="btn btn-outline-primary" />
                                 </div>
                             </div>
                         </form>
@@ -112,6 +110,7 @@
         $("#recovery_button").click(() => {
             $("#login").hide();
             $("#recovery").show();
+            $("input[name='email_recovery']").val($("input[name='email']").val())
         });
 
         $("#retour").click(() => {

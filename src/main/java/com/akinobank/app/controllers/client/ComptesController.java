@@ -185,6 +185,17 @@ public class ComptesController {
         if (!compte.getCodeSecret().equals(request.getCodeSecret()))
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
 
+        if (compte.getOldStatut().equals(CompteStatus.ACTIVE)) {
+            compte.setStatut(CompteStatus.ACTIVE);
+            compteRepository.save(compte);
+            activitiesService.save(
+                String.format("La réactivation du compte de nº : %s", compte.getNumeroCompte()),
+                ActivityCategory.COMPTES_DEMANDE_SUSPEND
+            );
+            return new ResponseEntity<>(compte, HttpStatus.OK);
+        }
+
+
         client.setNumberOfDemandes( client.getNumberOfDemandes() + 1);
         compte.setOldStatut(compte.getStatut());
         compte.setStatut(CompteStatus.PENDING_ACTIVE);

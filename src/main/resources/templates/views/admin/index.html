@@ -3,15 +3,88 @@
 <head th:replace="views/admin/fragments :: head(title = 'Panneau d\'administrateur')"></head>
 <body>
 <nav th:replace="views/admin/fragments :: navbar"></nav>
-<h1>Welcome to to Admin panel.</h1>
-<ul id="greet"></ul>
+<div th:replace="views/admin/fragments ::
+    header(title = 'Bienvenue au panneau d\'administrateur',
+    description = 'Le tableau de bord de l\'application.')">
+</div>
+<div class="container" style="max-width: 1330px;">
+    <div class="grid">
+        <div class="dashboard-card">
+            <div class="card-icon">
+                <span class="material-icons">
+                account_balance
+                </span>
+            </div>
+            <div class="card-details">
+                <div class="number"  th:text="${ agences }">12</div>
+                <div class="label">Agences</div>
+            </div>
+        </div>
+        <div class="dashboard-card">
+            <div class="card-icon">
+                <span class="material-icons">
+                    admin_panel_settings
+                </span>
+            </div>
+            <div class="card-details">
+                <div class="number"  th:text="${ users }">12</div>
+                <div class="label">Administeurs & agents</div>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="card-icon">
+                <span class="material-icons">
+                people
+                </span>
+            </div>
+            <div class="card-details">
+                <div class="number"  th:text="${ clients }">12</div>
+                <div class="label">Clients inscrits</div>
+            </div>
+        </div>
+        <div class="dashboard-card">
+            <div class="card-icon">
+                <span class="material-icons">
+                payment
+                </span>
+            </div>
+            <div class="card-details">
+                <div class="number"  th:text="${ comptes }">12</div>
+                <div class="label">Comptes enregistrés</div>
+            </div>
+        </div>
+        <div class="dashboard-card">
+            <div class="card-icon">
+                <span class="material-icons">
+                payments
+                </span>
+            </div>
+            <div class="card-details">
+                <div class="number" th:text="${ virements }">12</div>
+                <div class="label" >Operations de virement</div>
+            </div>
+        </div>
+        <div class="dashboard-card">
+            <div class="card-icon">
+                <span class="material-icons">
+                add_ic_call
+                </span>
+            </div>
+            <div class="card-details">
+                <div class="number"  th:text="${ recharges }">12</div>
+                <div class="label">Operations de recharge</div>
+            </div>
+        </div>
+    </div>
+</div>
 <div th:replace="views/admin/fragments :: scripts"></div>
 
 <script>
     function initialize() {
 
         // Subscribing to Server events to receive notifications.
-        const eventSource = new EventSource(window.location.origin + '/client/api/subscribe');
+        // const eventSource = new EventSource(window.location.origin + '/client/api/subscribe');
 
         // Handling data received from server event
         eventSource.onmessage = e => {
@@ -30,21 +103,21 @@
         eventSource.onerror = e => {
             if (e.readyState === EventSource.CLOSED) {
                 console.log('close');
-            }
-            else {
+            } else {
                 console.log(e);
             }
         };
-        eventSource.addEventListener('second', function(e) {
+        eventSource.addEventListener('second', function (e) {
             console.log('second', e.data);
         }, false);
 
-        $(window).on("unload", function(e) {
+        $(window).on("unload", function (e) {
             console.log("CLOSING EVENT SOURCE");
             eventSource.close();
             // Do Something
         });
     }
+
     // window.onload = initialize;
 
 

@@ -2,6 +2,7 @@ package com.akinobank.app.controllers;
 
 import com.akinobank.app.enumerations.ActivityCategory;
 import com.akinobank.app.enumerations.CompteStatus;
+import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.exceptions.InvalidVerificationTokenException;
 import com.akinobank.app.models.CodeValidationRequest;
 import com.akinobank.app.models.Compte;
@@ -138,7 +139,7 @@ public class GenericController {
                     ActivityCategory.EMAIL_CONF,
                     userToVerify
                 );
-                if (!userToVerify.get_2FaEnabled() && userToVerify.getPassword() != null)
+                if (!userToVerify.get_2FaEnabled() && userToVerify.getPassword() != null && userToVerify.getRole().equals(Role.CLIENT))
                     return "redirect:/2fa_setup?token=" + token;
 
                 if (userToVerify.getPassword() != null)
@@ -149,7 +150,12 @@ public class GenericController {
                     userToVerify.setEmailConfirmed(true);
                 userRepository.save(userToVerify);
                 return "redirect:/set_password?token=" + token;
-            } else {
+            } else if (action.equals("2fa_enable")) {
+                if (!userToVerify.get_2FaEnabled() && userToVerify.getPassword() != null && userToVerify.isEmailConfirmed())
+                    return "redirect:/2fa_setup?token=" + token;
+                return "redirect:/confirm?token=" + token;
+            }
+            else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
             }
         } catch (NullPointerException e) {
@@ -173,6 +179,9 @@ public class GenericController {
         String token = request.getParameter("token");
         User user = userRepository.findOneByVerificationToken(token);
         if (user == null) throw new InvalidVerificationTokenException();
+        if (!user.getRole().equals(Role.CLIENT))
+            return "redirect:/";
+
         String password = request.getParameter("password");
         String passwordConfirmation = request.getParameter("password_conf");
         if (!password.equals(passwordConfirmation)) {
@@ -181,7 +190,7 @@ public class GenericController {
         }
 
         user.setPassword(encoder.encode(password));
-
+        user.setVerificationToken(VerificationTokenGenerator.generateVerificationToken());
         activitiesService.save(
             String.format("Confirmation de l'email"),
             ActivityCategory.EMAIL_PASS_CHANGE,
@@ -191,8 +200,8 @@ public class GenericController {
         userRepository.save(user);
 
 
-        if (!user.get_2FaEnabled())
-            return "redirect:/2fa_setup?token=" + token;
+        if (!user.get_2FaEnabled() && user.getRole().equals(Role.CLIENT))
+            return "redirect:/2fa_setup?token=" + user.getVerificationToken();
 
         return "redirect:/";
     }
@@ -324,13 +333,14 @@ public class GenericController {
 
     @ResponseBody
     @PostMapping("/recover_account")
-    public HashMap<String, String> handleComptRecovery(@RequestBody CompteRecoveryRequest request) {
+    public HashMap<String, String> handleCompteRecovery(@RequestBody CompteRecoveryRequest request) {
         User user = userRepository.findByEmail(request.getEmail());
         switch (request.getOperation()) {
             case "RECOVER_PASSWORD":
                 mailService.sendPasswordRecoveryMail(user);
                 break;
             case "2FA_CONFIG":
+                mailService.send2FASetupMail(user);
 //                mail for 2fa auth
                 break;
             case "SETUP_PASSWORD":

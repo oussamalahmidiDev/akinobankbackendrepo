@@ -1,5 +1,6 @@
 package com.akinobank.app.controllers.admin;
 
+import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.*;
 import com.akinobank.app.services.ActivitiesService;
@@ -15,6 +16,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Controller
 @RequestMapping("/admin")
 public class DashboardController {
@@ -22,6 +26,9 @@ public class DashboardController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ClientRepository clientRepository;
 
     @Autowired
     private AdminRepository adminRepository;
@@ -33,6 +40,15 @@ public class DashboardController {
 
     @Autowired
     private AgenceRepository agenceRepository;
+
+    @Autowired
+    private CompteRepository compteRepository;
+
+    @Autowired
+    private VirementRepository virementRepository;
+
+    @Autowired
+    private RechargeRepository rechargeRepository;
 
     @Autowired
     private VilleRepository villeRepository;
@@ -62,6 +78,15 @@ public class DashboardController {
 
     @GetMapping()
     public String index(Model model) {
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("agences", agenceRepository.count());
+        attributes.put("clients", userRepository.countByRole(Role.CLIENT));
+        attributes.put("users", userRepository.countByRoleIsNot(Role.CLIENT));
+        attributes.put("comptes", compteRepository.count());
+        attributes.put("recharges", rechargeRepository.count());
+        attributes.put("virements", virementRepository.count());
+        model.addAllAttributes(attributes);
+
         return ADMIN_VIEWS_PATH + "index";
     }
 

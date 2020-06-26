@@ -1,6 +1,5 @@
 package com.akinobank.app.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -14,7 +13,6 @@ import java.util.List;
 @Builder
 @Data
 @NoArgsConstructor
-@EntityListeners(NotificationListener.class) // Link Notification entity to NotifiationListener
 public class Notification {
 
 

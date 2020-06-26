@@ -109,6 +109,29 @@ public class MailService  {
         }
     }
 
+    public void send2FASetupMail (User receiver) {
+        String url = getConfirmationURL(receiver) + "&action=2fa_enable";
+        try {
+            MimeMessage message = getMimeMessage(
+                receiver.getEmail(),
+                "Configuration de l'authentification à deux facteurs",
+                "Bienvenue "  + receiver.getPrenom() + " sur AKINOBANK"
+            );
+            MimeMessageHelper messageHelper = new MimeMessageHelper(message);
+
+            Context context = new Context();
+            context.setVariable("url", url);
+            context.setVariable("receiver", receiver);
+            String content = templateEngine.process("mails/2fa_setup", context);
+            messageHelper.setText(content, true);
+            // Send message
+            Transport.send(message);
+            logger.info("Message sent successfully.");
+        } catch (MessagingException ex) {
+            ex.printStackTrace();
+        }
+    }
+
     public void sendPasswordRecoveryMail (User receiver) {
         String url = getConfirmationURL(receiver) + "&action=forgot_password";
         try {
@@ -122,7 +145,7 @@ public class MailService  {
             Context context = new Context();
             context.setVariable("url", url);
             context.setVariable("receiver", receiver);
-            String content = templateEngine.process("mails/confirm", context);
+            String content = templateEngine.process("mails/password_recovery", context);
             messageHelper.setText(content, true);
             // Send message
             Transport.send(message);

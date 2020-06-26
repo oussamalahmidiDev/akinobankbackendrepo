@@ -35,4 +35,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findAllByRoleAndArchived(Role role , Boolean archived);
 
+    Long countByRole(Role role);
+    Long countByRoleIsNot(Role role);
+
 }

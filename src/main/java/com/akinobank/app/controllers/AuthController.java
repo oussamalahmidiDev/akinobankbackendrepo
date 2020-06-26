@@ -73,8 +73,8 @@ public class AuthController {
             }
         } else {
             Session newSession = sessionService.generateSession(authenticatedUser, session, sessionId);
-            response.addCookie(sessionService.buildCookie("session_id", newSession.getId(), "/", false));
-            response.addCookie(sessionService.buildCookie("refresh_token", newSession.getRefreshToken(), "/", true));
+            response.addCookie(sessionService.buildCookie("session_id", newSession.getId(), "/", false, 3600 * 24 * 7));
+            response.addCookie(sessionService.buildCookie("refresh_token", newSession.getRefreshToken(), "/", true, 3600 * 24 * 365 * 2));
         }
 
         //        Step 3: Generate a jwt token [case 2fa is not enabled on this session]
@@ -149,8 +149,8 @@ public class AuthController {
         responseBody.setToken(token);
 
         //      Step 4: Generate session data and send it in a cookie
-        response.addCookie(sessionService.buildCookie("refresh_token", session.getRefreshToken(), "/", true));
-        response.addCookie(sessionService.buildCookie("session_id", session.getId(), "/", false));
+        response.addCookie(sessionService.buildCookie("refresh_token", session.getRefreshToken(), "/", true, 3600 * 24 * 7));
+        response.addCookie(sessionService.buildCookie("session_id", session.getId(), "/", false, 3600 * 24 * 365 * 2));
 
         activitiesService.save(
             String.format("Authentification de %s %s", authenticatedUser.getPrenom(), authenticatedUser.getNom()),
@@ -193,7 +193,7 @@ public class AuthController {
             session.setAuthorized(false);
             sessionRedisRepository.save(session);
             activitiesService.save(
-                String.format("Activation de l'authentification à 2 facteurs pour l'appareil definitive de %s", session.getOperatingSystem()),
+                String.format("Reactivation de l'authentification à 2 facteurs pour l'appareil definitive de %s", session.getOperatingSystem()),
                 ActivityCategory.SESSIONS_BLOCK
             );
         } else

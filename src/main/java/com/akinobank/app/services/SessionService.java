@@ -67,6 +67,7 @@ public class SessionService {
         cookie.setPath(path);
         cookie.setHttpOnly(httpOnly);
         cookie.setMaxAge(maxAge);
+
         return cookie;
     }
 

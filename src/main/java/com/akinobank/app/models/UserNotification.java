@@ -41,7 +41,7 @@ public class UserNotification implements Serializable {
     public void intialValues() {
         lue = false;
     }
-
+// colien
 }
 
 // Notification listener to send notification after persisting entity in the DB.
