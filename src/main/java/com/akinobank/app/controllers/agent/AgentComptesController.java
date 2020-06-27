@@ -10,6 +10,7 @@ import com.akinobank.app.repositories.CompteRepository;
 import com.akinobank.app.repositories.NotificationRepository;
 import com.akinobank.app.services.ActivitiesService;
 import com.akinobank.app.services.AuthService;
+import com.akinobank.app.services.MailService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,9 @@ public class AgentComptesController {
 
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private MailService mailService;
 
     @Autowired
     private AuthService authService;
@@ -70,6 +74,17 @@ public class AgentComptesController {
 
         return compteToUpdate;
     }
+
+    @PostMapping("{id}/resend_infos")
+    @ResponseStatus(HttpStatus.OK)
+    public void resendInfo(@PathVariable("id")String id){
+
+        Compte compte = getCompteById(id);
+        mailService.sendCompteDetails(compte.getClient().getUser(), compte);
+
+    }
+
+
 
     @PutMapping("{id}/modifier/status")
     public Compte updateCompteStatus(@PathVariable String id, @RequestParam(value = "status") String status) {
