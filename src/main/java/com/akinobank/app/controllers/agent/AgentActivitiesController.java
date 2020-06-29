@@ -4,7 +4,11 @@ import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.models.Activity;
 import com.akinobank.app.models.Agence;
 import com.akinobank.app.models.Agent;
+import com.akinobank.app.models.Client;
 import com.akinobank.app.repositories.ActivityRepository;
+import com.akinobank.app.repositories.AgenceRepository;
+import com.akinobank.app.repositories.ClientRepository;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -17,6 +21,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/agent/api/activities")
+@Log4j2
 public class AgentActivitiesController {
 
     @Autowired
@@ -25,22 +30,28 @@ public class AgentActivitiesController {
     @Autowired
     private AgentProfileController profileController;
 
+    @Autowired
+    private AgenceRepository agenceRepository;
+
+    @Autowired
+    private ClientRepository clientRepository;
+
     @GetMapping("")
     List<Activity> getActivites() {
         Agent agent = profileController.getAgent();
         Agence agence = agent.getAgence();
-        return repository.findAllByUserAndUser_Agent_Agence(
+        return repository.findAllByUser(
                 agent.getUser(),
-                agence,
-                PageRequest.of(0, 200, Sort.by("timestamp").descending()));
+                PageRequest.of(0, 20, Sort.by("timestamp").descending()));
     }
 
     @GetMapping("/clients")
     List<Activity> getClientsActivites() {
-        return repository.findAllByUserRoleAndUser_Agent_Agence(
-                Role.CLIENT,
-                profileController.getAgent().getAgence(),
-                PageRequest.of(0, 200, Sort.by("timestamp").descending()));
+        long id = profileController.getAgent().getAgence().getId();
+        Agence agence = agenceRepository.findById(id).get();
+        return repository.findAllByUserRoleAndUser_Client_Agence(
+                Role.CLIENT, agence, PageRequest.of(0, 20, Sort.by("timestamp").descending()));
     }
+
 
 }
