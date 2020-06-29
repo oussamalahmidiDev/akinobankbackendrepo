@@ -1,8 +1,7 @@
 package com.akinobank.app;
 
 import com.akinobank.app.config.Storage;
-import com.akinobank.app.models.Compte;
-import com.akinobank.app.models.CompteCredentialsRequest;
+import com.akinobank.app.enumerations.Role;
 import com.akinobank.app.models.Notification;
 import com.akinobank.app.models.User;
 import com.akinobank.app.repositories.CompteRepository;
@@ -19,13 +18,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
-import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 //import com.akinobank.app.repositories.SessionRepository;
 
@@ -37,7 +35,7 @@ import java.util.List;
 public class AppApplication implements CommandLineRunner {
 
     Logger logger = LoggerFactory.getLogger(AppApplication.class);
-//    @Autowired
+    //    @Autowired
 //    private AdminRepository adminRepository;
 //
 //    @Autowired
@@ -51,10 +49,10 @@ public class AppApplication implements CommandLineRunner {
 //
     @Autowired
     private CompteRepository compteRepository;
-//
+    //
     @Autowired
     private UserRepository userRepository;
-//
+    //
 //    @Autowired
 //    private VilleRepository villeRepository;
 //
@@ -67,8 +65,8 @@ public class AppApplication implements CommandLineRunner {
 //    @Autowired
 //    private RechargeRepository rechargeRepository;
 //
-//    @Autowired
-//    private PasswordEncoder encoder;
+    @Autowired
+    private PasswordEncoder encoder;
 //
 //    @Autowired
 //    private SessionRepository sessionRepository;
@@ -100,33 +98,39 @@ public class AppApplication implements CommandLineRunner {
     }
 
     @GetMapping("/test/notify")
-    @ResponseBody
-    public String getNotification(@RequestBody Notification notification) {
-        List<User> receivers = new ArrayList<>();
-        receivers.add(userRepository.findByEmail("oussama.lahmidi@icloud.com"));
-        notification.setReceiver(receivers);
-
-//        notification.setClient(userRepository.findByEmail("oussama.lahmidi@icloud.com").getClient());
-
-        notificationRepository.save(notification);
-        // Increment Notification by one
-
-        // Push notifications to front-end
-//        template.convertAndSend("/topic/notifications", notification);
-//        template.convertAndSend();
-//        template.convertAndSendToUser("oussama.lahmidi@icloud.com", "/topic/notifications", notification);
-        return "Notifications successfully sent !";
-    }
-
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/test/num")
-    @ResponseBody
-    public Compte testNumeroCompte(@RequestBody @Valid CompteCredentialsRequest request) {
-        logger.info("Valid");
-        return compteRepository.findById(request.getNumeroCompte()).orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
-        );
+    public void send(@RequestBody Notification notification) {
+        template.convertAndSendToUser("oussama.lahmidi@icloud.com", "/topic/notifications", notification);
     }
+
+//    @GetMapping("/test/notify")
+//    @ResponseBody
+//    public String getNotification(@RequestBody Notification notification) {
+//        List<User> receivers = new ArrayList<>();
+//        receivers.add(userRepository.findByEmail("oussama.lahmidi@icloud.com"));
+//        notification.setReceiver(receivers);
+//
+////        notification.setClient(userRepository.findByEmail("oussama.lahmidi@icloud.com").getClient());
+//
+//        notificationRepository.save(notification);
+//        // Increment Notification by one
+//
+//        // Push notifications to front-end
+////        template.convertAndSend("/topic/notifications", notification);
+////        template.convertAndSend();
+////        template.convertAndSendToUser("oussama.lahmidi@icloud.com", "/topic/notifications", notification);
+//        return "Notifications successfully sent !";
+//    }
+
+//    @ResponseStatus(HttpStatus.OK)
+//    @PostMapping("/test/num")
+//    @ResponseBody
+//    public Compte testNumeroCompte(@RequestBody @Valid CompteCredentialsRequest request) {
+//        logger.info("Valid");
+//        return compteRepository.findById(request.getNumeroCompte()).orElseThrow(
+//            () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+//        );
+//    }
 
     @GetMapping("/test/email")
     @ResponseBody
@@ -276,5 +280,19 @@ public class AppApplication implements CommandLineRunner {
     //    //Just for test
     @Override
     public void run(String... args) {
+//        Create a default ADMIN USER ACCOUNT
+
+        User user = User.builder()
+            .email("admin@akino.com")
+            .nom("Admin")
+            .prenom("Akino")
+            .role(Role.ADMIN)
+            .id(1L)
+            .password(encoder.encode("password"))
+            .build();
+        if (!userRepository.findById(1L).isPresent())
+            userRepository.save(user);
+
+
     }
 }

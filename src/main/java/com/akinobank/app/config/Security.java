@@ -126,7 +126,7 @@ public class Security extends WebSecurityConfigurerAdapter implements WebMvcConf
             "/api/auth/agent",
             "/api/forgot_password",
             "/compte_details",
-            "/confirm", "/set_password", "/js/**", "/css/**").permitAll().
+            "/confirm", "/set_password", "/js/**", "/css/**", "/assets/**").permitAll().
             and().authorizeRequests().antMatchers("/admin/**").hasRole(Role.ADMIN.name()). // just for now
             and().authorizeRequests().antMatchers("/agent/**").hasRole(Role.AGENT.name()).
             and().authorizeRequests().antMatchers("/client/**").hasRole(Role.CLIENT.name()).

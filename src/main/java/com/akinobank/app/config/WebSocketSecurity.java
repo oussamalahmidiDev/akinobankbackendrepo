@@ -12,5 +12,10 @@ public class WebSocketSecurity extends AbstractSecurityWebSocketMessageBrokerCon
         messages.anyMessage().authenticated();
     }
 
+    @Override
+    protected boolean sameOriginDisabled() {
+        return true;
+    }
+
 
 }

@@ -33,7 +33,7 @@ public class User implements UserDetails { // We use interface UserDetials inste
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     //    @NotNull
