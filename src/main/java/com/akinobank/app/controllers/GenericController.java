@@ -31,7 +31,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -85,34 +88,12 @@ public class GenericController {
     private ActivitiesService activitiesService;
 
     @GetMapping("/")
-    @ResponseStatus(HttpStatus.OK)
-    public void index() {
+//    @ResponseStatus(HttpStatus.OK)
+    public String index() {
         logger.info("PING PONG");
+        return "views/index";
     }
 
-//    @PostMapping("/api/auth/agent")
-//    @ResponseBody
-//    public ResponseEntity<?> agentAuthenticate(@RequestBody User user) throws Exception {
-//        System.out.println(user.getEmail() + " " + user.getPassword());
-//
-//        User authenticatedUser = userRepository.findByEmail(user.getEmail());
-//        try {
-//            Role role = authenticatedUser.getRole();
-//            System.out.println(role);
-//            authService.agentAuthenticate(user.getEmail(), user.getPassword(), role);
-//
-//        } catch (Exception e) {
-//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "L'email ou mot de passe est incorrect");
-//        }
-//
-//        final String token = jwtUtils.generateToken(authenticatedUser);
-//
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("token", token);
-////        System.out.println(jwtUtils.getAllClaimsFromToken(token));
-//
-//        return ResponseEntity.ok(response);
-//    }
 
     // page de confirmation d email
     @GetMapping("/confirm")
@@ -192,7 +173,7 @@ public class GenericController {
         user.setPassword(encoder.encode(password));
         user.setVerificationToken(VerificationTokenGenerator.generateVerificationToken());
         activitiesService.save(
-                String.format("Confirmation de l'email"),
+                String.format("Configuration de mot de passe"),
                 ActivityCategory.EMAIL_PASS_CHANGE,
                 user
         );
@@ -262,7 +243,7 @@ public class GenericController {
         userRepository.save(user);
 
         activitiesService.save(
-                String.format("Confirmation de l'email"),
+                String.format("Activation de l'authentification à deux facteurs"),
                 ActivityCategory.EMAIL_2FA,
                 user
         );
