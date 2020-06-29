@@ -96,7 +96,7 @@ public class ComptesController {
         if (!compte.getCodeSecret().equals(request.getCodeSecret()))
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
 
-        client.setNumberOfDemandes( client.getNumberOfDemandes() + 1);
+//        client.setNumberOfDemandes( client.getNumberOfDemandes() + 1);
         compte.setOldStatut(compte.getStatut()); //
         compte.setStatut(CompteStatus.PENDING_BLOCKED);
         compte.setRaison(request.getRaison());
@@ -140,7 +140,7 @@ public class ComptesController {
         if (!compte.getCodeSecret().equals(request.getCodeSecret()))
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Le code est incorrect.");
 
-        client.setNumberOfDemandes( client.getNumberOfDemandes() + 1);
+//        client.setNumberOfDemandes( client.getNumberOfDemandes() + 1);
         compte.setOldStatut(compte.getStatut());
         compte.setStatut(CompteStatus.PENDING_SUSPENDED);
         compte.setRaison(request.getRaison());
@@ -196,7 +196,7 @@ public class ComptesController {
         }
 
 
-        client.setNumberOfDemandes( client.getNumberOfDemandes() + 1);
+//        client.setNumberOfDemandes( client.getNumberOfDemandes() + 1);
         compte.setOldStatut(compte.getStatut());
         compte.setStatut(CompteStatus.PENDING_ACTIVE);
         compte.setRaison(request.getRaison());

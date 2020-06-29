@@ -56,7 +56,7 @@ public class AgentDemandesController {
                     compte.setStatut(CompteStatus.SUSPENDED);
                     break;
             }
-            compte.getClient().setNumberOfDemandes(compte.getClient().getNumberOfDemandes() - 1);
+//            compte.getClient().setNumberOfDemandes(compte.getClient().getNumberOfDemandes() - 1);
             compteRepository.save(compte);
 
             return new ResponseEntity<>(HttpStatus.OK);
@@ -71,7 +71,7 @@ public class AgentDemandesController {
         try{
             Compte compte = compteRepository.findByNumeroCompteAndClient_Agence(numeroCompte,agent.getAgence()).get();
             compte.setStatut(compte.getOldStatut());
-            compte.getClient().setNumberOfDemandes(compte.getClient().getNumberOfDemandes() - 1);
+//            compte.getClient().setNumberOfDemandes(compte.getClient().getNumberOfDemandes() - 1);
             compteRepository.save(compte);
 
             return new ResponseEntity<>(HttpStatus.OK);

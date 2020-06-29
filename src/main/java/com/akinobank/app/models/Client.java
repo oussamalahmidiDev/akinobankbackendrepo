@@ -30,7 +30,7 @@ public class Client {
 
 //    @NotNull
     private boolean deleted;
-    private int numberOfDemandes ;
+//    private int numberOfDemandes ;
 
 
     @ManyToOne
