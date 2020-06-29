@@ -53,6 +53,7 @@ public class AuthController {
 
     @PostMapping("")
     public ResponseEntity<?> authenticate(@CookieValue(value = "session_id", defaultValue = "") String sessionId, @RequestBody User user, HttpServletResponse response) {
+        log.info("Authenticating");
         User authenticatedUser = authService.authenticate(user.getEmail(), user.getPassword());
         TokenResponse responseBody = new TokenResponse();
 
