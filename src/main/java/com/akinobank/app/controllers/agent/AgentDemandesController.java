@@ -41,7 +41,7 @@ public class AgentDemandesController {
     private AgentComptesController agentComptesController;
 
     @PostMapping("/accept")
-    public ResponseEntity<?> acceptDemande(@RequestParam("numeroCompte")String numeroCompte){
+    public Compte acceptDemande(@RequestParam("numeroCompte")String numeroCompte){
         Agent agent = agentProfileController.getAgent();
         try{
             Compte compte = compteRepository.findByNumeroCompteAndClient_Agence(numeroCompte,agent.getAgence()).get();
@@ -59,14 +59,14 @@ public class AgentDemandesController {
 //            compte.getClient().setNumberOfDemandes(compte.getClient().getNumberOfDemandes() - 1);
             compteRepository.save(compte);
 
-            return new ResponseEntity<>(HttpStatus.OK);
+            return compte;
 
         }catch(Exception e){
             throw new  ResponseStatusException(HttpStatus.NOT_FOUND, "Le compte avec nº " + numeroCompte + " est introuvable.");
         }
     }
     @PostMapping("/reject")
-    public ResponseEntity<?> rejectDemande(@RequestParam("numeroCompte")String numeroCompte ){
+    public Compte rejectDemande(@RequestParam("numeroCompte")String numeroCompte ){
         Agent agent = agentProfileController.getAgent();
         try{
             Compte compte = compteRepository.findByNumeroCompteAndClient_Agence(numeroCompte,agent.getAgence()).get();
@@ -74,7 +74,7 @@ public class AgentDemandesController {
 //            compte.getClient().setNumberOfDemandes(compte.getClient().getNumberOfDemandes() - 1);
             compteRepository.save(compte);
 
-            return new ResponseEntity<>(HttpStatus.OK);
+            return compte;
         }catch(Exception e){
             throw new  ResponseStatusException(HttpStatus.NOT_FOUND, "Le compte avec nº " + numeroCompte + " est introuvable.");
         }
