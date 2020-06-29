@@ -117,7 +117,7 @@ public class AgentClientsController {
 
 
     @PostMapping("/ajouter") //add new client , works
-    public User addClient(@RequestBody User user) {
+    public Client addClient(@RequestBody User user) {
         try {
             user.setRole(Role.CLIENT);
             user.setDeleted(false);
@@ -139,7 +139,8 @@ public class AgentClientsController {
                 ActivityCategory.CLIENTS_C
             );
 
-            return user;
+
+            return  clientRepository.findByUser(user).get();
         } catch (DataIntegrityViolationException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "L'email que vous avez entré est déjà utilisé.");
         }

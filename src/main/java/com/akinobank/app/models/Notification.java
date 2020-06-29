@@ -11,7 +11,8 @@ import java.util.List;
 @Entity
 @AllArgsConstructor
 @Builder
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class Notification {
 

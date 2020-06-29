@@ -195,7 +195,7 @@ public class VirementsController {
 
         List<User> receivers = new ArrayList<>();
 
-        receivers.add(client.getUser());
+        receivers.add(receiver.getUser());
 
         Notification notification = Notification.builder()
             .contenu(receiver.getUser().getNom() + " " + receiver.getUser().getPrenom() + " a confirmé la réception de votre virement.")

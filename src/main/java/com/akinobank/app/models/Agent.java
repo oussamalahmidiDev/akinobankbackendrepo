@@ -16,7 +16,7 @@ import java.util.Collection;
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString
+//@ToString
 @JsonPropertyOrder({ "user" })
 public class Agent  {
 

@@ -126,8 +126,8 @@ public class GenericController {
         try {
             if (action.equals("confirm")) {
                 if (userToVerify.isEmailConfirmed()
-                    && userToVerify.getPassword() != null
-                    && userToVerify.get_2FaEnabled()
+                        && userToVerify.getPassword() != null
+                        && userToVerify.get_2FaEnabled()
                 )
                     return "redirect:/";
 
@@ -135,9 +135,9 @@ public class GenericController {
                 userRepository.save(userToVerify);
 
                 activitiesService.save(
-                    String.format("Confirmation de l'email"),
-                    ActivityCategory.EMAIL_CONF,
-                    userToVerify
+                        String.format("Confirmation de l'email"),
+                        ActivityCategory.EMAIL_CONF,
+                        userToVerify
                 );
                 if (!userToVerify.get_2FaEnabled() && userToVerify.getPassword() != null && userToVerify.getRole().equals(Role.CLIENT))
                     return "redirect:/2fa_setup?token=" + token;
@@ -179,8 +179,8 @@ public class GenericController {
         String token = request.getParameter("token");
         User user = userRepository.findOneByVerificationToken(token);
         if (user == null) throw new InvalidVerificationTokenException();
-        if (!user.getRole().equals(Role.CLIENT))
-            return "redirect:/";
+//        if (!user.getRole().equals(Role.CLIENT))
+//            return "redirect:/";
 
         String password = request.getParameter("password");
         String passwordConfirmation = request.getParameter("password_conf");
@@ -192,9 +192,9 @@ public class GenericController {
         user.setPassword(encoder.encode(password));
         user.setVerificationToken(VerificationTokenGenerator.generateVerificationToken());
         activitiesService.save(
-            String.format("Confirmation de l'email"),
-            ActivityCategory.EMAIL_PASS_CHANGE,
-            user
+                String.format("Confirmation de l'email"),
+                ActivityCategory.EMAIL_PASS_CHANGE,
+                user
         );
 
         userRepository.save(user);
@@ -223,13 +223,13 @@ public class GenericController {
 
         log.info("QR secret key generated : {}", secret);
         QrData data = qrDataFactory.newBuilder()
-            .label(email)
-            .secret(secret)
-            .issuer("Akinobank")
-            .build();
+                .label(email)
+                .secret(secret)
+                .issuer("Akinobank")
+                .build();
         String qrCodeImage = getDataUriForImage(
-            qrGenerator.generate(data),
-            qrGenerator.getImageMimeType()
+                qrGenerator.generate(data),
+                qrGenerator.getImageMimeType()
         );
         log.info("QR URI : {}", qrCodeImage);
 
@@ -262,9 +262,9 @@ public class GenericController {
         userRepository.save(user);
 
         activitiesService.save(
-            String.format("Confirmation de l'email"),
-            ActivityCategory.EMAIL_2FA,
-            user
+                String.format("Confirmation de l'email"),
+                ActivityCategory.EMAIL_2FA,
+                user
         );
 
         HashMap res = new HashMap<String, String>();
