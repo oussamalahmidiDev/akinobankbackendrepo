@@ -193,15 +193,11 @@ public class VirementsController {
         virement.setStatut(VirementStatus.RECEIVED);
         virementRepository.save(virement);
 
-        List<User> receivers = new ArrayList<>();
-
-        receivers.add(receiver.getUser());
-
         Notification notification = Notification.builder()
             .contenu(receiver.getUser().getNom() + " " + receiver.getUser().getPrenom() + " a confirmé la réception de votre virement.")
             .build();
 
-        notificationService.send(notification, client.getUser());
+        notificationService.send(notification, receiver.getUser());
 
 //        template.convertAndSendToUser(sender.getUser().getEmail(), "/topic/notifications", notification);
 

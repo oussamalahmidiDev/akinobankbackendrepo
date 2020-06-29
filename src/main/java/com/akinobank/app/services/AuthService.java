@@ -45,6 +45,7 @@ public class AuthService implements UserDetailsService {
     public User authenticate(String email, String password) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+            log.info("User authenticated.");
             User authenticatedUser =  userRepository.findByEmail(email);
             if (!authenticatedUser.get_2FaEnabled() && authenticatedUser.getRole().equals(Role.CLIENT))
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Vous devez activer la verification en deux étapes. " +

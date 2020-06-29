@@ -87,6 +87,7 @@ public class ActivitiesService {
         clientCategories.put(ActivityCategory.COMPTES_CODE_CHANGE, "Changement du code secret de compte");
         clientCategories.put(ActivityCategory.COMPTES_DEMANDE_SUSPEND, "Envoie d'une demande de supsension de compte");
         clientCategories.put(ActivityCategory.COMPTES_DEMANDE_BLOCK, "Envoie d'une demande de blocage de compte");
+        clientCategories.put(ActivityCategory.COMPTES_DEMANDE_ACTIVATE, "Envoie d'une demande d'activation de compte");
         clientCategories.put(ActivityCategory.VIREMENTS_C, "Effectue d'un virement");
         clientCategories.put(ActivityCategory.VIREMENTS_CONF, "Confirmation d'un virement");
         clientCategories.put(ActivityCategory.VIREMENTS_D, "Suppression d'un virement");

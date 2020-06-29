@@ -204,8 +204,8 @@ public class ComptesController {
         compteRepository.save(compte);
 
         activitiesService.save(
-                String.format("Envoie d'une demande de suspension du compte nº %s pour la raison : %s", compte.getNumeroCompte(), request.getRaison()),
-                ActivityCategory.COMPTES_DEMANDE_SUSPEND
+                String.format("Envoie d'une demande d'activation du compte nº %s pour la raison : %s", compte.getNumeroCompte(), request.getRaison()),
+                ActivityCategory.COMPTES_ACTIVATE
         );
 
         List<User> receivers = agentRepository.findAllByAgence(client.getAgence()).stream()
