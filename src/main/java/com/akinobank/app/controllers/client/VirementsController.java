@@ -197,7 +197,7 @@ public class VirementsController {
             .contenu(receiver.getUser().getNom() + " " + receiver.getUser().getPrenom() + " a confirmé la réception de votre virement.")
             .build();
 
-        notificationService.send(notification, receiver.getUser());
+        notificationService.send(notification, sender.getUser());
 
 //        template.convertAndSendToUser(sender.getUser().getEmail(), "/topic/notifications", notification);
 
